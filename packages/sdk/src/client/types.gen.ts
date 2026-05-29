@@ -1230,7 +1230,7 @@ export type ValidationError = {
   };
 };
 
-export type ListSessionsApiV2SessionsGetData = {
+export type ListSessionsData = {
   body?: never;
   path?: never;
   query?: {
@@ -1271,32 +1271,31 @@ export type ListSessionsApiV2SessionsGetData = {
      *
      * Sort by field
      */
-    sort?: "created_at" | "-created_at";
+    sort?: Array<"created_at" | "-created_at"> | null;
   };
   url: "/api/v2/sessions";
 };
 
-export type ListSessionsApiV2SessionsGetErrors = {
+export type ListSessionsErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type ListSessionsApiV2SessionsGetError =
-  ListSessionsApiV2SessionsGetErrors[keyof ListSessionsApiV2SessionsGetErrors];
+export type ListSessionsError = ListSessionsErrors[keyof ListSessionsErrors];
 
-export type ListSessionsApiV2SessionsGetResponses = {
+export type ListSessionsResponses = {
   /**
    * Successful Response
    */
   200: PageSessionSummary;
 };
 
-export type ListSessionsApiV2SessionsGetResponse =
-  ListSessionsApiV2SessionsGetResponses[keyof ListSessionsApiV2SessionsGetResponses];
+export type ListSessionsResponse =
+  ListSessionsResponses[keyof ListSessionsResponses];
 
-export type CreateSessionApiV2SessionsPostData = {
+export type CreateSessionData = {
   body: SessionRequest;
   headers?: {
     /**
@@ -1309,54 +1308,53 @@ export type CreateSessionApiV2SessionsPostData = {
   url: "/api/v2/sessions";
 };
 
-export type CreateSessionApiV2SessionsPostErrors = {
+export type CreateSessionErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type CreateSessionApiV2SessionsPostError =
-  CreateSessionApiV2SessionsPostErrors[keyof CreateSessionApiV2SessionsPostErrors];
+export type CreateSessionError = CreateSessionErrors[keyof CreateSessionErrors];
 
-export type CreateSessionApiV2SessionsPostResponses = {
+export type CreateSessionResponses = {
   /**
    * Successful Response
    */
   201: Session;
 };
 
-export type CreateSessionApiV2SessionsPostResponse =
-  CreateSessionApiV2SessionsPostResponses[keyof CreateSessionApiV2SessionsPostResponses];
+export type CreateSessionResponse =
+  CreateSessionResponses[keyof CreateSessionResponses];
 
-export type GetSessionQuotaApiV2SessionsQuotaGetData = {
+export type GetSessionQuotaData = {
   body?: never;
   path?: never;
   query?: never;
   url: "/api/v2/sessions/quota";
 };
 
-export type GetSessionQuotaApiV2SessionsQuotaGetErrors = {
+export type GetSessionQuotaErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type GetSessionQuotaApiV2SessionsQuotaGetError =
-  GetSessionQuotaApiV2SessionsQuotaGetErrors[keyof GetSessionQuotaApiV2SessionsQuotaGetErrors];
+export type GetSessionQuotaError =
+  GetSessionQuotaErrors[keyof GetSessionQuotaErrors];
 
-export type GetSessionQuotaApiV2SessionsQuotaGetResponses = {
+export type GetSessionQuotaResponses = {
   /**
    * Successful Response
    */
   200: QuotaStatus;
 };
 
-export type GetSessionQuotaApiV2SessionsQuotaGetResponse =
-  GetSessionQuotaApiV2SessionsQuotaGetResponses[keyof GetSessionQuotaApiV2SessionsQuotaGetResponses];
+export type GetSessionQuotaResponse =
+  GetSessionQuotaResponses[keyof GetSessionQuotaResponses];
 
-export type CancelSessionApiV2SessionsIdDeleteData = {
+export type CancelSessionData = {
   body?: never;
   path: {
     /**
@@ -1368,27 +1366,26 @@ export type CancelSessionApiV2SessionsIdDeleteData = {
   url: "/api/v2/sessions/{id}";
 };
 
-export type CancelSessionApiV2SessionsIdDeleteErrors = {
+export type CancelSessionErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type CancelSessionApiV2SessionsIdDeleteError =
-  CancelSessionApiV2SessionsIdDeleteErrors[keyof CancelSessionApiV2SessionsIdDeleteErrors];
+export type CancelSessionError = CancelSessionErrors[keyof CancelSessionErrors];
 
-export type CancelSessionApiV2SessionsIdDeleteResponses = {
+export type CancelSessionResponses = {
   /**
    * Successful Response
    */
   204: void;
 };
 
-export type CancelSessionApiV2SessionsIdDeleteResponse =
-  CancelSessionApiV2SessionsIdDeleteResponses[keyof CancelSessionApiV2SessionsIdDeleteResponses];
+export type CancelSessionResponse =
+  CancelSessionResponses[keyof CancelSessionResponses];
 
-export type GetSessionApiV2SessionsIdGetData = {
+export type GetSessionData = {
   body?: never;
   path: {
     /**
@@ -1400,27 +1397,25 @@ export type GetSessionApiV2SessionsIdGetData = {
   url: "/api/v2/sessions/{id}";
 };
 
-export type GetSessionApiV2SessionsIdGetErrors = {
+export type GetSessionErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type GetSessionApiV2SessionsIdGetError =
-  GetSessionApiV2SessionsIdGetErrors[keyof GetSessionApiV2SessionsIdGetErrors];
+export type GetSessionError = GetSessionErrors[keyof GetSessionErrors];
 
-export type GetSessionApiV2SessionsIdGetResponses = {
+export type GetSessionResponses = {
   /**
    * Successful Response
    */
   200: Session;
 };
 
-export type GetSessionApiV2SessionsIdGetResponse =
-  GetSessionApiV2SessionsIdGetResponses[keyof GetSessionApiV2SessionsIdGetResponses];
+export type GetSessionResponse = GetSessionResponses[keyof GetSessionResponses];
 
-export type GetSessionStatusApiV2SessionsIdStatusGetData = {
+export type GetSessionStatusData = {
   body?: never;
   path: {
     /**
@@ -1432,27 +1427,27 @@ export type GetSessionStatusApiV2SessionsIdStatusGetData = {
   url: "/api/v2/sessions/{id}/status";
 };
 
-export type GetSessionStatusApiV2SessionsIdStatusGetErrors = {
+export type GetSessionStatusErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type GetSessionStatusApiV2SessionsIdStatusGetError =
-  GetSessionStatusApiV2SessionsIdStatusGetErrors[keyof GetSessionStatusApiV2SessionsIdStatusGetErrors];
+export type GetSessionStatusError =
+  GetSessionStatusErrors[keyof GetSessionStatusErrors];
 
-export type GetSessionStatusApiV2SessionsIdStatusGetResponses = {
+export type GetSessionStatusResponses = {
   /**
    * Successful Response
    */
   200: SessionStatus;
 };
 
-export type GetSessionStatusApiV2SessionsIdStatusGetResponse =
-  GetSessionStatusApiV2SessionsIdStatusGetResponses[keyof GetSessionStatusApiV2SessionsIdStatusGetResponses];
+export type GetSessionStatusResponse =
+  GetSessionStatusResponses[keyof GetSessionStatusResponses];
 
-export type SendSessionMessagesApiV2SessionsIdMessagesPostData = {
+export type SendSessionMessagesData = {
   /**
    * Input
    */
@@ -1473,24 +1468,24 @@ export type SendSessionMessagesApiV2SessionsIdMessagesPostData = {
   url: "/api/v2/sessions/{id}/messages";
 };
 
-export type SendSessionMessagesApiV2SessionsIdMessagesPostErrors = {
+export type SendSessionMessagesErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type SendSessionMessagesApiV2SessionsIdMessagesPostError =
-  SendSessionMessagesApiV2SessionsIdMessagesPostErrors[keyof SendSessionMessagesApiV2SessionsIdMessagesPostErrors];
+export type SendSessionMessagesError =
+  SendSessionMessagesErrors[keyof SendSessionMessagesErrors];
 
-export type SendSessionMessagesApiV2SessionsIdMessagesPostResponses = {
+export type SendSessionMessagesResponses = {
   /**
    * Successful Response
    */
   202: unknown;
 };
 
-export type PauseSessionApiV2SessionsIdPausePostData = {
+export type PauseSessionData = {
   body?: never;
   path: {
     /**
@@ -1502,24 +1497,23 @@ export type PauseSessionApiV2SessionsIdPausePostData = {
   url: "/api/v2/sessions/{id}/pause";
 };
 
-export type PauseSessionApiV2SessionsIdPausePostErrors = {
+export type PauseSessionErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type PauseSessionApiV2SessionsIdPausePostError =
-  PauseSessionApiV2SessionsIdPausePostErrors[keyof PauseSessionApiV2SessionsIdPausePostErrors];
+export type PauseSessionError = PauseSessionErrors[keyof PauseSessionErrors];
 
-export type PauseSessionApiV2SessionsIdPausePostResponses = {
+export type PauseSessionResponses = {
   /**
    * Successful Response
    */
   202: unknown;
 };
 
-export type ResumeSessionApiV2SessionsIdResumePostData = {
+export type ResumeSessionData = {
   body?: never;
   path: {
     /**
@@ -1531,24 +1525,23 @@ export type ResumeSessionApiV2SessionsIdResumePostData = {
   url: "/api/v2/sessions/{id}/resume";
 };
 
-export type ResumeSessionApiV2SessionsIdResumePostErrors = {
+export type ResumeSessionErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type ResumeSessionApiV2SessionsIdResumePostError =
-  ResumeSessionApiV2SessionsIdResumePostErrors[keyof ResumeSessionApiV2SessionsIdResumePostErrors];
+export type ResumeSessionError = ResumeSessionErrors[keyof ResumeSessionErrors];
 
-export type ResumeSessionApiV2SessionsIdResumePostResponses = {
+export type ResumeSessionResponses = {
   /**
    * Successful Response
    */
   202: unknown;
 };
 
-export type ForceSessionAnswerApiV2SessionsIdForceAnswerPostData = {
+export type ForceSessionAnswerData = {
   body?: never;
   path: {
     /**
@@ -1560,24 +1553,24 @@ export type ForceSessionAnswerApiV2SessionsIdForceAnswerPostData = {
   url: "/api/v2/sessions/{id}/force_answer";
 };
 
-export type ForceSessionAnswerApiV2SessionsIdForceAnswerPostErrors = {
+export type ForceSessionAnswerErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type ForceSessionAnswerApiV2SessionsIdForceAnswerPostError =
-  ForceSessionAnswerApiV2SessionsIdForceAnswerPostErrors[keyof ForceSessionAnswerApiV2SessionsIdForceAnswerPostErrors];
+export type ForceSessionAnswerError =
+  ForceSessionAnswerErrors[keyof ForceSessionAnswerErrors];
 
-export type ForceSessionAnswerApiV2SessionsIdForceAnswerPostResponses = {
+export type ForceSessionAnswerResponses = {
   /**
    * Successful Response
    */
   202: unknown;
 };
 
-export type GetSessionChangesApiV2SessionsIdChangesGetData = {
+export type GetSessionChangesData = {
   body?: never;
   path: {
     /**
@@ -1606,17 +1599,17 @@ export type GetSessionChangesApiV2SessionsIdChangesGetData = {
   url: "/api/v2/sessions/{id}/changes";
 };
 
-export type GetSessionChangesApiV2SessionsIdChangesGetErrors = {
+export type GetSessionChangesErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type GetSessionChangesApiV2SessionsIdChangesGetError =
-  GetSessionChangesApiV2SessionsIdChangesGetErrors[keyof GetSessionChangesApiV2SessionsIdChangesGetErrors];
+export type GetSessionChangesError =
+  GetSessionChangesErrors[keyof GetSessionChangesErrors];
 
-export type GetSessionChangesApiV2SessionsIdChangesGetResponses = {
+export type GetSessionChangesResponses = {
   /**
    * Successful Response
    */
@@ -1627,10 +1620,10 @@ export type GetSessionChangesApiV2SessionsIdChangesGetResponses = {
   204: void;
 };
 
-export type GetSessionChangesApiV2SessionsIdChangesGetResponse =
-  GetSessionChangesApiV2SessionsIdChangesGetResponses[keyof GetSessionChangesApiV2SessionsIdChangesGetResponses];
+export type GetSessionChangesResponse =
+  GetSessionChangesResponses[keyof GetSessionChangesResponses];
 
-export type ListSessionEventsApiV2SessionsIdEventsGetData = {
+export type ListSessionEventsData = {
   body?: never;
   path: {
     /**
@@ -1659,27 +1652,27 @@ export type ListSessionEventsApiV2SessionsIdEventsGetData = {
   url: "/api/v2/sessions/{id}/events";
 };
 
-export type ListSessionEventsApiV2SessionsIdEventsGetErrors = {
+export type ListSessionEventsErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type ListSessionEventsApiV2SessionsIdEventsGetError =
-  ListSessionEventsApiV2SessionsIdEventsGetErrors[keyof ListSessionEventsApiV2SessionsIdEventsGetErrors];
+export type ListSessionEventsError =
+  ListSessionEventsErrors[keyof ListSessionEventsErrors];
 
-export type ListSessionEventsApiV2SessionsIdEventsGetResponses = {
+export type ListSessionEventsResponses = {
   /**
    * Successful Response
    */
   200: PageTrajectoryEvent;
 };
 
-export type ListSessionEventsApiV2SessionsIdEventsGetResponse =
-  ListSessionEventsApiV2SessionsIdEventsGetResponses[keyof ListSessionEventsApiV2SessionsIdEventsGetResponses];
+export type ListSessionEventsResponse =
+  ListSessionEventsResponses[keyof ListSessionEventsResponses];
 
-export type SubmitSessionFeedbackApiV2SessionsIdFeedbackPostData = {
+export type SubmitSessionFeedbackData = {
   body: Feedback;
   path: {
     /**
@@ -1691,66 +1684,63 @@ export type SubmitSessionFeedbackApiV2SessionsIdFeedbackPostData = {
   url: "/api/v2/sessions/{id}/feedback";
 };
 
-export type SubmitSessionFeedbackApiV2SessionsIdFeedbackPostErrors = {
+export type SubmitSessionFeedbackErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type SubmitSessionFeedbackApiV2SessionsIdFeedbackPostError =
-  SubmitSessionFeedbackApiV2SessionsIdFeedbackPostErrors[keyof SubmitSessionFeedbackApiV2SessionsIdFeedbackPostErrors];
+export type SubmitSessionFeedbackError =
+  SubmitSessionFeedbackErrors[keyof SubmitSessionFeedbackErrors];
 
-export type SubmitSessionFeedbackApiV2SessionsIdFeedbackPostResponses = {
+export type SubmitSessionFeedbackResponses = {
   /**
    * Successful Response
    */
   204: void;
 };
 
-export type SubmitSessionFeedbackApiV2SessionsIdFeedbackPostResponse =
-  SubmitSessionFeedbackApiV2SessionsIdFeedbackPostResponses[keyof SubmitSessionFeedbackApiV2SessionsIdFeedbackPostResponses];
+export type SubmitSessionFeedbackResponse =
+  SubmitSessionFeedbackResponses[keyof SubmitSessionFeedbackResponses];
 
-export type SubmitEventFeedbackApiV2SessionsIdEventsEventIndexFeedbackPutData =
-  {
-    body: Feedback;
-    path: {
-      /**
-       * Id
-       */
-      id: string;
-      /**
-       * Event Index
-       */
-      event_index: number;
-    };
-    query?: never;
-    url: "/api/v2/sessions/{id}/events/{event_index}/feedback";
-  };
-
-export type SubmitEventFeedbackApiV2SessionsIdEventsEventIndexFeedbackPutErrors =
-  {
+export type SubmitEventFeedbackData = {
+  body: Feedback;
+  path: {
     /**
-     * Validation Error
+     * Id
      */
-    422: HttpValidationError;
-  };
-
-export type SubmitEventFeedbackApiV2SessionsIdEventsEventIndexFeedbackPutError =
-  SubmitEventFeedbackApiV2SessionsIdEventsEventIndexFeedbackPutErrors[keyof SubmitEventFeedbackApiV2SessionsIdEventsEventIndexFeedbackPutErrors];
-
-export type SubmitEventFeedbackApiV2SessionsIdEventsEventIndexFeedbackPutResponses =
-  {
+    id: string;
     /**
-     * Successful Response
+     * Event Index
      */
-    204: void;
+    event_index: number;
   };
+  query?: never;
+  url: "/api/v2/sessions/{id}/events/{event_index}/feedback";
+};
 
-export type SubmitEventFeedbackApiV2SessionsIdEventsEventIndexFeedbackPutResponse =
-  SubmitEventFeedbackApiV2SessionsIdEventsEventIndexFeedbackPutResponses[keyof SubmitEventFeedbackApiV2SessionsIdEventsEventIndexFeedbackPutResponses];
+export type SubmitEventFeedbackErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
 
-export type UnshareSessionApiV2SessionsIdShareDeleteData = {
+export type SubmitEventFeedbackError =
+  SubmitEventFeedbackErrors[keyof SubmitEventFeedbackErrors];
+
+export type SubmitEventFeedbackResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type SubmitEventFeedbackResponse =
+  SubmitEventFeedbackResponses[keyof SubmitEventFeedbackResponses];
+
+export type UnshareSessionData = {
   body?: never;
   path: {
     /**
@@ -1762,27 +1752,27 @@ export type UnshareSessionApiV2SessionsIdShareDeleteData = {
   url: "/api/v2/sessions/{id}/share";
 };
 
-export type UnshareSessionApiV2SessionsIdShareDeleteErrors = {
+export type UnshareSessionErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type UnshareSessionApiV2SessionsIdShareDeleteError =
-  UnshareSessionApiV2SessionsIdShareDeleteErrors[keyof UnshareSessionApiV2SessionsIdShareDeleteErrors];
+export type UnshareSessionError =
+  UnshareSessionErrors[keyof UnshareSessionErrors];
 
-export type UnshareSessionApiV2SessionsIdShareDeleteResponses = {
+export type UnshareSessionResponses = {
   /**
    * Successful Response
    */
   204: void;
 };
 
-export type UnshareSessionApiV2SessionsIdShareDeleteResponse =
-  UnshareSessionApiV2SessionsIdShareDeleteResponses[keyof UnshareSessionApiV2SessionsIdShareDeleteResponses];
+export type UnshareSessionResponse =
+  UnshareSessionResponses[keyof UnshareSessionResponses];
 
-export type ShareSessionApiV2SessionsIdSharePostData = {
+export type ShareSessionData = {
   body?: never;
   path: {
     /**
@@ -1794,27 +1784,26 @@ export type ShareSessionApiV2SessionsIdSharePostData = {
   url: "/api/v2/sessions/{id}/share";
 };
 
-export type ShareSessionApiV2SessionsIdSharePostErrors = {
+export type ShareSessionErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type ShareSessionApiV2SessionsIdSharePostError =
-  ShareSessionApiV2SessionsIdSharePostErrors[keyof ShareSessionApiV2SessionsIdSharePostErrors];
+export type ShareSessionError = ShareSessionErrors[keyof ShareSessionErrors];
 
-export type ShareSessionApiV2SessionsIdSharePostResponses = {
+export type ShareSessionResponses = {
   /**
    * Successful Response
    */
   200: ShareLink;
 };
 
-export type ShareSessionApiV2SessionsIdSharePostResponse =
-  ShareSessionApiV2SessionsIdSharePostResponses[keyof ShareSessionApiV2SessionsIdSharePostResponses];
+export type ShareSessionResponse =
+  ShareSessionResponses[keyof ShareSessionResponses];
 
-export type GetSessionResourceApiV2SessionsIdResourcesBucketKeyGetData = {
+export type GetSessionResourceData = {
   body?: never;
   path: {
     /**
@@ -1834,24 +1823,24 @@ export type GetSessionResourceApiV2SessionsIdResourcesBucketKeyGetData = {
   url: "/api/v2/sessions/{id}/resources/{bucket}/{key}";
 };
 
-export type GetSessionResourceApiV2SessionsIdResourcesBucketKeyGetErrors = {
+export type GetSessionResourceErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type GetSessionResourceApiV2SessionsIdResourcesBucketKeyGetError =
-  GetSessionResourceApiV2SessionsIdResourcesBucketKeyGetErrors[keyof GetSessionResourceApiV2SessionsIdResourcesBucketKeyGetErrors];
+export type GetSessionResourceError =
+  GetSessionResourceErrors[keyof GetSessionResourceErrors];
 
-export type GetSessionResourceApiV2SessionsIdResourcesBucketKeyGetResponses = {
+export type GetSessionResourceResponses = {
   /**
    * Successful Response
    */
   200: unknown;
 };
 
-export type ListMemoriesApiV2MemoriesGetData = {
+export type ListMemoriesData = {
   body?: never;
   path?: never;
   query?: {
@@ -1884,49 +1873,47 @@ export type ListMemoriesApiV2MemoriesGetData = {
      *
      * Sort by field
      */
-    sort?: "updated_at" | "-updated_at";
+    sort?: Array<"updated_at" | "-updated_at"> | null;
   };
   url: "/api/v2/memories";
 };
 
-export type ListMemoriesApiV2MemoriesGetErrors = {
+export type ListMemoriesErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type ListMemoriesApiV2MemoriesGetError =
-  ListMemoriesApiV2MemoriesGetErrors[keyof ListMemoriesApiV2MemoriesGetErrors];
+export type ListMemoriesError = ListMemoriesErrors[keyof ListMemoriesErrors];
 
-export type ListMemoriesApiV2MemoriesGetResponses = {
+export type ListMemoriesResponses = {
   /**
    * Successful Response
    */
   200: PageMemoryRecord;
 };
 
-export type ListMemoriesApiV2MemoriesGetResponse =
-  ListMemoriesApiV2MemoriesGetResponses[keyof ListMemoriesApiV2MemoriesGetResponses];
+export type ListMemoriesResponse =
+  ListMemoriesResponses[keyof ListMemoriesResponses];
 
-export type CreateMemoryApiV2MemoriesPostData = {
+export type CreateMemoryData = {
   body: CreateMemory;
   path?: never;
   query?: never;
   url: "/api/v2/memories";
 };
 
-export type CreateMemoryApiV2MemoriesPostErrors = {
+export type CreateMemoryErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type CreateMemoryApiV2MemoriesPostError =
-  CreateMemoryApiV2MemoriesPostErrors[keyof CreateMemoryApiV2MemoriesPostErrors];
+export type CreateMemoryError = CreateMemoryErrors[keyof CreateMemoryErrors];
 
-export type CreateMemoryApiV2MemoriesPostResponses = {
+export type CreateMemoryResponses = {
   /**
    * Existing memory updated (upsert).
    */
@@ -1937,10 +1924,10 @@ export type CreateMemoryApiV2MemoriesPostResponses = {
   201: unknown;
 };
 
-export type CreateMemoryApiV2MemoriesPostResponse =
-  CreateMemoryApiV2MemoriesPostResponses[keyof CreateMemoryApiV2MemoriesPostResponses];
+export type CreateMemoryResponse =
+  CreateMemoryResponses[keyof CreateMemoryResponses];
 
-export type DeleteMemoryApiV2MemoriesIdDeleteData = {
+export type DeleteMemoryData = {
   body?: never;
   path: {
     /**
@@ -1952,27 +1939,26 @@ export type DeleteMemoryApiV2MemoriesIdDeleteData = {
   url: "/api/v2/memories/{id}";
 };
 
-export type DeleteMemoryApiV2MemoriesIdDeleteErrors = {
+export type DeleteMemoryErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type DeleteMemoryApiV2MemoriesIdDeleteError =
-  DeleteMemoryApiV2MemoriesIdDeleteErrors[keyof DeleteMemoryApiV2MemoriesIdDeleteErrors];
+export type DeleteMemoryError = DeleteMemoryErrors[keyof DeleteMemoryErrors];
 
-export type DeleteMemoryApiV2MemoriesIdDeleteResponses = {
+export type DeleteMemoryResponses = {
   /**
    * Successful Response
    */
   204: void;
 };
 
-export type DeleteMemoryApiV2MemoriesIdDeleteResponse =
-  DeleteMemoryApiV2MemoriesIdDeleteResponses[keyof DeleteMemoryApiV2MemoriesIdDeleteResponses];
+export type DeleteMemoryResponse =
+  DeleteMemoryResponses[keyof DeleteMemoryResponses];
 
-export type GetMemoryApiV2MemoriesIdGetData = {
+export type GetMemoryData = {
   body?: never;
   path: {
     /**
@@ -1984,27 +1970,25 @@ export type GetMemoryApiV2MemoriesIdGetData = {
   url: "/api/v2/memories/{id}";
 };
 
-export type GetMemoryApiV2MemoriesIdGetErrors = {
+export type GetMemoryErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type GetMemoryApiV2MemoriesIdGetError =
-  GetMemoryApiV2MemoriesIdGetErrors[keyof GetMemoryApiV2MemoriesIdGetErrors];
+export type GetMemoryError = GetMemoryErrors[keyof GetMemoryErrors];
 
-export type GetMemoryApiV2MemoriesIdGetResponses = {
+export type GetMemoryResponses = {
   /**
    * Successful Response
    */
   200: MemoryRecord;
 };
 
-export type GetMemoryApiV2MemoriesIdGetResponse =
-  GetMemoryApiV2MemoriesIdGetResponses[keyof GetMemoryApiV2MemoriesIdGetResponses];
+export type GetMemoryResponse = GetMemoryResponses[keyof GetMemoryResponses];
 
-export type UpdateMemoryApiV2MemoriesIdPutData = {
+export type UpdateMemoryData = {
   body: UpdateMemory;
   path: {
     /**
@@ -2016,27 +2000,26 @@ export type UpdateMemoryApiV2MemoriesIdPutData = {
   url: "/api/v2/memories/{id}";
 };
 
-export type UpdateMemoryApiV2MemoriesIdPutErrors = {
+export type UpdateMemoryErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type UpdateMemoryApiV2MemoriesIdPutError =
-  UpdateMemoryApiV2MemoriesIdPutErrors[keyof UpdateMemoryApiV2MemoriesIdPutErrors];
+export type UpdateMemoryError = UpdateMemoryErrors[keyof UpdateMemoryErrors];
 
-export type UpdateMemoryApiV2MemoriesIdPutResponses = {
+export type UpdateMemoryResponses = {
   /**
    * Successful Response
    */
   200: MemoryRecord;
 };
 
-export type UpdateMemoryApiV2MemoriesIdPutResponse =
-  UpdateMemoryApiV2MemoriesIdPutResponses[keyof UpdateMemoryApiV2MemoriesIdPutResponses];
+export type UpdateMemoryResponse =
+  UpdateMemoryResponses[keyof UpdateMemoryResponses];
 
-export type ListSkillsApiV2SkillsGetData = {
+export type ListSkillsData = {
   body?: never;
   path?: never;
   query?: {
@@ -2063,59 +2046,56 @@ export type ListSkillsApiV2SkillsGetData = {
      *
      * Sort by field
      */
-    sort?: "created_at" | "-created_at" | "name" | "-name";
+    sort?: Array<"created_at" | "-created_at" | "name" | "-name"> | null;
   };
   url: "/api/v2/skills";
 };
 
-export type ListSkillsApiV2SkillsGetErrors = {
+export type ListSkillsErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type ListSkillsApiV2SkillsGetError =
-  ListSkillsApiV2SkillsGetErrors[keyof ListSkillsApiV2SkillsGetErrors];
+export type ListSkillsError = ListSkillsErrors[keyof ListSkillsErrors];
 
-export type ListSkillsApiV2SkillsGetResponses = {
+export type ListSkillsResponses = {
   /**
    * Successful Response
    */
   200: PageSkillRecord;
 };
 
-export type ListSkillsApiV2SkillsGetResponse =
-  ListSkillsApiV2SkillsGetResponses[keyof ListSkillsApiV2SkillsGetResponses];
+export type ListSkillsResponse = ListSkillsResponses[keyof ListSkillsResponses];
 
-export type CreateSkillApiV2SkillsPostData = {
+export type CreateSkillData = {
   body: CreateSkill;
   path?: never;
   query?: never;
   url: "/api/v2/skills";
 };
 
-export type CreateSkillApiV2SkillsPostErrors = {
+export type CreateSkillErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type CreateSkillApiV2SkillsPostError =
-  CreateSkillApiV2SkillsPostErrors[keyof CreateSkillApiV2SkillsPostErrors];
+export type CreateSkillError = CreateSkillErrors[keyof CreateSkillErrors];
 
-export type CreateSkillApiV2SkillsPostResponses = {
+export type CreateSkillResponses = {
   /**
    * Successful Response
    */
   201: SkillRecord;
 };
 
-export type CreateSkillApiV2SkillsPostResponse =
-  CreateSkillApiV2SkillsPostResponses[keyof CreateSkillApiV2SkillsPostResponses];
+export type CreateSkillResponse =
+  CreateSkillResponses[keyof CreateSkillResponses];
 
-export type DeleteSkillApiV2SkillsIdDeleteData = {
+export type DeleteSkillData = {
   body?: never;
   path: {
     /**
@@ -2127,27 +2107,26 @@ export type DeleteSkillApiV2SkillsIdDeleteData = {
   url: "/api/v2/skills/{id}";
 };
 
-export type DeleteSkillApiV2SkillsIdDeleteErrors = {
+export type DeleteSkillErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type DeleteSkillApiV2SkillsIdDeleteError =
-  DeleteSkillApiV2SkillsIdDeleteErrors[keyof DeleteSkillApiV2SkillsIdDeleteErrors];
+export type DeleteSkillError = DeleteSkillErrors[keyof DeleteSkillErrors];
 
-export type DeleteSkillApiV2SkillsIdDeleteResponses = {
+export type DeleteSkillResponses = {
   /**
    * Successful Response
    */
   204: void;
 };
 
-export type DeleteSkillApiV2SkillsIdDeleteResponse =
-  DeleteSkillApiV2SkillsIdDeleteResponses[keyof DeleteSkillApiV2SkillsIdDeleteResponses];
+export type DeleteSkillResponse =
+  DeleteSkillResponses[keyof DeleteSkillResponses];
 
-export type GetSkillApiV2SkillsIdGetData = {
+export type GetSkillData = {
   body?: never;
   path: {
     /**
@@ -2159,27 +2138,25 @@ export type GetSkillApiV2SkillsIdGetData = {
   url: "/api/v2/skills/{id}";
 };
 
-export type GetSkillApiV2SkillsIdGetErrors = {
+export type GetSkillErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type GetSkillApiV2SkillsIdGetError =
-  GetSkillApiV2SkillsIdGetErrors[keyof GetSkillApiV2SkillsIdGetErrors];
+export type GetSkillError = GetSkillErrors[keyof GetSkillErrors];
 
-export type GetSkillApiV2SkillsIdGetResponses = {
+export type GetSkillResponses = {
   /**
    * Successful Response
    */
   200: SkillRecord;
 };
 
-export type GetSkillApiV2SkillsIdGetResponse =
-  GetSkillApiV2SkillsIdGetResponses[keyof GetSkillApiV2SkillsIdGetResponses];
+export type GetSkillResponse = GetSkillResponses[keyof GetSkillResponses];
 
-export type UpdateSkillApiV2SkillsIdPutData = {
+export type UpdateSkillData = {
   body: UpdateSkill;
   path: {
     /**
@@ -2191,27 +2168,26 @@ export type UpdateSkillApiV2SkillsIdPutData = {
   url: "/api/v2/skills/{id}";
 };
 
-export type UpdateSkillApiV2SkillsIdPutErrors = {
+export type UpdateSkillErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type UpdateSkillApiV2SkillsIdPutError =
-  UpdateSkillApiV2SkillsIdPutErrors[keyof UpdateSkillApiV2SkillsIdPutErrors];
+export type UpdateSkillError = UpdateSkillErrors[keyof UpdateSkillErrors];
 
-export type UpdateSkillApiV2SkillsIdPutResponses = {
+export type UpdateSkillResponses = {
   /**
    * Successful Response
    */
   200: SkillRecord;
 };
 
-export type UpdateSkillApiV2SkillsIdPutResponse =
-  UpdateSkillApiV2SkillsIdPutResponses[keyof UpdateSkillApiV2SkillsIdPutResponses];
+export type UpdateSkillResponse =
+  UpdateSkillResponses[keyof UpdateSkillResponses];
 
-export type ListEnvironmentsApiV2EnvironmentsGetData = {
+export type ListEnvironmentsData = {
   body?: never;
   path?: never;
   query?: {
@@ -2232,59 +2208,61 @@ export type ListEnvironmentsApiV2EnvironmentsGetData = {
      *
      * Sort by field
      */
-    sort?: "created_at" | "-created_at" | "env_identifier" | "-env_identifier";
+    sort?: Array<
+      "created_at" | "-created_at" | "env_identifier" | "-env_identifier"
+    > | null;
   };
   url: "/api/v2/environments";
 };
 
-export type ListEnvironmentsApiV2EnvironmentsGetErrors = {
+export type ListEnvironmentsErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type ListEnvironmentsApiV2EnvironmentsGetError =
-  ListEnvironmentsApiV2EnvironmentsGetErrors[keyof ListEnvironmentsApiV2EnvironmentsGetErrors];
+export type ListEnvironmentsError =
+  ListEnvironmentsErrors[keyof ListEnvironmentsErrors];
 
-export type ListEnvironmentsApiV2EnvironmentsGetResponses = {
+export type ListEnvironmentsResponses = {
   /**
    * Successful Response
    */
   200: PageEnvironmentRecord;
 };
 
-export type ListEnvironmentsApiV2EnvironmentsGetResponse =
-  ListEnvironmentsApiV2EnvironmentsGetResponses[keyof ListEnvironmentsApiV2EnvironmentsGetResponses];
+export type ListEnvironmentsResponse =
+  ListEnvironmentsResponses[keyof ListEnvironmentsResponses];
 
-export type CreateEnvironmentApiV2EnvironmentsPostData = {
+export type CreateEnvironmentData = {
   body: CreateEnvironment;
   path?: never;
   query?: never;
   url: "/api/v2/environments";
 };
 
-export type CreateEnvironmentApiV2EnvironmentsPostErrors = {
+export type CreateEnvironmentErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type CreateEnvironmentApiV2EnvironmentsPostError =
-  CreateEnvironmentApiV2EnvironmentsPostErrors[keyof CreateEnvironmentApiV2EnvironmentsPostErrors];
+export type CreateEnvironmentError =
+  CreateEnvironmentErrors[keyof CreateEnvironmentErrors];
 
-export type CreateEnvironmentApiV2EnvironmentsPostResponses = {
+export type CreateEnvironmentResponses = {
   /**
    * Successful Response
    */
   201: EnvironmentRecord;
 };
 
-export type CreateEnvironmentApiV2EnvironmentsPostResponse =
-  CreateEnvironmentApiV2EnvironmentsPostResponses[keyof CreateEnvironmentApiV2EnvironmentsPostResponses];
+export type CreateEnvironmentResponse =
+  CreateEnvironmentResponses[keyof CreateEnvironmentResponses];
 
-export type DeleteEnvironmentApiV2EnvironmentsEnvIdentifierDeleteData = {
+export type DeleteEnvironmentData = {
   body?: never;
   path: {
     /**
@@ -2296,27 +2274,27 @@ export type DeleteEnvironmentApiV2EnvironmentsEnvIdentifierDeleteData = {
   url: "/api/v2/environments/{env_identifier}";
 };
 
-export type DeleteEnvironmentApiV2EnvironmentsEnvIdentifierDeleteErrors = {
+export type DeleteEnvironmentErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type DeleteEnvironmentApiV2EnvironmentsEnvIdentifierDeleteError =
-  DeleteEnvironmentApiV2EnvironmentsEnvIdentifierDeleteErrors[keyof DeleteEnvironmentApiV2EnvironmentsEnvIdentifierDeleteErrors];
+export type DeleteEnvironmentError =
+  DeleteEnvironmentErrors[keyof DeleteEnvironmentErrors];
 
-export type DeleteEnvironmentApiV2EnvironmentsEnvIdentifierDeleteResponses = {
+export type DeleteEnvironmentResponses = {
   /**
    * Successful Response
    */
   204: void;
 };
 
-export type DeleteEnvironmentApiV2EnvironmentsEnvIdentifierDeleteResponse =
-  DeleteEnvironmentApiV2EnvironmentsEnvIdentifierDeleteResponses[keyof DeleteEnvironmentApiV2EnvironmentsEnvIdentifierDeleteResponses];
+export type DeleteEnvironmentResponse =
+  DeleteEnvironmentResponses[keyof DeleteEnvironmentResponses];
 
-export type GetEnvironmentApiV2EnvironmentsEnvIdentifierGetData = {
+export type GetEnvironmentData = {
   body?: never;
   path: {
     /**
@@ -2328,27 +2306,27 @@ export type GetEnvironmentApiV2EnvironmentsEnvIdentifierGetData = {
   url: "/api/v2/environments/{env_identifier}";
 };
 
-export type GetEnvironmentApiV2EnvironmentsEnvIdentifierGetErrors = {
+export type GetEnvironmentErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type GetEnvironmentApiV2EnvironmentsEnvIdentifierGetError =
-  GetEnvironmentApiV2EnvironmentsEnvIdentifierGetErrors[keyof GetEnvironmentApiV2EnvironmentsEnvIdentifierGetErrors];
+export type GetEnvironmentError =
+  GetEnvironmentErrors[keyof GetEnvironmentErrors];
 
-export type GetEnvironmentApiV2EnvironmentsEnvIdentifierGetResponses = {
+export type GetEnvironmentResponses = {
   /**
    * Successful Response
    */
   200: EnvironmentRecord;
 };
 
-export type GetEnvironmentApiV2EnvironmentsEnvIdentifierGetResponse =
-  GetEnvironmentApiV2EnvironmentsEnvIdentifierGetResponses[keyof GetEnvironmentApiV2EnvironmentsEnvIdentifierGetResponses];
+export type GetEnvironmentResponse =
+  GetEnvironmentResponses[keyof GetEnvironmentResponses];
 
-export type UpdateEnvironmentApiV2EnvironmentsEnvIdentifierPutData = {
+export type UpdateEnvironmentData = {
   body: UpdateEnvironment;
   path: {
     /**
@@ -2360,27 +2338,27 @@ export type UpdateEnvironmentApiV2EnvironmentsEnvIdentifierPutData = {
   url: "/api/v2/environments/{env_identifier}";
 };
 
-export type UpdateEnvironmentApiV2EnvironmentsEnvIdentifierPutErrors = {
+export type UpdateEnvironmentErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type UpdateEnvironmentApiV2EnvironmentsEnvIdentifierPutError =
-  UpdateEnvironmentApiV2EnvironmentsEnvIdentifierPutErrors[keyof UpdateEnvironmentApiV2EnvironmentsEnvIdentifierPutErrors];
+export type UpdateEnvironmentError =
+  UpdateEnvironmentErrors[keyof UpdateEnvironmentErrors];
 
-export type UpdateEnvironmentApiV2EnvironmentsEnvIdentifierPutResponses = {
+export type UpdateEnvironmentResponses = {
   /**
    * Successful Response
    */
   200: EnvironmentRecord;
 };
 
-export type UpdateEnvironmentApiV2EnvironmentsEnvIdentifierPutResponse =
-  UpdateEnvironmentApiV2EnvironmentsEnvIdentifierPutResponses[keyof UpdateEnvironmentApiV2EnvironmentsEnvIdentifierPutResponses];
+export type UpdateEnvironmentResponse =
+  UpdateEnvironmentResponses[keyof UpdateEnvironmentResponses];
 
-export type ListAgentsApiV2AgentsGetData = {
+export type ListAgentsData = {
   body?: never;
   path?: never;
   query?: {
@@ -2401,63 +2379,58 @@ export type ListAgentsApiV2AgentsGetData = {
      *
      * Sort by field
      */
-    sort?:
-      | "created_at"
-      | "-created_at"
-      | "agent_identifier"
-      | "-agent_identifier";
+    sort?: Array<
+      "created_at" | "-created_at" | "agent_identifier" | "-agent_identifier"
+    > | null;
   };
   url: "/api/v2/agents";
 };
 
-export type ListAgentsApiV2AgentsGetErrors = {
+export type ListAgentsErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type ListAgentsApiV2AgentsGetError =
-  ListAgentsApiV2AgentsGetErrors[keyof ListAgentsApiV2AgentsGetErrors];
+export type ListAgentsError = ListAgentsErrors[keyof ListAgentsErrors];
 
-export type ListAgentsApiV2AgentsGetResponses = {
+export type ListAgentsResponses = {
   /**
    * Successful Response
    */
   200: PageAgentRecord;
 };
 
-export type ListAgentsApiV2AgentsGetResponse =
-  ListAgentsApiV2AgentsGetResponses[keyof ListAgentsApiV2AgentsGetResponses];
+export type ListAgentsResponse = ListAgentsResponses[keyof ListAgentsResponses];
 
-export type CreateAgentApiV2AgentsPostData = {
+export type CreateAgentData = {
   body: CreateAgent;
   path?: never;
   query?: never;
   url: "/api/v2/agents";
 };
 
-export type CreateAgentApiV2AgentsPostErrors = {
+export type CreateAgentErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type CreateAgentApiV2AgentsPostError =
-  CreateAgentApiV2AgentsPostErrors[keyof CreateAgentApiV2AgentsPostErrors];
+export type CreateAgentError = CreateAgentErrors[keyof CreateAgentErrors];
 
-export type CreateAgentApiV2AgentsPostResponses = {
+export type CreateAgentResponses = {
   /**
    * Successful Response
    */
   201: AgentRecord;
 };
 
-export type CreateAgentApiV2AgentsPostResponse =
-  CreateAgentApiV2AgentsPostResponses[keyof CreateAgentApiV2AgentsPostResponses];
+export type CreateAgentResponse =
+  CreateAgentResponses[keyof CreateAgentResponses];
 
-export type DeleteAgentApiV2AgentsAgentIdentifierDeleteData = {
+export type DeleteAgentData = {
   body?: never;
   path: {
     /**
@@ -2469,27 +2442,26 @@ export type DeleteAgentApiV2AgentsAgentIdentifierDeleteData = {
   url: "/api/v2/agents/{agent_identifier}";
 };
 
-export type DeleteAgentApiV2AgentsAgentIdentifierDeleteErrors = {
+export type DeleteAgentErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type DeleteAgentApiV2AgentsAgentIdentifierDeleteError =
-  DeleteAgentApiV2AgentsAgentIdentifierDeleteErrors[keyof DeleteAgentApiV2AgentsAgentIdentifierDeleteErrors];
+export type DeleteAgentError = DeleteAgentErrors[keyof DeleteAgentErrors];
 
-export type DeleteAgentApiV2AgentsAgentIdentifierDeleteResponses = {
+export type DeleteAgentResponses = {
   /**
    * Successful Response
    */
   204: void;
 };
 
-export type DeleteAgentApiV2AgentsAgentIdentifierDeleteResponse =
-  DeleteAgentApiV2AgentsAgentIdentifierDeleteResponses[keyof DeleteAgentApiV2AgentsAgentIdentifierDeleteResponses];
+export type DeleteAgentResponse =
+  DeleteAgentResponses[keyof DeleteAgentResponses];
 
-export type GetAgentApiV2AgentsAgentIdentifierGetData = {
+export type GetAgentData = {
   body?: never;
   path: {
     /**
@@ -2501,27 +2473,25 @@ export type GetAgentApiV2AgentsAgentIdentifierGetData = {
   url: "/api/v2/agents/{agent_identifier}";
 };
 
-export type GetAgentApiV2AgentsAgentIdentifierGetErrors = {
+export type GetAgentErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type GetAgentApiV2AgentsAgentIdentifierGetError =
-  GetAgentApiV2AgentsAgentIdentifierGetErrors[keyof GetAgentApiV2AgentsAgentIdentifierGetErrors];
+export type GetAgentError = GetAgentErrors[keyof GetAgentErrors];
 
-export type GetAgentApiV2AgentsAgentIdentifierGetResponses = {
+export type GetAgentResponses = {
   /**
    * Successful Response
    */
   200: AgentRecord;
 };
 
-export type GetAgentApiV2AgentsAgentIdentifierGetResponse =
-  GetAgentApiV2AgentsAgentIdentifierGetResponses[keyof GetAgentApiV2AgentsAgentIdentifierGetResponses];
+export type GetAgentResponse = GetAgentResponses[keyof GetAgentResponses];
 
-export type UpdateAgentApiV2AgentsAgentIdentifierPutData = {
+export type UpdateAgentData = {
   body: UpdateAgent;
   path: {
     /**
@@ -2533,22 +2503,21 @@ export type UpdateAgentApiV2AgentsAgentIdentifierPutData = {
   url: "/api/v2/agents/{agent_identifier}";
 };
 
-export type UpdateAgentApiV2AgentsAgentIdentifierPutErrors = {
+export type UpdateAgentErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type UpdateAgentApiV2AgentsAgentIdentifierPutError =
-  UpdateAgentApiV2AgentsAgentIdentifierPutErrors[keyof UpdateAgentApiV2AgentsAgentIdentifierPutErrors];
+export type UpdateAgentError = UpdateAgentErrors[keyof UpdateAgentErrors];
 
-export type UpdateAgentApiV2AgentsAgentIdentifierPutResponses = {
+export type UpdateAgentResponses = {
   /**
    * Successful Response
    */
   200: AgentRecord;
 };
 
-export type UpdateAgentApiV2AgentsAgentIdentifierPutResponse =
-  UpdateAgentApiV2AgentsAgentIdentifierPutResponses[keyof UpdateAgentApiV2AgentsAgentIdentifierPutResponses];
+export type UpdateAgentResponse =
+  UpdateAgentResponses[keyof UpdateAgentResponses];

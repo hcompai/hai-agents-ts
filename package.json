@@ -3,7 +3,6 @@
   "private": true,
   "packageManager": "pnpm@10.20.0",
   "scripts": {
-    "generate": "pnpm --filter hai-agents run generate",
     "build": "pnpm -r run build",
     "typecheck": "pnpm -r run typecheck"
   }
