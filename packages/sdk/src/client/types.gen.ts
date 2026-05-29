@@ -816,6 +816,14 @@ export type SessionRequest = {
    * Parent session id.
    */
   parent_session_id?: string | null;
+  /**
+   * Answer Format
+   *
+   * JSON Schema the final answer must conform to. Null returns free-form text.
+   */
+  answer_format?: {
+    [key: string]: unknown;
+  } | null;
 };
 
 /**
