@@ -3,117 +3,117 @@
 import type { Client, Options as Options2, TDataShape } from "./client";
 import { client } from "./client.gen";
 import type {
-  CancelSessionApiV2SessionsIdDeleteData,
-  CancelSessionApiV2SessionsIdDeleteErrors,
-  CancelSessionApiV2SessionsIdDeleteResponses,
-  CreateAgentApiV2AgentsPostData,
-  CreateAgentApiV2AgentsPostErrors,
-  CreateAgentApiV2AgentsPostResponses,
-  CreateEnvironmentApiV2EnvironmentsPostData,
-  CreateEnvironmentApiV2EnvironmentsPostErrors,
-  CreateEnvironmentApiV2EnvironmentsPostResponses,
-  CreateMemoryApiV2MemoriesPostData,
-  CreateMemoryApiV2MemoriesPostErrors,
-  CreateMemoryApiV2MemoriesPostResponses,
-  CreateSessionApiV2SessionsPostData,
-  CreateSessionApiV2SessionsPostErrors,
-  CreateSessionApiV2SessionsPostResponses,
-  CreateSkillApiV2SkillsPostData,
-  CreateSkillApiV2SkillsPostErrors,
-  CreateSkillApiV2SkillsPostResponses,
-  DeleteAgentApiV2AgentsAgentIdentifierDeleteData,
-  DeleteAgentApiV2AgentsAgentIdentifierDeleteErrors,
-  DeleteAgentApiV2AgentsAgentIdentifierDeleteResponses,
-  DeleteEnvironmentApiV2EnvironmentsEnvIdentifierDeleteData,
-  DeleteEnvironmentApiV2EnvironmentsEnvIdentifierDeleteErrors,
-  DeleteEnvironmentApiV2EnvironmentsEnvIdentifierDeleteResponses,
-  DeleteMemoryApiV2MemoriesIdDeleteData,
-  DeleteMemoryApiV2MemoriesIdDeleteErrors,
-  DeleteMemoryApiV2MemoriesIdDeleteResponses,
-  DeleteSkillApiV2SkillsIdDeleteData,
-  DeleteSkillApiV2SkillsIdDeleteErrors,
-  DeleteSkillApiV2SkillsIdDeleteResponses,
-  ForceSessionAnswerApiV2SessionsIdForceAnswerPostData,
-  ForceSessionAnswerApiV2SessionsIdForceAnswerPostErrors,
-  ForceSessionAnswerApiV2SessionsIdForceAnswerPostResponses,
-  GetAgentApiV2AgentsAgentIdentifierGetData,
-  GetAgentApiV2AgentsAgentIdentifierGetErrors,
-  GetAgentApiV2AgentsAgentIdentifierGetResponses,
-  GetEnvironmentApiV2EnvironmentsEnvIdentifierGetData,
-  GetEnvironmentApiV2EnvironmentsEnvIdentifierGetErrors,
-  GetEnvironmentApiV2EnvironmentsEnvIdentifierGetResponses,
-  GetMemoryApiV2MemoriesIdGetData,
-  GetMemoryApiV2MemoriesIdGetErrors,
-  GetMemoryApiV2MemoriesIdGetResponses,
-  GetSessionApiV2SessionsIdGetData,
-  GetSessionApiV2SessionsIdGetErrors,
-  GetSessionApiV2SessionsIdGetResponses,
-  GetSessionChangesApiV2SessionsIdChangesGetData,
-  GetSessionChangesApiV2SessionsIdChangesGetErrors,
-  GetSessionChangesApiV2SessionsIdChangesGetResponses,
-  GetSessionQuotaApiV2SessionsQuotaGetData,
-  GetSessionQuotaApiV2SessionsQuotaGetErrors,
-  GetSessionQuotaApiV2SessionsQuotaGetResponses,
-  GetSessionResourceApiV2SessionsIdResourcesBucketKeyGetData,
-  GetSessionResourceApiV2SessionsIdResourcesBucketKeyGetErrors,
-  GetSessionResourceApiV2SessionsIdResourcesBucketKeyGetResponses,
-  GetSessionStatusApiV2SessionsIdStatusGetData,
-  GetSessionStatusApiV2SessionsIdStatusGetErrors,
-  GetSessionStatusApiV2SessionsIdStatusGetResponses,
-  GetSkillApiV2SkillsIdGetData,
-  GetSkillApiV2SkillsIdGetErrors,
-  GetSkillApiV2SkillsIdGetResponses,
-  ListAgentsApiV2AgentsGetData,
-  ListAgentsApiV2AgentsGetErrors,
-  ListAgentsApiV2AgentsGetResponses,
-  ListEnvironmentsApiV2EnvironmentsGetData,
-  ListEnvironmentsApiV2EnvironmentsGetErrors,
-  ListEnvironmentsApiV2EnvironmentsGetResponses,
-  ListMemoriesApiV2MemoriesGetData,
-  ListMemoriesApiV2MemoriesGetErrors,
-  ListMemoriesApiV2MemoriesGetResponses,
-  ListSessionEventsApiV2SessionsIdEventsGetData,
-  ListSessionEventsApiV2SessionsIdEventsGetErrors,
-  ListSessionEventsApiV2SessionsIdEventsGetResponses,
-  ListSessionsApiV2SessionsGetData,
-  ListSessionsApiV2SessionsGetErrors,
-  ListSessionsApiV2SessionsGetResponses,
-  ListSkillsApiV2SkillsGetData,
-  ListSkillsApiV2SkillsGetErrors,
-  ListSkillsApiV2SkillsGetResponses,
-  PauseSessionApiV2SessionsIdPausePostData,
-  PauseSessionApiV2SessionsIdPausePostErrors,
-  PauseSessionApiV2SessionsIdPausePostResponses,
-  ResumeSessionApiV2SessionsIdResumePostData,
-  ResumeSessionApiV2SessionsIdResumePostErrors,
-  ResumeSessionApiV2SessionsIdResumePostResponses,
-  SendSessionMessagesApiV2SessionsIdMessagesPostData,
-  SendSessionMessagesApiV2SessionsIdMessagesPostErrors,
-  SendSessionMessagesApiV2SessionsIdMessagesPostResponses,
-  ShareSessionApiV2SessionsIdSharePostData,
-  ShareSessionApiV2SessionsIdSharePostErrors,
-  ShareSessionApiV2SessionsIdSharePostResponses,
-  SubmitEventFeedbackApiV2SessionsIdEventsEventIndexFeedbackPutData,
-  SubmitEventFeedbackApiV2SessionsIdEventsEventIndexFeedbackPutErrors,
-  SubmitEventFeedbackApiV2SessionsIdEventsEventIndexFeedbackPutResponses,
-  SubmitSessionFeedbackApiV2SessionsIdFeedbackPostData,
-  SubmitSessionFeedbackApiV2SessionsIdFeedbackPostErrors,
-  SubmitSessionFeedbackApiV2SessionsIdFeedbackPostResponses,
-  UnshareSessionApiV2SessionsIdShareDeleteData,
-  UnshareSessionApiV2SessionsIdShareDeleteErrors,
-  UnshareSessionApiV2SessionsIdShareDeleteResponses,
-  UpdateAgentApiV2AgentsAgentIdentifierPutData,
-  UpdateAgentApiV2AgentsAgentIdentifierPutErrors,
-  UpdateAgentApiV2AgentsAgentIdentifierPutResponses,
-  UpdateEnvironmentApiV2EnvironmentsEnvIdentifierPutData,
-  UpdateEnvironmentApiV2EnvironmentsEnvIdentifierPutErrors,
-  UpdateEnvironmentApiV2EnvironmentsEnvIdentifierPutResponses,
-  UpdateMemoryApiV2MemoriesIdPutData,
-  UpdateMemoryApiV2MemoriesIdPutErrors,
-  UpdateMemoryApiV2MemoriesIdPutResponses,
-  UpdateSkillApiV2SkillsIdPutData,
-  UpdateSkillApiV2SkillsIdPutErrors,
-  UpdateSkillApiV2SkillsIdPutResponses,
+  CancelSessionData,
+  CancelSessionErrors,
+  CancelSessionResponses,
+  CreateAgentData,
+  CreateAgentErrors,
+  CreateAgentResponses,
+  CreateEnvironmentData,
+  CreateEnvironmentErrors,
+  CreateEnvironmentResponses,
+  CreateMemoryData,
+  CreateMemoryErrors,
+  CreateMemoryResponses,
+  CreateSessionData,
+  CreateSessionErrors,
+  CreateSessionResponses,
+  CreateSkillData,
+  CreateSkillErrors,
+  CreateSkillResponses,
+  DeleteAgentData,
+  DeleteAgentErrors,
+  DeleteAgentResponses,
+  DeleteEnvironmentData,
+  DeleteEnvironmentErrors,
+  DeleteEnvironmentResponses,
+  DeleteMemoryData,
+  DeleteMemoryErrors,
+  DeleteMemoryResponses,
+  DeleteSkillData,
+  DeleteSkillErrors,
+  DeleteSkillResponses,
+  ForceSessionAnswerData,
+  ForceSessionAnswerErrors,
+  ForceSessionAnswerResponses,
+  GetAgentData,
+  GetAgentErrors,
+  GetAgentResponses,
+  GetEnvironmentData,
+  GetEnvironmentErrors,
+  GetEnvironmentResponses,
+  GetMemoryData,
+  GetMemoryErrors,
+  GetMemoryResponses,
+  GetSessionChangesData,
+  GetSessionChangesErrors,
+  GetSessionChangesResponses,
+  GetSessionData,
+  GetSessionErrors,
+  GetSessionQuotaData,
+  GetSessionQuotaErrors,
+  GetSessionQuotaResponses,
+  GetSessionResourceData,
+  GetSessionResourceErrors,
+  GetSessionResourceResponses,
+  GetSessionResponses,
+  GetSessionStatusData,
+  GetSessionStatusErrors,
+  GetSessionStatusResponses,
+  GetSkillData,
+  GetSkillErrors,
+  GetSkillResponses,
+  ListAgentsData,
+  ListAgentsErrors,
+  ListAgentsResponses,
+  ListEnvironmentsData,
+  ListEnvironmentsErrors,
+  ListEnvironmentsResponses,
+  ListMemoriesData,
+  ListMemoriesErrors,
+  ListMemoriesResponses,
+  ListSessionEventsData,
+  ListSessionEventsErrors,
+  ListSessionEventsResponses,
+  ListSessionsData,
+  ListSessionsErrors,
+  ListSessionsResponses,
+  ListSkillsData,
+  ListSkillsErrors,
+  ListSkillsResponses,
+  PauseSessionData,
+  PauseSessionErrors,
+  PauseSessionResponses,
+  ResumeSessionData,
+  ResumeSessionErrors,
+  ResumeSessionResponses,
+  SendSessionMessagesData,
+  SendSessionMessagesErrors,
+  SendSessionMessagesResponses,
+  ShareSessionData,
+  ShareSessionErrors,
+  ShareSessionResponses,
+  SubmitEventFeedbackData,
+  SubmitEventFeedbackErrors,
+  SubmitEventFeedbackResponses,
+  SubmitSessionFeedbackData,
+  SubmitSessionFeedbackErrors,
+  SubmitSessionFeedbackResponses,
+  UnshareSessionData,
+  UnshareSessionErrors,
+  UnshareSessionResponses,
+  UpdateAgentData,
+  UpdateAgentErrors,
+  UpdateAgentResponses,
+  UpdateEnvironmentData,
+  UpdateEnvironmentErrors,
+  UpdateEnvironmentResponses,
+  UpdateMemoryData,
+  UpdateMemoryErrors,
+  UpdateMemoryResponses,
+  UpdateSkillData,
+  UpdateSkillErrors,
+  UpdateSkillResponses,
 } from "./types.gen";
 
 export type Options<
@@ -139,14 +139,12 @@ export type Options<
  *
  * List sessions visible to ``user``.
  */
-export const listSessionsApiV2SessionsGet = <
-  ThrowOnError extends boolean = false,
->(
-  options?: Options<ListSessionsApiV2SessionsGetData, ThrowOnError>,
+export const listSessions = <ThrowOnError extends boolean = false>(
+  options?: Options<ListSessionsData, ThrowOnError>,
 ) =>
   (options?.client ?? client).get<
-    ListSessionsApiV2SessionsGetResponses,
-    ListSessionsApiV2SessionsGetErrors,
+    ListSessionsResponses,
+    ListSessionsErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -162,14 +160,12 @@ export const listSessionsApiV2SessionsGet = <
  * Pass ``Idempotency-Key`` for safe retries: identical requests within 24h
  * return the original session; reuse with a different body returns 422.
  */
-export const createSessionApiV2SessionsPost = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<CreateSessionApiV2SessionsPostData, ThrowOnError>,
+export const createSession = <ThrowOnError extends boolean = false>(
+  options: Options<CreateSessionData, ThrowOnError>,
 ) =>
   (options.client ?? client).post<
-    CreateSessionApiV2SessionsPostResponses,
-    CreateSessionApiV2SessionsPostErrors,
+    CreateSessionResponses,
+    CreateSessionErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -186,14 +182,12 @@ export const createSessionApiV2SessionsPost = <
  *
  * Concurrent-session quota for the authenticated user.
  */
-export const getSessionQuotaApiV2SessionsQuotaGet = <
-  ThrowOnError extends boolean = false,
->(
-  options?: Options<GetSessionQuotaApiV2SessionsQuotaGetData, ThrowOnError>,
+export const getSessionQuota = <ThrowOnError extends boolean = false>(
+  options?: Options<GetSessionQuotaData, ThrowOnError>,
 ) =>
   (options?.client ?? client).get<
-    GetSessionQuotaApiV2SessionsQuotaGetResponses,
-    GetSessionQuotaApiV2SessionsQuotaGetErrors,
+    GetSessionQuotaResponses,
+    GetSessionQuotaErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -206,14 +200,12 @@ export const getSessionQuotaApiV2SessionsQuotaGet = <
  *
  * Cancel the session.
  */
-export const cancelSessionApiV2SessionsIdDelete = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<CancelSessionApiV2SessionsIdDeleteData, ThrowOnError>,
+export const cancelSession = <ThrowOnError extends boolean = false>(
+  options: Options<CancelSessionData, ThrowOnError>,
 ) =>
   (options.client ?? client).delete<
-    CancelSessionApiV2SessionsIdDeleteResponses,
-    CancelSessionApiV2SessionsIdDeleteErrors,
+    CancelSessionResponses,
+    CancelSessionErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -226,14 +218,12 @@ export const cancelSessionApiV2SessionsIdDelete = <
  *
  * Get a session.
  */
-export const getSessionApiV2SessionsIdGet = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<GetSessionApiV2SessionsIdGetData, ThrowOnError>,
+export const getSession = <ThrowOnError extends boolean = false>(
+  options: Options<GetSessionData, ThrowOnError>,
 ) =>
   (options.client ?? client).get<
-    GetSessionApiV2SessionsIdGetResponses,
-    GetSessionApiV2SessionsIdGetErrors,
+    GetSessionResponses,
+    GetSessionErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -246,14 +236,12 @@ export const getSessionApiV2SessionsIdGet = <
  *
  * Get a session's live status.
  */
-export const getSessionStatusApiV2SessionsIdStatusGet = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<GetSessionStatusApiV2SessionsIdStatusGetData, ThrowOnError>,
+export const getSessionStatus = <ThrowOnError extends boolean = false>(
+  options: Options<GetSessionStatusData, ThrowOnError>,
 ) =>
   (options.client ?? client).get<
-    GetSessionStatusApiV2SessionsIdStatusGetResponses,
-    GetSessionStatusApiV2SessionsIdStatusGetErrors,
+    GetSessionStatusResponses,
+    GetSessionStatusErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -266,17 +254,12 @@ export const getSessionStatusApiV2SessionsIdStatusGet = <
  *
  * Send a user message (single or batch).
  */
-export const sendSessionMessagesApiV2SessionsIdMessagesPost = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<
-    SendSessionMessagesApiV2SessionsIdMessagesPostData,
-    ThrowOnError
-  >,
+export const sendSessionMessages = <ThrowOnError extends boolean = false>(
+  options: Options<SendSessionMessagesData, ThrowOnError>,
 ) =>
   (options.client ?? client).post<
-    SendSessionMessagesApiV2SessionsIdMessagesPostResponses,
-    SendSessionMessagesApiV2SessionsIdMessagesPostErrors,
+    SendSessionMessagesResponses,
+    SendSessionMessagesErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -293,14 +276,12 @@ export const sendSessionMessagesApiV2SessionsIdMessagesPost = <
  *
  * Pause the session.
  */
-export const pauseSessionApiV2SessionsIdPausePost = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<PauseSessionApiV2SessionsIdPausePostData, ThrowOnError>,
+export const pauseSession = <ThrowOnError extends boolean = false>(
+  options: Options<PauseSessionData, ThrowOnError>,
 ) =>
   (options.client ?? client).post<
-    PauseSessionApiV2SessionsIdPausePostResponses,
-    PauseSessionApiV2SessionsIdPausePostErrors,
+    PauseSessionResponses,
+    PauseSessionErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -313,14 +294,12 @@ export const pauseSessionApiV2SessionsIdPausePost = <
  *
  * Resume the session.
  */
-export const resumeSessionApiV2SessionsIdResumePost = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<ResumeSessionApiV2SessionsIdResumePostData, ThrowOnError>,
+export const resumeSession = <ThrowOnError extends boolean = false>(
+  options: Options<ResumeSessionData, ThrowOnError>,
 ) =>
   (options.client ?? client).post<
-    ResumeSessionApiV2SessionsIdResumePostResponses,
-    ResumeSessionApiV2SessionsIdResumePostErrors,
+    ResumeSessionResponses,
+    ResumeSessionErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -333,17 +312,12 @@ export const resumeSessionApiV2SessionsIdResumePost = <
  *
  * Ask the agent to emit a final answer on its next step.
  */
-export const forceSessionAnswerApiV2SessionsIdForceAnswerPost = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<
-    ForceSessionAnswerApiV2SessionsIdForceAnswerPostData,
-    ThrowOnError
-  >,
+export const forceSessionAnswer = <ThrowOnError extends boolean = false>(
+  options: Options<ForceSessionAnswerData, ThrowOnError>,
 ) =>
   (options.client ?? client).post<
-    ForceSessionAnswerApiV2SessionsIdForceAnswerPostResponses,
-    ForceSessionAnswerApiV2SessionsIdForceAnswerPostErrors,
+    ForceSessionAnswerResponses,
+    ForceSessionAnswerErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -356,17 +330,12 @@ export const forceSessionAnswerApiV2SessionsIdForceAnswerPost = <
  *
  * Long-poll for new events since ``from_index``; 204 if none arrive within ``wait_for_seconds``.
  */
-export const getSessionChangesApiV2SessionsIdChangesGet = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<
-    GetSessionChangesApiV2SessionsIdChangesGetData,
-    ThrowOnError
-  >,
+export const getSessionChanges = <ThrowOnError extends boolean = false>(
+  options: Options<GetSessionChangesData, ThrowOnError>,
 ) =>
   (options.client ?? client).get<
-    GetSessionChangesApiV2SessionsIdChangesGetResponses,
-    GetSessionChangesApiV2SessionsIdChangesGetErrors,
+    GetSessionChangesResponses,
+    GetSessionChangesErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -379,14 +348,12 @@ export const getSessionChangesApiV2SessionsIdChangesGet = <
  *
  * Paginated event history. Use ``/changes`` for live tailing.
  */
-export const listSessionEventsApiV2SessionsIdEventsGet = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<ListSessionEventsApiV2SessionsIdEventsGetData, ThrowOnError>,
+export const listSessionEvents = <ThrowOnError extends boolean = false>(
+  options: Options<ListSessionEventsData, ThrowOnError>,
 ) =>
   (options.client ?? client).get<
-    ListSessionEventsApiV2SessionsIdEventsGetResponses,
-    ListSessionEventsApiV2SessionsIdEventsGetErrors,
+    ListSessionEventsResponses,
+    ListSessionEventsErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -399,17 +366,12 @@ export const listSessionEventsApiV2SessionsIdEventsGet = <
  *
  * Record semantic-success feedback on the whole session.
  */
-export const submitSessionFeedbackApiV2SessionsIdFeedbackPost = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<
-    SubmitSessionFeedbackApiV2SessionsIdFeedbackPostData,
-    ThrowOnError
-  >,
+export const submitSessionFeedback = <ThrowOnError extends boolean = false>(
+  options: Options<SubmitSessionFeedbackData, ThrowOnError>,
 ) =>
   (options.client ?? client).post<
-    SubmitSessionFeedbackApiV2SessionsIdFeedbackPostResponses,
-    SubmitSessionFeedbackApiV2SessionsIdFeedbackPostErrors,
+    SubmitSessionFeedbackResponses,
+    SubmitSessionFeedbackErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -426,17 +388,12 @@ export const submitSessionFeedbackApiV2SessionsIdFeedbackPost = <
  *
  * Record feedback on a single event in the session's history.
  */
-export const submitEventFeedbackApiV2SessionsIdEventsEventIndexFeedbackPut = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<
-    SubmitEventFeedbackApiV2SessionsIdEventsEventIndexFeedbackPutData,
-    ThrowOnError
-  >,
+export const submitEventFeedback = <ThrowOnError extends boolean = false>(
+  options: Options<SubmitEventFeedbackData, ThrowOnError>,
 ) =>
   (options.client ?? client).put<
-    SubmitEventFeedbackApiV2SessionsIdEventsEventIndexFeedbackPutResponses,
-    SubmitEventFeedbackApiV2SessionsIdEventsEventIndexFeedbackPutErrors,
+    SubmitEventFeedbackResponses,
+    SubmitEventFeedbackErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -453,14 +410,12 @@ export const submitEventFeedbackApiV2SessionsIdEventsEventIndexFeedbackPut = <
  *
  * Revoke public access to the session.
  */
-export const unshareSessionApiV2SessionsIdShareDelete = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<UnshareSessionApiV2SessionsIdShareDeleteData, ThrowOnError>,
+export const unshareSession = <ThrowOnError extends boolean = false>(
+  options: Options<UnshareSessionData, ThrowOnError>,
 ) =>
   (options.client ?? client).delete<
-    UnshareSessionApiV2SessionsIdShareDeleteResponses,
-    UnshareSessionApiV2SessionsIdShareDeleteErrors,
+    UnshareSessionResponses,
+    UnshareSessionErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -473,14 +428,12 @@ export const unshareSessionApiV2SessionsIdShareDelete = <
  *
  * Make the session publicly readable; returns the share URL path.
  */
-export const shareSessionApiV2SessionsIdSharePost = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<ShareSessionApiV2SessionsIdSharePostData, ThrowOnError>,
+export const shareSession = <ThrowOnError extends boolean = false>(
+  options: Options<ShareSessionData, ThrowOnError>,
 ) =>
   (options.client ?? client).post<
-    ShareSessionApiV2SessionsIdSharePostResponses,
-    ShareSessionApiV2SessionsIdSharePostErrors,
+    ShareSessionResponses,
+    ShareSessionErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -493,17 +446,12 @@ export const shareSessionApiV2SessionsIdSharePost = <
  *
  * Redirect to a presigned S3 URL for a session-owned resource.
  */
-export const getSessionResourceApiV2SessionsIdResourcesBucketKeyGet = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<
-    GetSessionResourceApiV2SessionsIdResourcesBucketKeyGetData,
-    ThrowOnError
-  >,
+export const getSessionResource = <ThrowOnError extends boolean = false>(
+  options: Options<GetSessionResourceData, ThrowOnError>,
 ) =>
   (options.client ?? client).get<
-    GetSessionResourceApiV2SessionsIdResourcesBucketKeyGetResponses,
-    GetSessionResourceApiV2SessionsIdResourcesBucketKeyGetErrors,
+    GetSessionResourceResponses,
+    GetSessionResourceErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -516,14 +464,12 @@ export const getSessionResourceApiV2SessionsIdResourcesBucketKeyGet = <
  *
  * List org memories; optional exact-namespace and key-prefix filters.
  */
-export const listMemoriesApiV2MemoriesGet = <
-  ThrowOnError extends boolean = false,
->(
-  options?: Options<ListMemoriesApiV2MemoriesGetData, ThrowOnError>,
+export const listMemories = <ThrowOnError extends boolean = false>(
+  options?: Options<ListMemoriesData, ThrowOnError>,
 ) =>
   (options?.client ?? client).get<
-    ListMemoriesApiV2MemoriesGetResponses,
-    ListMemoriesApiV2MemoriesGetErrors,
+    ListMemoriesResponses,
+    ListMemoriesErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -536,14 +482,12 @@ export const listMemoriesApiV2MemoriesGet = <
  *
  * Upsert a memory by ``(org_id, namespace, key)``. 201 on create, 200 on update.
  */
-export const createMemoryApiV2MemoriesPost = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<CreateMemoryApiV2MemoriesPostData, ThrowOnError>,
+export const createMemory = <ThrowOnError extends boolean = false>(
+  options: Options<CreateMemoryData, ThrowOnError>,
 ) =>
   (options.client ?? client).post<
-    CreateMemoryApiV2MemoriesPostResponses,
-    CreateMemoryApiV2MemoriesPostErrors,
+    CreateMemoryResponses,
+    CreateMemoryErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -560,14 +504,12 @@ export const createMemoryApiV2MemoriesPost = <
  *
  * Delete a memory.
  */
-export const deleteMemoryApiV2MemoriesIdDelete = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<DeleteMemoryApiV2MemoriesIdDeleteData, ThrowOnError>,
+export const deleteMemory = <ThrowOnError extends boolean = false>(
+  options: Options<DeleteMemoryData, ThrowOnError>,
 ) =>
   (options.client ?? client).delete<
-    DeleteMemoryApiV2MemoriesIdDeleteResponses,
-    DeleteMemoryApiV2MemoriesIdDeleteErrors,
+    DeleteMemoryResponses,
+    DeleteMemoryErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -580,14 +522,12 @@ export const deleteMemoryApiV2MemoriesIdDelete = <
  *
  * Get a memory by id.
  */
-export const getMemoryApiV2MemoriesIdGet = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<GetMemoryApiV2MemoriesIdGetData, ThrowOnError>,
+export const getMemory = <ThrowOnError extends boolean = false>(
+  options: Options<GetMemoryData, ThrowOnError>,
 ) =>
   (options.client ?? client).get<
-    GetMemoryApiV2MemoriesIdGetResponses,
-    GetMemoryApiV2MemoriesIdGetErrors,
+    GetMemoryResponses,
+    GetMemoryErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -600,14 +540,12 @@ export const getMemoryApiV2MemoriesIdGet = <
  *
  * Update a memory's value.
  */
-export const updateMemoryApiV2MemoriesIdPut = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<UpdateMemoryApiV2MemoriesIdPutData, ThrowOnError>,
+export const updateMemory = <ThrowOnError extends boolean = false>(
+  options: Options<UpdateMemoryData, ThrowOnError>,
 ) =>
   (options.client ?? client).put<
-    UpdateMemoryApiV2MemoriesIdPutResponses,
-    UpdateMemoryApiV2MemoriesIdPutErrors,
+    UpdateMemoryResponses,
+    UpdateMemoryErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -624,12 +562,12 @@ export const updateMemoryApiV2MemoriesIdPut = <
  *
  * List skills for the current org, optionally filtered by name prefix.
  */
-export const listSkillsApiV2SkillsGet = <ThrowOnError extends boolean = false>(
-  options?: Options<ListSkillsApiV2SkillsGetData, ThrowOnError>,
+export const listSkills = <ThrowOnError extends boolean = false>(
+  options?: Options<ListSkillsData, ThrowOnError>,
 ) =>
   (options?.client ?? client).get<
-    ListSkillsApiV2SkillsGetResponses,
-    ListSkillsApiV2SkillsGetErrors,
+    ListSkillsResponses,
+    ListSkillsErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -642,14 +580,12 @@ export const listSkillsApiV2SkillsGet = <ThrowOnError extends boolean = false>(
  *
  * Create a skill.
  */
-export const createSkillApiV2SkillsPost = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<CreateSkillApiV2SkillsPostData, ThrowOnError>,
+export const createSkill = <ThrowOnError extends boolean = false>(
+  options: Options<CreateSkillData, ThrowOnError>,
 ) =>
   (options.client ?? client).post<
-    CreateSkillApiV2SkillsPostResponses,
-    CreateSkillApiV2SkillsPostErrors,
+    CreateSkillResponses,
+    CreateSkillErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -666,14 +602,12 @@ export const createSkillApiV2SkillsPost = <
  *
  * Delete a skill.
  */
-export const deleteSkillApiV2SkillsIdDelete = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<DeleteSkillApiV2SkillsIdDeleteData, ThrowOnError>,
+export const deleteSkill = <ThrowOnError extends boolean = false>(
+  options: Options<DeleteSkillData, ThrowOnError>,
 ) =>
   (options.client ?? client).delete<
-    DeleteSkillApiV2SkillsIdDeleteResponses,
-    DeleteSkillApiV2SkillsIdDeleteErrors,
+    DeleteSkillResponses,
+    DeleteSkillErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -686,12 +620,12 @@ export const deleteSkillApiV2SkillsIdDelete = <
  *
  * Get a skill by id.
  */
-export const getSkillApiV2SkillsIdGet = <ThrowOnError extends boolean = false>(
-  options: Options<GetSkillApiV2SkillsIdGetData, ThrowOnError>,
+export const getSkill = <ThrowOnError extends boolean = false>(
+  options: Options<GetSkillData, ThrowOnError>,
 ) =>
   (options.client ?? client).get<
-    GetSkillApiV2SkillsIdGetResponses,
-    GetSkillApiV2SkillsIdGetErrors,
+    GetSkillResponses,
+    GetSkillErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -704,14 +638,12 @@ export const getSkillApiV2SkillsIdGet = <ThrowOnError extends boolean = false>(
  *
  * Update a skill's content.
  */
-export const updateSkillApiV2SkillsIdPut = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<UpdateSkillApiV2SkillsIdPutData, ThrowOnError>,
+export const updateSkill = <ThrowOnError extends boolean = false>(
+  options: Options<UpdateSkillData, ThrowOnError>,
 ) =>
   (options.client ?? client).put<
-    UpdateSkillApiV2SkillsIdPutResponses,
-    UpdateSkillApiV2SkillsIdPutErrors,
+    UpdateSkillResponses,
+    UpdateSkillErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -728,14 +660,12 @@ export const updateSkillApiV2SkillsIdPut = <
  *
  * List reserved + caller's org environments.
  */
-export const listEnvironmentsApiV2EnvironmentsGet = <
-  ThrowOnError extends boolean = false,
->(
-  options?: Options<ListEnvironmentsApiV2EnvironmentsGetData, ThrowOnError>,
+export const listEnvironments = <ThrowOnError extends boolean = false>(
+  options?: Options<ListEnvironmentsData, ThrowOnError>,
 ) =>
   (options?.client ?? client).get<
-    ListEnvironmentsApiV2EnvironmentsGetResponses,
-    ListEnvironmentsApiV2EnvironmentsGetErrors,
+    ListEnvironmentsResponses,
+    ListEnvironmentsErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -748,14 +678,12 @@ export const listEnvironmentsApiV2EnvironmentsGet = <
  *
  * Create an environment. ``reserved=True`` and the ``h/`` namespace require H-employee privileges.
  */
-export const createEnvironmentApiV2EnvironmentsPost = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<CreateEnvironmentApiV2EnvironmentsPostData, ThrowOnError>,
+export const createEnvironment = <ThrowOnError extends boolean = false>(
+  options: Options<CreateEnvironmentData, ThrowOnError>,
 ) =>
   (options.client ?? client).post<
-    CreateEnvironmentApiV2EnvironmentsPostResponses,
-    CreateEnvironmentApiV2EnvironmentsPostErrors,
+    CreateEnvironmentResponses,
+    CreateEnvironmentErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -772,17 +700,12 @@ export const createEnvironmentApiV2EnvironmentsPost = <
  *
  * Delete by identifier. Reserved rows: H employee only.
  */
-export const deleteEnvironmentApiV2EnvironmentsEnvIdentifierDelete = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<
-    DeleteEnvironmentApiV2EnvironmentsEnvIdentifierDeleteData,
-    ThrowOnError
-  >,
+export const deleteEnvironment = <ThrowOnError extends boolean = false>(
+  options: Options<DeleteEnvironmentData, ThrowOnError>,
 ) =>
   (options.client ?? client).delete<
-    DeleteEnvironmentApiV2EnvironmentsEnvIdentifierDeleteResponses,
-    DeleteEnvironmentApiV2EnvironmentsEnvIdentifierDeleteErrors,
+    DeleteEnvironmentResponses,
+    DeleteEnvironmentErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -795,17 +718,12 @@ export const deleteEnvironmentApiV2EnvironmentsEnvIdentifierDelete = <
  *
  * Fetch by identifier; 404 if not visible. ``:path`` so slash-containing ids round-trip.
  */
-export const getEnvironmentApiV2EnvironmentsEnvIdentifierGet = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<
-    GetEnvironmentApiV2EnvironmentsEnvIdentifierGetData,
-    ThrowOnError
-  >,
+export const getEnvironment = <ThrowOnError extends boolean = false>(
+  options: Options<GetEnvironmentData, ThrowOnError>,
 ) =>
   (options.client ?? client).get<
-    GetEnvironmentApiV2EnvironmentsEnvIdentifierGetResponses,
-    GetEnvironmentApiV2EnvironmentsEnvIdentifierGetErrors,
+    GetEnvironmentResponses,
+    GetEnvironmentErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -818,17 +736,12 @@ export const getEnvironmentApiV2EnvironmentsEnvIdentifierGet = <
  *
  * Replace ``spec`` + ``description``. ``spec.id`` must match the URL identifier; renames are not supported.
  */
-export const updateEnvironmentApiV2EnvironmentsEnvIdentifierPut = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<
-    UpdateEnvironmentApiV2EnvironmentsEnvIdentifierPutData,
-    ThrowOnError
-  >,
+export const updateEnvironment = <ThrowOnError extends boolean = false>(
+  options: Options<UpdateEnvironmentData, ThrowOnError>,
 ) =>
   (options.client ?? client).put<
-    UpdateEnvironmentApiV2EnvironmentsEnvIdentifierPutResponses,
-    UpdateEnvironmentApiV2EnvironmentsEnvIdentifierPutErrors,
+    UpdateEnvironmentResponses,
+    UpdateEnvironmentErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -845,12 +758,12 @@ export const updateEnvironmentApiV2EnvironmentsEnvIdentifierPut = <
  *
  * List reserved + caller's org agents.
  */
-export const listAgentsApiV2AgentsGet = <ThrowOnError extends boolean = false>(
-  options?: Options<ListAgentsApiV2AgentsGetData, ThrowOnError>,
+export const listAgents = <ThrowOnError extends boolean = false>(
+  options?: Options<ListAgentsData, ThrowOnError>,
 ) =>
   (options?.client ?? client).get<
-    ListAgentsApiV2AgentsGetResponses,
-    ListAgentsApiV2AgentsGetErrors,
+    ListAgentsResponses,
+    ListAgentsErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -863,14 +776,12 @@ export const listAgentsApiV2AgentsGet = <ThrowOnError extends boolean = false>(
  *
  * Create an agent. ``reserved=True`` and the ``h/`` namespace require H-employee privileges.
  */
-export const createAgentApiV2AgentsPost = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<CreateAgentApiV2AgentsPostData, ThrowOnError>,
+export const createAgent = <ThrowOnError extends boolean = false>(
+  options: Options<CreateAgentData, ThrowOnError>,
 ) =>
   (options.client ?? client).post<
-    CreateAgentApiV2AgentsPostResponses,
-    CreateAgentApiV2AgentsPostErrors,
+    CreateAgentResponses,
+    CreateAgentErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -887,17 +798,12 @@ export const createAgentApiV2AgentsPost = <
  *
  * Delete by identifier. Reserved rows: H employee only.
  */
-export const deleteAgentApiV2AgentsAgentIdentifierDelete = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<
-    DeleteAgentApiV2AgentsAgentIdentifierDeleteData,
-    ThrowOnError
-  >,
+export const deleteAgent = <ThrowOnError extends boolean = false>(
+  options: Options<DeleteAgentData, ThrowOnError>,
 ) =>
   (options.client ?? client).delete<
-    DeleteAgentApiV2AgentsAgentIdentifierDeleteResponses,
-    DeleteAgentApiV2AgentsAgentIdentifierDeleteErrors,
+    DeleteAgentResponses,
+    DeleteAgentErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -910,14 +816,12 @@ export const deleteAgentApiV2AgentsAgentIdentifierDelete = <
  *
  * Fetch by identifier; 404 if not visible. ``:path`` so slash-containing ids round-trip.
  */
-export const getAgentApiV2AgentsAgentIdentifierGet = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<GetAgentApiV2AgentsAgentIdentifierGetData, ThrowOnError>,
+export const getAgent = <ThrowOnError extends boolean = false>(
+  options: Options<GetAgentData, ThrowOnError>,
 ) =>
   (options.client ?? client).get<
-    GetAgentApiV2AgentsAgentIdentifierGetResponses,
-    GetAgentApiV2AgentsAgentIdentifierGetErrors,
+    GetAgentResponses,
+    GetAgentErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
@@ -930,14 +834,12 @@ export const getAgentApiV2AgentsAgentIdentifierGet = <
  *
  * Replace ``spec``. ``spec.name`` must match the URL identifier; renames are not supported.
  */
-export const updateAgentApiV2AgentsAgentIdentifierPut = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<UpdateAgentApiV2AgentsAgentIdentifierPutData, ThrowOnError>,
+export const updateAgent = <ThrowOnError extends boolean = false>(
+  options: Options<UpdateAgentData, ThrowOnError>,
 ) =>
   (options.client ?? client).put<
-    UpdateAgentApiV2AgentsAgentIdentifierPutResponses,
-    UpdateAgentApiV2AgentsAgentIdentifierPutErrors,
+    UpdateAgentResponses,
+    UpdateAgentErrors,
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],

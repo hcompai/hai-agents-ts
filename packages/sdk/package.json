@@ -18,14 +18,11 @@
     "dist"
   ],
   "scripts": {
-    "generate": "openapi-ts",
     "build": "tsup src/index.ts --format esm,cjs --dts --clean",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@hey-api/openapi-ts": "^0.97.3",
-    "prettier": "^3.8.3",
     "tsup": "^8.5.1",
-    "typescript": "^6.0.3"
+    "typescript": "^5.9.3"
   }
 }
