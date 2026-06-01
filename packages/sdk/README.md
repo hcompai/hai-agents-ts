@@ -26,6 +26,8 @@ import {
   createSession,
   getSessionStatus,
   getSessionChanges,
+  sendSessionMessages,
+  submitSessionFeedback,
 } from "hai-agents";
 
 const config = {
@@ -62,6 +64,49 @@ const { data: changes } = await getSessionChanges({
   query: { from_index: 0 },
 });
 console.log(changes!.answer);
+```
+
+## Sending messages and feedback
+
+`sendSessionMessages` accepts either one user message object or a batch wrapper.
+It does not accept a raw array.
+
+```ts
+await sendSessionMessages({
+  ...config,
+  path: { id: sessionId },
+  body: {
+    type: "user_message",
+    message: "Please keep the answer under one sentence.",
+  },
+});
+
+await sendSessionMessages({
+  ...config,
+  path: { id: sessionId },
+  body: {
+    type: "batch",
+    messages: [
+      {
+        type: "user_message",
+        message: "Actually, include the page title too.",
+      },
+    ],
+  },
+});
+```
+
+Feedback is binary success feedback with an optional message:
+
+```ts
+await submitSessionFeedback({
+  ...config,
+  path: { id: sessionId },
+  body: {
+    success: true,
+    message: "The answer matched the page heading.",
+  },
+});
 ```
 
 ## Cancelling a session
