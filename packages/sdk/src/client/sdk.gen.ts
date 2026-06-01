@@ -661,7 +661,7 @@ export const listAgents = <ThrowOnError extends boolean = false>(
 /**
  * Create Agent
  *
- * Create an agent. ``reserved=True`` and the ``h/`` namespace require H-employee privileges.
+ * Create an agent..
  */
 export const createAgent = <ThrowOnError extends boolean = false>(
   options: Options<CreateAgentData, ThrowOnError>,
@@ -694,7 +694,7 @@ export const deleteAgent = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/v2/agents/{agent_identifier}",
+    url: "/api/v2/agents/{agent_name}",
     ...options,
   });
 
@@ -712,7 +712,7 @@ export const getAgent = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/v2/agents/{agent_identifier}",
+    url: "/api/v2/agents/{agent_name}",
     ...options,
   });
 
@@ -730,7 +730,7 @@ export const updateAgent = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/v2/agents/{agent_identifier}",
+    url: "/api/v2/agents/{agent_name}",
     ...options,
     headers: {
       "Content-Type": "application/json",

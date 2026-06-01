@@ -60,39 +60,6 @@ export type Agent = {
 };
 
 /**
- * AgentRecord
- *
- * Catalog row exposing an ``Agent`` spec payload plus AgP metadata.
- *
- * The catalog handle is ``spec.name``; callers reference it directly
- * via ``record.spec.name`` rather than a duplicated top-level field.
- */
-export type AgentRecord = {
-  /**
-   * Id
-   */
-  id: string;
-  /**
-   * Typed agent definition consumed by the runtime.
-   */
-  spec: Agent;
-  /**
-   * Reserved
-   *
-   * True for H-owned rows; world-readable, write-locked behind employee_only.
-   */
-  reserved: boolean;
-  /**
-   * Created At
-   */
-  created_at: string;
-  /**
-   * Updated At
-   */
-  updated_at: string;
-};
-
-/**
  * Browser
  *
  * Browser environment.
@@ -132,24 +99,6 @@ export type Browser = {
    * Initial URL.
    */
   start_url: string | null;
-};
-
-/**
- * CreateAgent
- *
- * ``POST /api/v2/agents`` body.
- */
-export type CreateAgent = {
-  /**
-   * Typed agent definition consumed by the runtime.
-   */
-  spec: Agent;
-  /**
-   * Reserved
-   *
-   * H employees only; rejected with 403 otherwise.
-   */
-  reserved?: boolean;
 };
 
 /**
@@ -390,13 +339,13 @@ export type ModelUsage = {
 };
 
 /**
- * Page[AgentRecord]
+ * Page[Agent]
  */
-export type PageAgentRecord = {
+export type PageAgent = {
   /**
    * Items
    */
-  items: Array<AgentRecord>;
+  items: Array<Agent>;
   /**
    * Total
    */
@@ -850,18 +799,6 @@ export type TrajectoryStatus =
   | "failed"
   | "timed_out"
   | "interrupted";
-
-/**
- * UpdateAgent
- *
- * ``PUT /api/v2/agents/{agent_identifier}`` body. Full replace; ``spec.name`` is immutable.
- */
-export type UpdateAgent = {
-  /**
-   * Typed agent definition consumed by the runtime.
-   */
-  spec: Agent;
-};
 
 /**
  * UpdateEnvironment
@@ -1948,7 +1885,7 @@ export type ListAgentsData = {
      * Sort by field
      */
     sort?: Array<
-      "created_at" | "-created_at" | "agent_identifier" | "-agent_identifier"
+      "created_at" | "-created_at" | "agent_name" | "-agent_name"
     > | null;
   };
   url: "/api/v2/agents";
@@ -1967,13 +1904,13 @@ export type ListAgentsResponses = {
   /**
    * Successful Response
    */
-  200: PageAgentRecord;
+  200: PageAgent;
 };
 
 export type ListAgentsResponse = ListAgentsResponses[keyof ListAgentsResponses];
 
 export type CreateAgentData = {
-  body: CreateAgent;
+  body: Agent;
   path?: never;
   query?: never;
   url: "/api/v2/agents";
@@ -1992,7 +1929,7 @@ export type CreateAgentResponses = {
   /**
    * Successful Response
    */
-  201: AgentRecord;
+  201: Agent;
 };
 
 export type CreateAgentResponse =
@@ -2002,12 +1939,12 @@ export type DeleteAgentData = {
   body?: never;
   path: {
     /**
-     * Agent Identifier
+     * Agent Name
      */
-    agent_identifier: string;
+    agent_name: string;
   };
   query?: never;
-  url: "/api/v2/agents/{agent_identifier}";
+  url: "/api/v2/agents/{agent_name}";
 };
 
 export type DeleteAgentErrors = {
@@ -2033,12 +1970,12 @@ export type GetAgentData = {
   body?: never;
   path: {
     /**
-     * Agent Identifier
+     * Agent Name
      */
-    agent_identifier: string;
+    agent_name: string;
   };
   query?: never;
-  url: "/api/v2/agents/{agent_identifier}";
+  url: "/api/v2/agents/{agent_name}";
 };
 
 export type GetAgentErrors = {
@@ -2054,21 +1991,21 @@ export type GetAgentResponses = {
   /**
    * Successful Response
    */
-  200: AgentRecord;
+  200: Agent;
 };
 
 export type GetAgentResponse = GetAgentResponses[keyof GetAgentResponses];
 
 export type UpdateAgentData = {
-  body: UpdateAgent;
+  body: Agent;
   path: {
     /**
-     * Agent Identifier
+     * Agent Name
      */
-    agent_identifier: string;
+    agent_name: string;
   };
   query?: never;
-  url: "/api/v2/agents/{agent_identifier}";
+  url: "/api/v2/agents/{agent_name}";
 };
 
 export type UpdateAgentErrors = {
@@ -2084,7 +2021,7 @@ export type UpdateAgentResponses = {
   /**
    * Successful Response
    */
-  200: AgentRecord;
+  200: Agent;
 };
 
 export type UpdateAgentResponse =
