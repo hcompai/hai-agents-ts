@@ -126,56 +126,6 @@ export type CreateEnvironment = {
 };
 
 /**
- * CreateSkill
- *
- * Request to create a skill.
- */
-export type CreateSkill = {
-  /**
-   * Name
-   *
-   * Kebab-case stable handle the agent uses to reference this skill.
-   */
-  name: string;
-  /**
-   * Description
-   *
-   * One-line routing hint shown in the skill catalog.
-   */
-  description: string;
-  /**
-   * Body
-   *
-   * Markdown prompt fragment. Required unless `uri` is set.
-   */
-  body?: string;
-  /**
-   * Source
-   *
-   * Provenance URL.
-   */
-  source?: string | null;
-  /**
-   * Url Pattern
-   *
-   * Inject only when an observation URL matches this regex. Mutually exclusive with `uri`.
-   */
-  url_pattern?: string | null;
-  /**
-   * Uri
-   *
-   * Fetch body on demand from this location. Mutually exclusive with `url_pattern`.
-   */
-  uri?: string | null;
-  /**
-   * Reserved
-   *
-   * H employees only; rejected with 403 otherwise. Reserved rows are world-readable.
-   */
-  reserved?: boolean;
-};
-
-/**
  * EnvironmentRecord
  *
  * Catalog row exposing an ``Environment`` spec plus AgP metadata.
@@ -393,13 +343,13 @@ export type PageSessionSummary = {
 };
 
 /**
- * Page[SkillRecord]
+ * Page[Skill]
  */
-export type PageSkillRecord = {
+export type PageSkill = {
   /**
    * Items
    */
-  items: Array<SkillRecord>;
+  items: Array<Skill>;
   /**
    * Total
    */
@@ -642,54 +592,6 @@ export type Skill = {
 };
 
 /**
- * SkillRecord
- *
- * Named prompt fragment loaded into an agent's system prompt.
- */
-export type SkillRecord = {
-  /**
-   * Id
-   */
-  id: string;
-  /**
-   * Name
-   */
-  name: string;
-  /**
-   * Description
-   */
-  description: string;
-  /**
-   * Body
-   */
-  body: string;
-  /**
-   * Source
-   */
-  source: string | null;
-  /**
-   * Url Pattern
-   */
-  url_pattern: string | null;
-  /**
-   * Uri
-   */
-  uri: string | null;
-  /**
-   * Reserved
-   */
-  reserved: boolean;
-  /**
-   * Created At
-   */
-  created_at: string;
-  /**
-   * Updated At
-   */
-  updated_at: string;
-};
-
-/**
  * TrajectoryChanges
  *
  * Changes to a trajectory.
@@ -816,34 +718,6 @@ export type UpdateEnvironment = {
    * Description
    */
   description?: string;
-};
-
-/**
- * UpdateSkill
- *
- * Request to update a skill. Full replacement; `name` is immutable.
- */
-export type UpdateSkill = {
-  /**
-   * Description
-   */
-  description: string;
-  /**
-   * Body
-   */
-  body?: string;
-  /**
-   * Source
-   */
-  source?: string | null;
-  /**
-   * Url Pattern
-   */
-  url_pattern?: string | null;
-  /**
-   * Uri
-   */
-  uri?: string | null;
 };
 
 /**
@@ -1569,13 +1443,13 @@ export type ListSkillsResponses = {
   /**
    * Successful Response
    */
-  200: PageSkillRecord;
+  200: PageSkill;
 };
 
 export type ListSkillsResponse = ListSkillsResponses[keyof ListSkillsResponses];
 
 export type CreateSkillData = {
-  body: CreateSkill;
+  body: Skill;
   path?: never;
   query?: never;
   url: "/api/v2/skills";
@@ -1594,7 +1468,7 @@ export type CreateSkillResponses = {
   /**
    * Successful Response
    */
-  201: SkillRecord;
+  201: Skill;
 };
 
 export type CreateSkillResponse =
@@ -1604,12 +1478,12 @@ export type DeleteSkillData = {
   body?: never;
   path: {
     /**
-     * Id
+     * Name
      */
-    id: string;
+    name: string;
   };
   query?: never;
-  url: "/api/v2/skills/{id}";
+  url: "/api/v2/skills/{name}";
 };
 
 export type DeleteSkillErrors = {
@@ -1635,12 +1509,12 @@ export type GetSkillData = {
   body?: never;
   path: {
     /**
-     * Id
+     * Name
      */
-    id: string;
+    name: string;
   };
   query?: never;
-  url: "/api/v2/skills/{id}";
+  url: "/api/v2/skills/{name}";
 };
 
 export type GetSkillErrors = {
@@ -1656,21 +1530,21 @@ export type GetSkillResponses = {
   /**
    * Successful Response
    */
-  200: SkillRecord;
+  200: Skill;
 };
 
 export type GetSkillResponse = GetSkillResponses[keyof GetSkillResponses];
 
 export type UpdateSkillData = {
-  body: UpdateSkill;
+  body: Skill;
   path: {
     /**
-     * Id
+     * Name
      */
-    id: string;
+    name: string;
   };
   query?: never;
-  url: "/api/v2/skills/{id}";
+  url: "/api/v2/skills/{name}";
 };
 
 export type UpdateSkillErrors = {
@@ -1686,7 +1560,7 @@ export type UpdateSkillResponses = {
   /**
    * Successful Response
    */
-  200: SkillRecord;
+  200: Skill;
 };
 
 export type UpdateSkillResponse =
