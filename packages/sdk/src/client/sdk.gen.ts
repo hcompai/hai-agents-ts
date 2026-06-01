@@ -12,9 +12,6 @@ import type {
   CreateEnvironmentData,
   CreateEnvironmentErrors,
   CreateEnvironmentResponses,
-  CreateMemoryData,
-  CreateMemoryErrors,
-  CreateMemoryResponses,
   CreateSessionData,
   CreateSessionErrors,
   CreateSessionResponses,
@@ -27,9 +24,6 @@ import type {
   DeleteEnvironmentData,
   DeleteEnvironmentErrors,
   DeleteEnvironmentResponses,
-  DeleteMemoryData,
-  DeleteMemoryErrors,
-  DeleteMemoryResponses,
   DeleteSkillData,
   DeleteSkillErrors,
   DeleteSkillResponses,
@@ -42,9 +36,6 @@ import type {
   GetEnvironmentData,
   GetEnvironmentErrors,
   GetEnvironmentResponses,
-  GetMemoryData,
-  GetMemoryErrors,
-  GetMemoryResponses,
   GetSessionChangesData,
   GetSessionChangesErrors,
   GetSessionChangesResponses,
@@ -69,9 +60,6 @@ import type {
   ListEnvironmentsData,
   ListEnvironmentsErrors,
   ListEnvironmentsResponses,
-  ListMemoriesData,
-  ListMemoriesErrors,
-  ListMemoriesResponses,
   ListSessionEventsData,
   ListSessionEventsErrors,
   ListSessionEventsResponses,
@@ -108,9 +96,6 @@ import type {
   UpdateEnvironmentData,
   UpdateEnvironmentErrors,
   UpdateEnvironmentResponses,
-  UpdateMemoryData,
-  UpdateMemoryErrors,
-  UpdateMemoryResponses,
   UpdateSkillData,
   UpdateSkillErrors,
   UpdateSkillResponses,
@@ -457,104 +442,6 @@ export const getSessionResource = <ThrowOnError extends boolean = false>(
     security: [{ scheme: "bearer", type: "http" }],
     url: "/api/v2/sessions/{id}/resources/{bucket}/{key}",
     ...options,
-  });
-
-/**
- * List Memories
- *
- * List org memories; optional exact-namespace and key-prefix filters.
- */
-export const listMemories = <ThrowOnError extends boolean = false>(
-  options?: Options<ListMemoriesData, ThrowOnError>,
-) =>
-  (options?.client ?? client).get<
-    ListMemoriesResponses,
-    ListMemoriesErrors,
-    ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/v2/memories",
-    ...options,
-  });
-
-/**
- * Create Memory
- *
- * Upsert a memory by ``(org_id, namespace, key)``. 201 on create, 200 on update.
- */
-export const createMemory = <ThrowOnError extends boolean = false>(
-  options: Options<CreateMemoryData, ThrowOnError>,
-) =>
-  (options.client ?? client).post<
-    CreateMemoryResponses,
-    CreateMemoryErrors,
-    ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/v2/memories",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
-
-/**
- * Delete Memory
- *
- * Delete a memory.
- */
-export const deleteMemory = <ThrowOnError extends boolean = false>(
-  options: Options<DeleteMemoryData, ThrowOnError>,
-) =>
-  (options.client ?? client).delete<
-    DeleteMemoryResponses,
-    DeleteMemoryErrors,
-    ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/v2/memories/{id}",
-    ...options,
-  });
-
-/**
- * Get Memory
- *
- * Get a memory by id.
- */
-export const getMemory = <ThrowOnError extends boolean = false>(
-  options: Options<GetMemoryData, ThrowOnError>,
-) =>
-  (options.client ?? client).get<
-    GetMemoryResponses,
-    GetMemoryErrors,
-    ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/v2/memories/{id}",
-    ...options,
-  });
-
-/**
- * Update Memory
- *
- * Update a memory's value.
- */
-export const updateMemory = <ThrowOnError extends boolean = false>(
-  options: Options<UpdateMemoryData, ThrowOnError>,
-) =>
-  (options.client ?? client).put<
-    UpdateMemoryResponses,
-    UpdateMemoryErrors,
-    ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/v2/memories/{id}",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
   });
 
 /**

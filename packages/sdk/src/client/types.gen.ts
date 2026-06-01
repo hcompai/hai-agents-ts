@@ -234,26 +234,6 @@ export type CreateEnvironment = {
 };
 
 /**
- * CreateMemory
- *
- * Upsert a memory by ``(org_id, namespace, key)``.
- */
-export type CreateMemory = {
-  /**
-   * Namespace
-   */
-  namespace: string;
-  /**
-   * Key
-   */
-  key: string;
-  /**
-   * Value
-   */
-  value: string;
-};
-
-/**
  * CreateSkill
  *
  * Request to create a skill.
@@ -483,38 +463,6 @@ export type Memory = {
 };
 
 /**
- * MemoryRecord
- *
- * Persistent KV entry scoped to ``(org_id, namespace, key)``.
- */
-export type MemoryRecord = {
-  /**
-   * Id
-   */
-  id: string;
-  /**
-   * Namespace
-   */
-  namespace: string;
-  /**
-   * Key
-   */
-  key: string;
-  /**
-   * Value
-   */
-  value: string;
-  /**
-   * Created At
-   */
-  created_at: string;
-  /**
-   * Updated At
-   */
-  updated_at: string;
-};
-
-/**
  * Metrics
  *
  * Metrics for a trajectory.
@@ -636,24 +584,6 @@ export type PageEnvironmentRecord = {
    * Items
    */
   items: Array<EnvironmentRecord>;
-  /**
-   * Total
-   */
-  total: number;
-  /**
-   * Page
-   */
-  page: number;
-};
-
-/**
- * Page[MemoryRecord]
- */
-export type PageMemoryRecord = {
-  /**
-   * Items
-   */
-  items: Array<MemoryRecord>;
   /**
    * Total
    */
@@ -1128,18 +1058,6 @@ export type UpdateEnvironment = {
    * Description
    */
   description?: string;
-};
-
-/**
- * UpdateMemory
- *
- * Update a memory's value in place.
- */
-export type UpdateMemory = {
-  /**
-   * Value
-   */
-  value: string;
 };
 
 /**
@@ -1847,185 +1765,6 @@ export type GetSessionResourceResponses = {
    */
   200: unknown;
 };
-
-export type ListMemoriesData = {
-  body?: never;
-  path?: never;
-  query?: {
-    /**
-     * Namespace
-     *
-     * Exact namespace filter.
-     */
-    namespace?: string | null;
-    /**
-     * Key
-     *
-     * Key prefix filter.
-     */
-    key?: string | null;
-    /**
-     * Page
-     *
-     * Page number (1-based)
-     */
-    page?: number;
-    /**
-     * Size
-     *
-     * Number of items per page
-     */
-    size?: number;
-    /**
-     * Sort
-     *
-     * Sort by field
-     */
-    sort?: Array<"updated_at" | "-updated_at"> | null;
-  };
-  url: "/api/v2/memories";
-};
-
-export type ListMemoriesErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type ListMemoriesError = ListMemoriesErrors[keyof ListMemoriesErrors];
-
-export type ListMemoriesResponses = {
-  /**
-   * Successful Response
-   */
-  200: PageMemoryRecord;
-};
-
-export type ListMemoriesResponse =
-  ListMemoriesResponses[keyof ListMemoriesResponses];
-
-export type CreateMemoryData = {
-  body: CreateMemory;
-  path?: never;
-  query?: never;
-  url: "/api/v2/memories";
-};
-
-export type CreateMemoryErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type CreateMemoryError = CreateMemoryErrors[keyof CreateMemoryErrors];
-
-export type CreateMemoryResponses = {
-  /**
-   * Existing memory updated (upsert).
-   */
-  200: MemoryRecord;
-  /**
-   * New memory created.
-   */
-  201: unknown;
-};
-
-export type CreateMemoryResponse =
-  CreateMemoryResponses[keyof CreateMemoryResponses];
-
-export type DeleteMemoryData = {
-  body?: never;
-  path: {
-    /**
-     * Id
-     */
-    id: string;
-  };
-  query?: never;
-  url: "/api/v2/memories/{id}";
-};
-
-export type DeleteMemoryErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type DeleteMemoryError = DeleteMemoryErrors[keyof DeleteMemoryErrors];
-
-export type DeleteMemoryResponses = {
-  /**
-   * Successful Response
-   */
-  204: void;
-};
-
-export type DeleteMemoryResponse =
-  DeleteMemoryResponses[keyof DeleteMemoryResponses];
-
-export type GetMemoryData = {
-  body?: never;
-  path: {
-    /**
-     * Id
-     */
-    id: string;
-  };
-  query?: never;
-  url: "/api/v2/memories/{id}";
-};
-
-export type GetMemoryErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type GetMemoryError = GetMemoryErrors[keyof GetMemoryErrors];
-
-export type GetMemoryResponses = {
-  /**
-   * Successful Response
-   */
-  200: MemoryRecord;
-};
-
-export type GetMemoryResponse = GetMemoryResponses[keyof GetMemoryResponses];
-
-export type UpdateMemoryData = {
-  body: UpdateMemory;
-  path: {
-    /**
-     * Id
-     */
-    id: string;
-  };
-  query?: never;
-  url: "/api/v2/memories/{id}";
-};
-
-export type UpdateMemoryErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type UpdateMemoryError = UpdateMemoryErrors[keyof UpdateMemoryErrors];
-
-export type UpdateMemoryResponses = {
-  /**
-   * Successful Response
-   */
-  200: MemoryRecord;
-};
-
-export type UpdateMemoryResponse =
-  UpdateMemoryResponses[keyof UpdateMemoryResponses];
 
 export type ListSkillsData = {
   body?: never;
