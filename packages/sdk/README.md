@@ -14,3 +14,51 @@ npm install hai-agents
 ```
 
 Grab an API key at [portal.hcompany.ai](https://portal.hcompany.ai).
+
+## Usage
+
+Every operation takes per-call options. Set `baseUrl` to the Agent Platform and
+provide your `hk-...` key via the `auth` callback:
+
+```ts
+import {
+  createSession,
+  getSessionStatus,
+  getSessionChanges,
+} from "hai-agents";
+
+const config = {
+  baseUrl: "https://agp.eu.hcompany.ai",
+  auth: () => process.env.H_API_KEY!,
+};
+
+// Start a browsing session with the hosted `h/web` agent.
+const { data: session } = await createSession({
+  ...config,
+  body: {
+    agent: "h/web",
+    messages: [{ type: "user_message", message: "What is the H1 on example.com?" }],
+    max_steps: 10,
+    max_time_s: 150,
+  },
+});
+
+const sessionId = session!.id;
+
+// Poll until the session reaches a terminal state.
+const terminal = new Set(["completed", "failed", "timed_out", "interrupted"]);
+let status = session!.status.status;
+while (!terminal.has(status)) {
+  await new Promise((resolve) => setTimeout(resolve, 5000));
+  const { data } = await getSessionStatus({ ...config, path: { id: sessionId } });
+  status = data!.status;
+}
+
+// Read the agent's final answer.
+const { data: changes } = await getSessionChanges({
+  ...config,
+  path: { id: sessionId },
+  query: { from_index: 0 },
+});
+console.log(changes!.answer);
+```
