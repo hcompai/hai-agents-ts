@@ -10,7 +10,7 @@ TypeScript developer libraries and tools for [H Company's Agent Platform](https:
 
 | Package | Description |
 | --- | --- |
-| [`packages/sdk`](packages/sdk) | TypeScript SDK — a fully typed client for the Agent Platform API. Published to npm as [`hai-agents`](https://www.npmjs.com/package/hai-agents). |
+| [`packages/sdk`](packages/sdk) | TypeScript SDK — a fully typed client for the Agent Platform API. Packaged as `hai-agents`. |
 
 ## Development
 
