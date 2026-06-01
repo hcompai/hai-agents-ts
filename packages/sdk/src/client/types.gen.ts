@@ -32,15 +32,6 @@ export type Agent = {
     | ({
         kind: "web";
       } & Browser)
-    | ({
-        kind: "code";
-      } & CodeSandbox)
-    | ({
-        kind: "mcp";
-      } & Mcp)
-    | ({
-        kind: "memory";
-      } & Memory)
   >;
   /**
    * Model
@@ -144,44 +135,6 @@ export type Browser = {
 };
 
 /**
- * CodeSandbox
- *
- * Code sandbox environment.
- */
-export type CodeSandbox = {
-  /**
-   * Id
-   *
-   * Catalog id.
-   */
-  id: string;
-  /**
-   * Kind
-   */
-  kind?: "code";
-  /**
-   * Pip Packages
-   *
-   * Pip packages installed at provision time.
-   */
-  pip_packages?: Array<string>;
-  /**
-   * Env
-   *
-   * Environment variables.
-   */
-  env?: {
-    [key: string]: string;
-  };
-  /**
-   * Mcp Servers
-   *
-   * MCP servers reachable from the sandbox.
-   */
-  mcp_servers?: Array<McpServer>;
-};
-
-/**
  * CreateAgent
  *
  * ``POST /api/v2/agents`` body.
@@ -208,19 +161,9 @@ export type CreateEnvironment = {
   /**
    * Spec
    */
-  spec:
-    | ({
-        kind: "web";
-      } & Browser)
-    | ({
-        kind: "code";
-      } & CodeSandbox)
-    | ({
-        kind: "mcp";
-      } & Mcp)
-    | ({
-        kind: "memory";
-      } & Memory);
+  spec: {
+    kind: "web";
+  } & Browser;
   /**
    * Description
    */
@@ -301,19 +244,9 @@ export type EnvironmentRecord = {
    *
    * Discriminated by ``kind``.
    */
-  spec:
-    | ({
-        kind: "web";
-      } & Browser)
-    | ({
-        kind: "code";
-      } & CodeSandbox)
-    | ({
-        kind: "mcp";
-      } & Mcp)
-    | ({
-        kind: "memory";
-      } & Memory);
+  spec: {
+    kind: "web";
+  } & Browser;
   /**
    * Description
    */
@@ -358,108 +291,6 @@ export type HttpValidationError = {
    * Detail
    */
   detail?: Array<ValidationError>;
-};
-
-/**
- * MCP
- *
- * MCP environment.
- */
-export type Mcp = {
-  /**
-   * Id
-   *
-   * Catalog id.
-   */
-  id: string;
-  /**
-   * Kind
-   */
-  kind?: "mcp";
-  /**
-   * Servers
-   *
-   * At least one MCP server.
-   */
-  servers: Array<McpServer>;
-};
-
-/**
- * MCPServer
- *
- * MCP server attached to an environment.
- */
-export type McpServer = {
-  /**
-   * Name
-   *
-   * Stable identifier.
-   */
-  name: string;
-  /**
-   * Transport
-   *
-   * MCP transport.
-   */
-  transport: "stdio" | "streamable_http" | "sse";
-  /**
-   * Command
-   *
-   * Subprocess executable (stdio).
-   */
-  command?: string | null;
-  /**
-   * Args
-   *
-   * Subprocess argv tail (stdio).
-   */
-  args?: Array<string>;
-  /**
-   * Env
-   *
-   * Subprocess env vars (stdio).
-   */
-  env?: {
-    [key: string]: string;
-  };
-  /**
-   * Url
-   *
-   * Endpoint URL (HTTP).
-   */
-  url?: string | null;
-  /**
-   * Headers
-   *
-   * Request headers (HTTP).
-   */
-  headers?: {
-    [key: string]: string;
-  };
-};
-
-/**
- * Memory
- *
- * Cross-session key-value memory backed by AgP.
- */
-export type Memory = {
-  /**
-   * Id
-   *
-   * Catalog id.
-   */
-  id: string;
-  /**
-   * Kind
-   */
-  kind?: "memory";
-  /**
-   * Namespace
-   *
-   * Memory namespace; scope for keys across sessions.
-   */
-  namespace: string;
 };
 
 /**
@@ -1041,19 +872,9 @@ export type UpdateEnvironment = {
   /**
    * Spec
    */
-  spec:
-    | ({
-        kind: "web";
-      } & Browser)
-    | ({
-        kind: "code";
-      } & CodeSandbox)
-    | ({
-        kind: "mcp";
-      } & Mcp)
-    | ({
-        kind: "memory";
-      } & Memory);
+  spec: {
+    kind: "web";
+  } & Browser;
   /**
    * Description
    */
