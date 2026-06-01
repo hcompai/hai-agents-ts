@@ -2023,23 +2023,11 @@
                   "oneOf": [
                     {
                       "$ref": "#/components/schemas/Browser"
-                    },
-                    {
-                      "$ref": "#/components/schemas/CodeSandbox"
-                    },
-                    {
-                      "$ref": "#/components/schemas/MCP"
-                    },
-                    {
-                      "$ref": "#/components/schemas/Memory"
                     }
                   ],
                   "discriminator": {
                     "propertyName": "kind",
                     "mapping": {
-                      "code": "#/components/schemas/CodeSandbox",
-                      "mcp": "#/components/schemas/MCP",
-                      "memory": "#/components/schemas/Memory",
                       "web": "#/components/schemas/Browser"
                     }
                   }
@@ -2223,53 +2211,6 @@
         "title": "Browser",
         "description": "Browser environment."
       },
-      "CodeSandbox": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "minLength": 1,
-            "title": "Id",
-            "description": "Catalog id."
-          },
-          "kind": {
-            "type": "string",
-            "const": "code",
-            "title": "Kind",
-            "default": "code"
-          },
-          "pip_packages": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Pip Packages",
-            "description": "Pip packages installed at provision time."
-          },
-          "env": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "type": "object",
-            "title": "Env",
-            "description": "Environment variables."
-          },
-          "mcp_servers": {
-            "items": {
-              "$ref": "#/components/schemas/MCPServer"
-            },
-            "type": "array",
-            "title": "Mcp Servers",
-            "description": "MCP servers reachable from the sandbox."
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "id"
-        ],
-        "title": "CodeSandbox",
-        "description": "Code sandbox environment."
-      },
       "CreateAgent": {
         "properties": {
           "spec": {
@@ -2297,24 +2238,12 @@
             "oneOf": [
               {
                 "$ref": "#/components/schemas/Browser"
-              },
-              {
-                "$ref": "#/components/schemas/CodeSandbox"
-              },
-              {
-                "$ref": "#/components/schemas/MCP"
-              },
-              {
-                "$ref": "#/components/schemas/Memory"
               }
             ],
             "title": "Spec",
             "discriminator": {
               "propertyName": "kind",
               "mapping": {
-                "code": "#/components/schemas/CodeSandbox",
-                "mcp": "#/components/schemas/MCP",
-                "memory": "#/components/schemas/Memory",
                 "web": "#/components/schemas/Browser"
               }
             }
@@ -2430,15 +2359,6 @@
             "oneOf": [
               {
                 "$ref": "#/components/schemas/Browser"
-              },
-              {
-                "$ref": "#/components/schemas/CodeSandbox"
-              },
-              {
-                "$ref": "#/components/schemas/MCP"
-              },
-              {
-                "$ref": "#/components/schemas/Memory"
               }
             ],
             "title": "Spec",
@@ -2446,9 +2366,6 @@
             "discriminator": {
               "propertyName": "kind",
               "mapping": {
-                "code": "#/components/schemas/CodeSandbox",
-                "mcp": "#/components/schemas/MCP",
-                "memory": "#/components/schemas/Memory",
                 "web": "#/components/schemas/Browser"
               }
             }
@@ -2523,146 +2440,6 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
-      },
-      "MCP": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "minLength": 1,
-            "title": "Id",
-            "description": "Catalog id."
-          },
-          "kind": {
-            "type": "string",
-            "const": "mcp",
-            "title": "Kind",
-            "default": "mcp"
-          },
-          "servers": {
-            "items": {
-              "$ref": "#/components/schemas/MCPServer"
-            },
-            "type": "array",
-            "minItems": 1,
-            "title": "Servers",
-            "description": "At least one MCP server."
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "id",
-          "servers"
-        ],
-        "title": "MCP",
-        "description": "MCP environment."
-      },
-      "MCPServer": {
-        "properties": {
-          "name": {
-            "type": "string",
-            "minLength": 1,
-            "pattern": "^[A-Za-z0-9_.-]+$",
-            "title": "Name",
-            "description": "Stable identifier."
-          },
-          "transport": {
-            "type": "string",
-            "enum": [
-              "stdio",
-              "streamable_http",
-              "sse"
-            ],
-            "title": "Transport",
-            "description": "MCP transport."
-          },
-          "command": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Command",
-            "description": "Subprocess executable (stdio)."
-          },
-          "args": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Args",
-            "description": "Subprocess argv tail (stdio)."
-          },
-          "env": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "type": "object",
-            "title": "Env",
-            "description": "Subprocess env vars (stdio)."
-          },
-          "url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Url",
-            "description": "Endpoint URL (HTTP)."
-          },
-          "headers": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "type": "object",
-            "title": "Headers",
-            "description": "Request headers (HTTP)."
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "name",
-          "transport"
-        ],
-        "title": "MCPServer",
-        "description": "MCP server attached to an environment."
-      },
-      "Memory": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "minLength": 1,
-            "title": "Id",
-            "description": "Catalog id."
-          },
-          "kind": {
-            "type": "string",
-            "const": "memory",
-            "title": "Kind",
-            "default": "memory"
-          },
-          "namespace": {
-            "type": "string",
-            "minLength": 1,
-            "title": "Namespace",
-            "description": "Memory namespace; scope for keys across sessions."
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "id",
-          "namespace"
-        ],
-        "title": "Memory",
-        "description": "Cross-session key-value memory backed by AgP."
       },
       "Metrics": {
         "properties": {
@@ -3560,24 +3337,12 @@
             "oneOf": [
               {
                 "$ref": "#/components/schemas/Browser"
-              },
-              {
-                "$ref": "#/components/schemas/CodeSandbox"
-              },
-              {
-                "$ref": "#/components/schemas/MCP"
-              },
-              {
-                "$ref": "#/components/schemas/Memory"
               }
             ],
             "title": "Spec",
             "discriminator": {
               "propertyName": "kind",
               "mapping": {
-                "code": "#/components/schemas/CodeSandbox",
-                "mcp": "#/components/schemas/MCP",
-                "memory": "#/components/schemas/Memory",
                 "web": "#/components/schemas/Browser"
               }
             }
