@@ -22,6 +22,7 @@ provide your `hk-...` key via the `auth` callback:
 
 ```ts
 import {
+  cancelSession,
   createSession,
   getSessionStatus,
   getSessionChanges,
@@ -106,4 +107,24 @@ await submitSessionFeedback({
     message: "The answer matched the page heading.",
   },
 });
+```
+
+## Cancelling a session
+
+`cancelSession` asks the platform to interrupt the run. The response confirms
+that the request was accepted; the session may still report `pending` or
+`running` briefly while the worker stops. Poll status until it reaches a
+terminal state such as `interrupted`.
+
+```ts
+await cancelSession({ ...config, path: { id: sessionId } });
+
+let cancelledStatus = "running";
+while (!terminal.has(cancelledStatus)) {
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+  const { data } = await getSessionStatus({ ...config, path: { id: sessionId } });
+  cancelledStatus = data!.status;
+}
+
+console.log(cancelledStatus);
 ```

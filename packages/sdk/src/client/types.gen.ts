@@ -32,15 +32,6 @@ export type Agent = {
     | ({
         kind: "web";
       } & Browser)
-    | ({
-        kind: "code";
-      } & CodeSandbox)
-    | ({
-        kind: "mcp";
-      } & Mcp)
-    | ({
-        kind: "memory";
-      } & Memory)
   >;
   /**
    * Model
@@ -144,44 +135,6 @@ export type Browser = {
 };
 
 /**
- * CodeSandbox
- *
- * Code sandbox environment.
- */
-export type CodeSandbox = {
-  /**
-   * Id
-   *
-   * Catalog id.
-   */
-  id: string;
-  /**
-   * Kind
-   */
-  kind?: "code";
-  /**
-   * Pip Packages
-   *
-   * Pip packages installed at provision time.
-   */
-  pip_packages?: Array<string>;
-  /**
-   * Env
-   *
-   * Environment variables.
-   */
-  env?: {
-    [key: string]: string;
-  };
-  /**
-   * Mcp Servers
-   *
-   * MCP servers reachable from the sandbox.
-   */
-  mcp_servers?: Array<McpServer>;
-};
-
-/**
  * CreateAgent
  *
  * ``POST /api/v2/agents`` body.
@@ -208,19 +161,9 @@ export type CreateEnvironment = {
   /**
    * Spec
    */
-  spec:
-    | ({
-        kind: "web";
-      } & Browser)
-    | ({
-        kind: "code";
-      } & CodeSandbox)
-    | ({
-        kind: "mcp";
-      } & Mcp)
-    | ({
-        kind: "memory";
-      } & Memory);
+  spec: {
+    kind: "web";
+  } & Browser;
   /**
    * Description
    */
@@ -231,26 +174,6 @@ export type CreateEnvironment = {
    * H employees only; rejected with 403 otherwise.
    */
   reserved?: boolean;
-};
-
-/**
- * CreateMemory
- *
- * Upsert a memory by ``(org_id, namespace, key)``.
- */
-export type CreateMemory = {
-  /**
-   * Namespace
-   */
-  namespace: string;
-  /**
-   * Key
-   */
-  key: string;
-  /**
-   * Value
-   */
-  value: string;
 };
 
 /**
@@ -321,19 +244,9 @@ export type EnvironmentRecord = {
    *
    * Discriminated by ``kind``.
    */
-  spec:
-    | ({
-        kind: "web";
-      } & Browser)
-    | ({
-        kind: "code";
-      } & CodeSandbox)
-    | ({
-        kind: "mcp";
-      } & Mcp)
-    | ({
-        kind: "memory";
-      } & Memory);
+  spec: {
+    kind: "web";
+  } & Browser;
   /**
    * Description
    */
@@ -378,140 +291,6 @@ export type HttpValidationError = {
    * Detail
    */
   detail?: Array<ValidationError>;
-};
-
-/**
- * MCP
- *
- * MCP environment.
- */
-export type Mcp = {
-  /**
-   * Id
-   *
-   * Catalog id.
-   */
-  id: string;
-  /**
-   * Kind
-   */
-  kind?: "mcp";
-  /**
-   * Servers
-   *
-   * At least one MCP server.
-   */
-  servers: Array<McpServer>;
-};
-
-/**
- * MCPServer
- *
- * MCP server attached to an environment.
- */
-export type McpServer = {
-  /**
-   * Name
-   *
-   * Stable identifier.
-   */
-  name: string;
-  /**
-   * Transport
-   *
-   * MCP transport.
-   */
-  transport: "stdio" | "streamable_http" | "sse";
-  /**
-   * Command
-   *
-   * Subprocess executable (stdio).
-   */
-  command?: string | null;
-  /**
-   * Args
-   *
-   * Subprocess argv tail (stdio).
-   */
-  args?: Array<string>;
-  /**
-   * Env
-   *
-   * Subprocess env vars (stdio).
-   */
-  env?: {
-    [key: string]: string;
-  };
-  /**
-   * Url
-   *
-   * Endpoint URL (HTTP).
-   */
-  url?: string | null;
-  /**
-   * Headers
-   *
-   * Request headers (HTTP).
-   */
-  headers?: {
-    [key: string]: string;
-  };
-};
-
-/**
- * Memory
- *
- * Cross-session key-value memory backed by AgP.
- */
-export type Memory = {
-  /**
-   * Id
-   *
-   * Catalog id.
-   */
-  id: string;
-  /**
-   * Kind
-   */
-  kind?: "memory";
-  /**
-   * Namespace
-   *
-   * Memory namespace; scope for keys across sessions.
-   */
-  namespace: string;
-};
-
-/**
- * MemoryRecord
- *
- * Persistent KV entry scoped to ``(org_id, namespace, key)``.
- */
-export type MemoryRecord = {
-  /**
-   * Id
-   */
-  id: string;
-  /**
-   * Namespace
-   */
-  namespace: string;
-  /**
-   * Key
-   */
-  key: string;
-  /**
-   * Value
-   */
-  value: string;
-  /**
-   * Created At
-   */
-  created_at: string;
-  /**
-   * Updated At
-   */
-  updated_at: string;
 };
 
 /**
@@ -636,24 +415,6 @@ export type PageEnvironmentRecord = {
    * Items
    */
   items: Array<EnvironmentRecord>;
-  /**
-   * Total
-   */
-  total: number;
-  /**
-   * Page
-   */
-  page: number;
-};
-
-/**
- * Page[MemoryRecord]
- */
-export type PageMemoryRecord = {
-  /**
-   * Items
-   */
-  items: Array<MemoryRecord>;
   /**
    * Total
    */
@@ -1111,35 +872,13 @@ export type UpdateEnvironment = {
   /**
    * Spec
    */
-  spec:
-    | ({
-        kind: "web";
-      } & Browser)
-    | ({
-        kind: "code";
-      } & CodeSandbox)
-    | ({
-        kind: "mcp";
-      } & Mcp)
-    | ({
-        kind: "memory";
-      } & Memory);
+  spec: {
+    kind: "web";
+  } & Browser;
   /**
    * Description
    */
   description?: string;
-};
-
-/**
- * UpdateMemory
- *
- * Update a memory's value in place.
- */
-export type UpdateMemory = {
-  /**
-   * Value
-   */
-  value: string;
 };
 
 /**
@@ -1847,185 +1586,6 @@ export type GetSessionResourceResponses = {
    */
   200: unknown;
 };
-
-export type ListMemoriesData = {
-  body?: never;
-  path?: never;
-  query?: {
-    /**
-     * Namespace
-     *
-     * Exact namespace filter.
-     */
-    namespace?: string | null;
-    /**
-     * Key
-     *
-     * Key prefix filter.
-     */
-    key?: string | null;
-    /**
-     * Page
-     *
-     * Page number (1-based)
-     */
-    page?: number;
-    /**
-     * Size
-     *
-     * Number of items per page
-     */
-    size?: number;
-    /**
-     * Sort
-     *
-     * Sort by field
-     */
-    sort?: Array<"updated_at" | "-updated_at"> | null;
-  };
-  url: "/api/v2/memories";
-};
-
-export type ListMemoriesErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type ListMemoriesError = ListMemoriesErrors[keyof ListMemoriesErrors];
-
-export type ListMemoriesResponses = {
-  /**
-   * Successful Response
-   */
-  200: PageMemoryRecord;
-};
-
-export type ListMemoriesResponse =
-  ListMemoriesResponses[keyof ListMemoriesResponses];
-
-export type CreateMemoryData = {
-  body: CreateMemory;
-  path?: never;
-  query?: never;
-  url: "/api/v2/memories";
-};
-
-export type CreateMemoryErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type CreateMemoryError = CreateMemoryErrors[keyof CreateMemoryErrors];
-
-export type CreateMemoryResponses = {
-  /**
-   * Existing memory updated (upsert).
-   */
-  200: MemoryRecord;
-  /**
-   * New memory created.
-   */
-  201: unknown;
-};
-
-export type CreateMemoryResponse =
-  CreateMemoryResponses[keyof CreateMemoryResponses];
-
-export type DeleteMemoryData = {
-  body?: never;
-  path: {
-    /**
-     * Id
-     */
-    id: string;
-  };
-  query?: never;
-  url: "/api/v2/memories/{id}";
-};
-
-export type DeleteMemoryErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type DeleteMemoryError = DeleteMemoryErrors[keyof DeleteMemoryErrors];
-
-export type DeleteMemoryResponses = {
-  /**
-   * Successful Response
-   */
-  204: void;
-};
-
-export type DeleteMemoryResponse =
-  DeleteMemoryResponses[keyof DeleteMemoryResponses];
-
-export type GetMemoryData = {
-  body?: never;
-  path: {
-    /**
-     * Id
-     */
-    id: string;
-  };
-  query?: never;
-  url: "/api/v2/memories/{id}";
-};
-
-export type GetMemoryErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type GetMemoryError = GetMemoryErrors[keyof GetMemoryErrors];
-
-export type GetMemoryResponses = {
-  /**
-   * Successful Response
-   */
-  200: MemoryRecord;
-};
-
-export type GetMemoryResponse = GetMemoryResponses[keyof GetMemoryResponses];
-
-export type UpdateMemoryData = {
-  body: UpdateMemory;
-  path: {
-    /**
-     * Id
-     */
-    id: string;
-  };
-  query?: never;
-  url: "/api/v2/memories/{id}";
-};
-
-export type UpdateMemoryErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type UpdateMemoryError = UpdateMemoryErrors[keyof UpdateMemoryErrors];
-
-export type UpdateMemoryResponses = {
-  /**
-   * Successful Response
-   */
-  200: MemoryRecord;
-};
-
-export type UpdateMemoryResponse =
-  UpdateMemoryResponses[keyof UpdateMemoryResponses];
 
 export type ListSkillsData = {
   body?: never;
