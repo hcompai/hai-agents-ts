@@ -19,6 +19,7 @@
   ],
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "check:root-exports": "node scripts/check-root-client-exports.mjs",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
