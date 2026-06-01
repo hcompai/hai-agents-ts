@@ -102,71 +102,6 @@ export type Browser = {
 };
 
 /**
- * CreateEnvironment
- *
- * ``POST /api/v2/environments`` body.
- */
-export type CreateEnvironment = {
-  /**
-   * Spec
-   */
-  spec: {
-    kind: "web";
-  } & Browser;
-  /**
-   * Description
-   */
-  description?: string;
-  /**
-   * Reserved
-   *
-   * H employees only; rejected with 403 otherwise.
-   */
-  reserved?: boolean;
-};
-
-/**
- * EnvironmentRecord
- *
- * Catalog row exposing an ``Environment`` spec plus AgP metadata.
- *
- * The catalog handle is ``spec.id``; callers reference it directly via
- * ``record.spec.id`` rather than a duplicated top-level field.
- */
-export type EnvironmentRecord = {
-  /**
-   * Id
-   */
-  id: string;
-  /**
-   * Spec
-   *
-   * Discriminated by ``kind``.
-   */
-  spec: {
-    kind: "web";
-  } & Browser;
-  /**
-   * Description
-   */
-  description?: string;
-  /**
-   * Reserved
-   *
-   * True for H-owned rows; world-readable, write-locked behind employee_only.
-   */
-  reserved: boolean;
-  /**
-   * Created At
-   */
-  created_at: string;
-  /**
-   * Updated At
-   */
-  updated_at: string;
-};
-
-/**
  * Feedback
  *
  * Feedback on the semantic success of the trajectory.
@@ -307,22 +242,27 @@ export type PageAgent = {
 };
 
 /**
- * Page[EnvironmentRecord]
+ * Page[Annotated[Union[Browser, CodeSandbox, MCP, Memory], FieldInfo(annotation=NoneType, required=True, discriminator='kind')]]
  */
-export type PageEnvironmentRecord = {
-  /**
-   * Items
-   */
-  items: Array<EnvironmentRecord>;
-  /**
-   * Total
-   */
-  total: number;
-  /**
-   * Page
-   */
-  page: number;
-};
+export type PageAnnotatedUnionBrowserCodeSandboxMcpMemoryFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind =
+  {
+    /**
+     * Items
+     */
+    items: Array<
+      {
+        kind: "web";
+      } & Browser
+    >;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Page
+     */
+    page: number;
+  };
 
 /**
  * Page[SessionSummary]
@@ -701,24 +641,6 @@ export type TrajectoryStatus =
   | "failed"
   | "timed_out"
   | "interrupted";
-
-/**
- * UpdateEnvironment
- *
- * ``PUT /api/v2/environments/{env_identifier}`` body. Full replace; ``spec.id`` is immutable.
- */
-export type UpdateEnvironment = {
-  /**
-   * Spec
-   */
-  spec: {
-    kind: "web";
-  } & Browser;
-  /**
-   * Description
-   */
-  description?: string;
-};
 
 /**
  * UserMessageBatch
@@ -1587,9 +1509,7 @@ export type ListEnvironmentsData = {
      *
      * Sort by field
      */
-    sort?: Array<
-      "created_at" | "-created_at" | "env_identifier" | "-env_identifier"
-    > | null;
+    sort?: Array<"created_at" | "-created_at" | "id" | "-id"> | null;
   };
   url: "/api/v2/environments";
 };
@@ -1608,14 +1528,19 @@ export type ListEnvironmentsResponses = {
   /**
    * Successful Response
    */
-  200: PageEnvironmentRecord;
+  200: PageAnnotatedUnionBrowserCodeSandboxMcpMemoryFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind;
 };
 
 export type ListEnvironmentsResponse =
   ListEnvironmentsResponses[keyof ListEnvironmentsResponses];
 
 export type CreateEnvironmentData = {
-  body: CreateEnvironment;
+  /**
+   * Create
+   */
+  body: {
+    kind: "web";
+  } & Browser;
   path?: never;
   query?: never;
   url: "/api/v2/environments";
@@ -1633,9 +1558,13 @@ export type CreateEnvironmentError =
 
 export type CreateEnvironmentResponses = {
   /**
+   * Response Create Environment Api V2 Environments Post
+   *
    * Successful Response
    */
-  201: EnvironmentRecord;
+  201: {
+    kind: "web";
+  } & Browser;
 };
 
 export type CreateEnvironmentResponse =
@@ -1645,12 +1574,12 @@ export type DeleteEnvironmentData = {
   body?: never;
   path: {
     /**
-     * Env Identifier
+     * Id
      */
-    env_identifier: string;
+    id: string;
   };
   query?: never;
-  url: "/api/v2/environments/{env_identifier}";
+  url: "/api/v2/environments/{id}";
 };
 
 export type DeleteEnvironmentErrors = {
@@ -1677,12 +1606,12 @@ export type GetEnvironmentData = {
   body?: never;
   path: {
     /**
-     * Env Identifier
+     * Id
      */
-    env_identifier: string;
+    id: string;
   };
   query?: never;
-  url: "/api/v2/environments/{env_identifier}";
+  url: "/api/v2/environments/{id}";
 };
 
 export type GetEnvironmentErrors = {
@@ -1697,24 +1626,33 @@ export type GetEnvironmentError =
 
 export type GetEnvironmentResponses = {
   /**
+   * Response Get Environment Api V2 Environments  Id  Get
+   *
    * Successful Response
    */
-  200: EnvironmentRecord;
+  200: {
+    kind: "web";
+  } & Browser;
 };
 
 export type GetEnvironmentResponse =
   GetEnvironmentResponses[keyof GetEnvironmentResponses];
 
 export type UpdateEnvironmentData = {
-  body: UpdateEnvironment;
+  /**
+   * Update
+   */
+  body: {
+    kind: "web";
+  } & Browser;
   path: {
     /**
-     * Env Identifier
+     * Id
      */
-    env_identifier: string;
+    id: string;
   };
   query?: never;
-  url: "/api/v2/environments/{env_identifier}";
+  url: "/api/v2/environments/{id}";
 };
 
 export type UpdateEnvironmentErrors = {
@@ -1729,9 +1667,13 @@ export type UpdateEnvironmentError =
 
 export type UpdateEnvironmentResponses = {
   /**
+   * Response Update Environment Api V2 Environments  Id  Put
+   *
    * Successful Response
    */
-  200: EnvironmentRecord;
+  200: {
+    kind: "web";
+  } & Browser;
 };
 
 export type UpdateEnvironmentResponse =

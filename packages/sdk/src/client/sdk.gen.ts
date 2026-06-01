@@ -563,7 +563,7 @@ export const listEnvironments = <ThrowOnError extends boolean = false>(
 /**
  * Create Environment
  *
- * Create an environment. ``reserved=True`` and the ``h/`` namespace require H-employee privileges.
+ * Create an environment.
  */
 export const createEnvironment = <ThrowOnError extends boolean = false>(
   options: Options<CreateEnvironmentData, ThrowOnError>,
@@ -596,7 +596,7 @@ export const deleteEnvironment = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/v2/environments/{env_identifier}",
+    url: "/api/v2/environments/{id}",
     ...options,
   });
 
@@ -614,14 +614,14 @@ export const getEnvironment = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/v2/environments/{env_identifier}",
+    url: "/api/v2/environments/{id}",
     ...options,
   });
 
 /**
  * Update Environment
  *
- * Replace ``spec`` + ``description``. ``spec.id`` must match the URL identifier; renames are not supported.
+ * Replace the environment spec.
  */
 export const updateEnvironment = <ThrowOnError extends boolean = false>(
   options: Options<UpdateEnvironmentData, ThrowOnError>,
@@ -632,7 +632,7 @@ export const updateEnvironment = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/v2/environments/{env_identifier}",
+    url: "/api/v2/environments/{id}",
     ...options,
     headers: {
       "Content-Type": "application/json",
