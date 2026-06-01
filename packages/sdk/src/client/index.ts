@@ -37,7 +37,6 @@ export {
 } from "./sdk.gen";
 export type {
   Agent,
-  AgentRecord,
   Browser,
   CancelSessionData,
   CancelSessionError,
@@ -45,7 +44,6 @@ export type {
   CancelSessionResponse,
   CancelSessionResponses,
   ClientOptions,
-  CreateAgent,
   CreateAgentData,
   CreateAgentError,
   CreateAgentErrors,
@@ -157,7 +155,7 @@ export type {
   Metrics,
   ModelCost,
   ModelUsage,
-  PageAgentRecord,
+  PageAgent,
   PageEnvironmentRecord,
   PageSessionSummary,
   PageSkillRecord,
@@ -205,7 +203,6 @@ export type {
   UnshareSessionErrors,
   UnshareSessionResponse,
   UnshareSessionResponses,
-  UpdateAgent,
   UpdateAgentData,
   UpdateAgentError,
   UpdateAgentErrors,
