@@ -40,6 +40,9 @@ export {
   updateMemory,
   updateSkill,
 } from "./sdk.gen";
+export { client } from "./client.gen";
+export { createClient } from "./client";
+export type { Client, Config, CreateClientConfig } from "./client";
 export type {
   Agent,
   AgentRecord,
