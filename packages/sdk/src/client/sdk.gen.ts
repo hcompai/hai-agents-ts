@@ -447,7 +447,7 @@ export const getSessionResource = <ThrowOnError extends boolean = false>(
 /**
  * List Skills
  *
- * List skills for the current org, optionally filtered by name prefix.
+ * List reserved + caller's org skills, optionally filtered by name prefix.
  */
 export const listSkills = <ThrowOnError extends boolean = false>(
   options?: Options<ListSkillsData, ThrowOnError>,
@@ -465,7 +465,7 @@ export const listSkills = <ThrowOnError extends boolean = false>(
 /**
  * Create Skill
  *
- * Create a skill.
+ * Create a skill. The ``h/`` namespace is reserved for built-in skills.
  */
 export const createSkill = <ThrowOnError extends boolean = false>(
   options: Options<CreateSkillData, ThrowOnError>,
@@ -487,7 +487,7 @@ export const createSkill = <ThrowOnError extends boolean = false>(
 /**
  * Delete Skill
  *
- * Delete a skill.
+ * Delete by name. Reserved rows: H employee only.
  */
 export const deleteSkill = <ThrowOnError extends boolean = false>(
   options: Options<DeleteSkillData, ThrowOnError>,
@@ -498,14 +498,14 @@ export const deleteSkill = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/v2/skills/{id}",
+    url: "/api/v2/skills/{name}",
     ...options,
   });
 
 /**
  * Get Skill
  *
- * Get a skill by id.
+ * Fetch by name; 404 if not visible. ``:path`` so slash-containing names round-trip.
  */
 export const getSkill = <ThrowOnError extends boolean = false>(
   options: Options<GetSkillData, ThrowOnError>,
@@ -516,14 +516,14 @@ export const getSkill = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/v2/skills/{id}",
+    url: "/api/v2/skills/{name}",
     ...options,
   });
 
 /**
  * Update Skill
  *
- * Update a skill's content.
+ * Replace a skill's content. ``name`` must match the URL identifier; renames are not supported.
  */
 export const updateSkill = <ThrowOnError extends boolean = false>(
   options: Options<UpdateSkillData, ThrowOnError>,
@@ -534,7 +534,7 @@ export const updateSkill = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/v2/skills/{id}",
+    url: "/api/v2/skills/{name}",
     ...options,
     headers: {
       "Content-Type": "application/json",
