@@ -19,6 +19,7 @@
   ],
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "check:base-url": "node scripts/check-production-base-url.mjs",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
