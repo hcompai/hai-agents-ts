@@ -13,19 +13,19 @@ export type Agent = {
   /**
    * Name
    *
-   * Unique catalog identifier for this agent. Format: lowercase ASCII letters, digits and hyphens; must start and end with alphanumeric; max 63 chars per segment; optional single 'org/' namespace prefix (e.g. 'h/web-environment').
+   * Unique name for this agent in your catalog. Format: lowercase ASCII letters, digits and hyphens; must start and end with alphanumeric; max 63 chars per segment; optional single 'org/' namespace prefix (e.g. 'h/web-environment').
    */
   name: string;
   /**
    * Description
    *
-   * Short summary advertised to parent agents that may delegate to this one.
+   * What the agent does. Parent agents read this to decide when to delegate to it.
    */
   description: string;
   /**
    * Environments
    *
-   * Environments the agent runs in. A string entry references a catalog id; an inline Environment defines an ad-hoc environment. At least one entry, at most one per kind.
+   * Environments the agent runs in. Each entry is a registered environment's id or an inline definition. At least one, at most one per kind.
    */
   environments: Array<
     | string
@@ -36,25 +36,25 @@ export type Agent = {
   /**
    * Model
    *
-   * Model id; defaults to the platform-provided one if omitted.
+   * Model that serves the agent. Defaults to the platform model if omitted.
    */
   model?: string | null;
   /**
    * Instructions
    *
-   * Steering text appended to the system prompt.
+   * Instructions appended to the agent's system prompt to steer behavior.
    */
   instructions?: string | null;
   /**
    * Subagents
    *
-   * Agents this one can spawn. A string entry references another catalog id; an inline Agent defines an ad-hoc sub-agent.
+   * Agents this one can delegate to. Each entry is a registered agent's name or an inline definition.
    */
   subagents?: Array<string | Agent> | null;
   /**
    * Skills
    *
-   * Skills available to this agent. A string entry references a catalog id; an inline Skill defines an ad-hoc skill.
+   * Skills the agent can draw on. Each entry is a registered skill's name or an inline definition.
    */
   skills?: Array<string | Skill> | null;
 };
@@ -62,13 +62,13 @@ export type Agent = {
 /**
  * Browser
  *
- * Browser environment.
+ * A local web browser the agent navigates and acts on.
  */
 export type Browser = {
   /**
    * Id
    *
-   * Catalog id.
+   * Catalog identifier for this environment.
    */
   id: string;
   /**
@@ -96,9 +96,15 @@ export type Browser = {
   /**
    * Start Url
    *
-   * Initial URL.
+   * Initial URL to open. Null starts on a blank page.
    */
   start_url: string | null;
+  /**
+   * Mode
+   *
+   * How the agent perceives and drives the browser. 'visual': act on screenshots by viewport coordinates. 'multimodal': the same, with the page also included as markdown text alongside each screenshot. 'text': read-only markdown with URL navigation, no screenshots.
+   */
+  mode?: "visual" | "text" | "multimodal";
 };
 
 /**
@@ -159,31 +165,43 @@ export type HttpValidationError = {
 /**
  * Metrics
  *
- * Metrics for a trajectory.
+ * Rolled-up usage and cost for a session.
  */
 export type Metrics = {
   /**
    * Steps
+   *
+   * Steps taken so far.
    */
   steps?: number;
   /**
    * Cost Per Model
+   *
+   * Per-model token usage and cost.
    */
   cost_per_model?: Array<ModelCost>;
   /**
    * Input Cost
+   *
+   * Total input cost in USD; null if any model is unpriced.
    */
   input_cost?: number | null;
   /**
    * Output Cost
+   *
+   * Total output cost in USD; null if any model is unpriced.
    */
   output_cost?: number | null;
   /**
    * Reasoning Cost
+   *
+   * Total reasoning cost in USD; null if any model is unpriced.
    */
   reasoning_cost?: number | null;
   /**
    * Total Cost
+   *
+   * Total cost in USD; null if any model is unpriced.
    */
   total_cost?: number | null;
 };
@@ -191,39 +209,55 @@ export type Metrics = {
 /**
  * ModelCost
  *
- * Cost for a model.
+ * Token usage and cost for a single model.
  */
 export type ModelCost = {
   /**
    * Name
+   *
+   * Model id.
    */
   name: string;
   /**
    * Input Tokens
+   *
+   * Input tokens consumed.
    */
   input_tokens: number;
   /**
    * Output Tokens
+   *
+   * Output tokens produced.
    */
   output_tokens: number;
   /**
    * Reasoning Tokens
+   *
+   * Reasoning tokens produced.
    */
   reasoning_tokens: number;
   /**
    * Input Cost
+   *
+   * Input cost in USD; null if the model is unpriced.
    */
   input_cost?: number | null;
   /**
    * Output Cost
+   *
+   * Output cost in USD; null if the model is unpriced.
    */
   output_cost?: number | null;
   /**
    * Reasoning Cost
+   *
+   * Reasoning cost in USD; null if the model is unpriced.
    */
   reasoning_cost?: number | null;
   /**
    * Total Cost
+   *
+   * Total cost in USD; null if the model is unpriced.
    */
   total_cost?: number | null;
 };
@@ -236,18 +270,26 @@ export type ModelCost = {
 export type ModelUsage = {
   /**
    * Name
+   *
+   * Model id.
    */
   name: string;
   /**
    * Input Tokens
+   *
+   * Input tokens consumed.
    */
   input_tokens: number;
   /**
    * Output Tokens
+   *
+   * Output tokens produced.
    */
   output_tokens: number;
   /**
    * Reasoning Tokens
+   *
+   * Reasoning tokens produced.
    */
   reasoning_tokens: number;
 };
@@ -383,49 +425,49 @@ export type SessionRequest = {
   /**
    * Agent
    *
-   * Catalog id or inline Agent. Carries its own environments.
+   * Agent to run: a registered agent's name, or an inline Agent definition.
    */
   agent: string | Agent;
   /**
    * Messages
    *
-   * Queued before turn 1. Accepts a string, a single UserMessageEvent, or a list.
+   * Initial task for the agent. A plain string, a single message, or a list of messages.
    */
   messages?: string | UserMessageEvent | Array<UserMessageEvent> | null;
   /**
    * Max Steps
    *
-   * Cap on policy calls; runtime default if null.
+   * Maximum reasoning steps the agent may take. Unbounded if null.
    */
   max_steps?: number | null;
   /**
    * Max Time S
    *
-   * Cap on wall-clock seconds.
+   * Maximum wall-clock seconds the agent may run. Unbounded if null.
    */
   max_time_s?: number | null;
   /**
    * Idle Timeout S
    *
-   * Idle window before auto-termination; null terminates on Answer.
+   * Seconds to keep the session open for follow-up messages after each answer. Null ends the session as soon as the agent answers.
    */
   idle_timeout_s?: number | null;
   /**
    * Group Id
    *
-   * Group id for cascading and listing.
+   * Optional id to group and list related sessions together.
    */
   group_id?: string | null;
   /**
    * Parent Session Id
    *
-   * Parent session id.
+   * Id of the parent session, when this is a child run.
    */
   parent_session_id?: string | null;
   /**
    * Answer Format
    *
-   * JSON Schema the final answer must conform to. Null returns free-form text.
+   * JSON Schema the final answer must conform to. Null returns a free-form text answer.
    */
   answer_format?: {
     [key: string]: unknown;
@@ -438,21 +480,32 @@ export type SessionRequest = {
  * ``GET /api/v2/sessions/{id}/status`` response.
  */
 export type SessionStatus = {
+  /**
+   * Current lifecycle state of the session.
+   */
   status: TrajectoryStatus;
   /**
    * Error
+   *
+   * Error message if the session failed; null otherwise.
    */
   error?: string | null;
   /**
    * Steps
+   *
+   * Number of steps the agent has taken.
    */
   steps?: number;
   /**
    * Usage Per Model
+   *
+   * Per-model token usage. Empty until the agent calls a model.
    */
   usage_per_model?: Array<ModelUsage>;
   /**
    * Subagent Session Ids
+   *
+   * Session ids of any subagents this session spawned.
    */
   subagent_session_ids?: Array<string>;
 };
@@ -502,37 +555,37 @@ export type ShareLink = {
 /**
  * Skill
  *
- * Named instruction content. Loaded by name via ``load_skill`` or rendered inline by toolboxes.
+ * A named, reusable instruction an agent can draw on during a session.
  */
 export type Skill = {
   /**
    * Name
    *
-   * Catalog id. Format: lowercase ASCII letters, digits and hyphens; must start and end with alphanumeric; max 63 chars per segment; optional single 'org/' namespace prefix (e.g. 'h/web-environment').
+   * Unique name for this skill in your catalog. Format: lowercase ASCII letters, digits and hyphens; must start and end with alphanumeric; max 63 chars per segment; optional single 'org/' namespace prefix (e.g. 'h/web-environment').
    */
   name: string;
   /**
    * Description
    *
-   * One-line routing hint.
+   * When to use this skill. The agent reads this to decide whether to load it.
    */
   description: string;
   /**
    * Body
    *
-   * Markdown content.
+   * Markdown instructions the agent loads when it uses the skill.
    */
   body: string;
   /**
    * Source
    *
-   * Provenance URL.
+   * Optional URL the content was sourced from.
    */
   source?: string | null;
   /**
    * Url Pattern
    *
-   * Informational regex hinting at URLs where this skill applies (not gated).
+   * Optional regex hinting at URLs where this skill applies.
    */
   url_pattern?: string | null;
 };
@@ -676,10 +729,14 @@ export type UserMessageEvent = {
   type?: "user_message";
   /**
    * Message
+   *
+   * Message text sent to the agent.
    */
   message: string;
   /**
    * Images
+   *
+   * Optional images attached to the message, as base64 data URIs.
    */
   images?: Array<string>;
   /**
