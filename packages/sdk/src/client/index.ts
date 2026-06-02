@@ -110,7 +110,6 @@ export type {
   GetSessionResourceData,
   GetSessionResourceError,
   GetSessionResourceErrors,
-  GetSessionResourceResponses,
   GetSessionResponse,
   GetSessionResponses,
   GetSessionStatusData,
@@ -218,3 +217,6 @@ export type {
   UserMessageEvent,
   ValidationError,
 } from "./types.gen";
+export { client } from "./client.gen";
+export { createClient, createConfig } from "./client";
+export type { Client, Config, CreateClientConfig } from "./client";
