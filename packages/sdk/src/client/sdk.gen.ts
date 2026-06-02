@@ -46,7 +46,6 @@ import type {
   GetSessionQuotaResponses,
   GetSessionResourceData,
   GetSessionResourceErrors,
-  GetSessionResourceResponses,
   GetSessionResponses,
   GetSessionStatusData,
   GetSessionStatusErrors,
@@ -435,7 +434,7 @@ export const getSessionResource = <ThrowOnError extends boolean = false>(
   options: Options<GetSessionResourceData, ThrowOnError>,
 ) =>
   (options.client ?? client).get<
-    GetSessionResourceResponses,
+    unknown,
     GetSessionResourceErrors,
     ThrowOnError
   >({
