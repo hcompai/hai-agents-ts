@@ -24,6 +24,26 @@ type ReqInit = Omit<RequestInit, "body" | "headers"> & {
   headers: ReturnType<typeof mergeHeaders>;
 };
 
+const errorMessage = (error: unknown): string | undefined => {
+  if (typeof error === "string") return error;
+  if (error && typeof error === "object" && "message" in error) {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === "string") return message;
+  }
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return undefined;
+  }
+};
+
+const toError = (error: unknown, fallback = "Request failed"): Error => {
+  if (error instanceof Error) return error;
+  return Object.assign(new Error(errorMessage(error) || fallback), {
+    cause: error,
+  });
+};
+
 export const createClient = (config: Config = {}): Client => {
   let _config = mergeConfigs(createConfig(), config);
 
@@ -210,7 +230,7 @@ export const createClient = (config: Config = {}): Client => {
         // noop
       }
 
-      throw jsonError ?? textError;
+      throw toError(jsonError ?? textError, response.statusText || `HTTP ${response.status}`);
     } catch (error) {
       let finalError = error;
 
@@ -228,7 +248,7 @@ export const createClient = (config: Config = {}): Client => {
       finalError = finalError || {};
 
       if (throwOnError) {
-        throw finalError;
+        throw toError(finalError, response?.statusText || "Request failed");
       }
 
       // TODO: we probably want to return error and improve types
