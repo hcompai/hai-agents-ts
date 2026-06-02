@@ -102,6 +102,35 @@ export type Browser = {
 };
 
 /**
+ * EnvironmentPage
+ *
+ * Named page subclass so OpenAPI emits a clean ``EnvironmentPage`` schema name.
+ *
+ * ``Environment`` is ``Annotated[Browser | CodeSandbox | MCP | Memory, Field(discriminator="kind")]``
+ * and has no ``__name__``. Without this subclass, Pydantic titles ``Page[Environment]``
+ * by repr()ing the type parameter, producing a 95-char schema name that leaks
+ * Pydantic FieldInfo into generated SDKs.
+ */
+export type EnvironmentPage = {
+  /**
+   * Items
+   */
+  items: Array<
+    {
+      kind: "web";
+    } & Browser
+  >;
+  /**
+   * Total
+   */
+  total: number;
+  /**
+   * Page
+   */
+  page: number;
+};
+
+/**
  * Feedback
  *
  * Feedback on the semantic success of the trajectory.
@@ -240,29 +269,6 @@ export type PageAgent = {
    */
   page: number;
 };
-
-/**
- * Page[Annotated[Union[Browser, CodeSandbox, MCP, Memory], FieldInfo(annotation=NoneType, required=True, discriminator='kind')]]
- */
-export type PageAnnotatedUnionBrowserCodeSandboxMcpMemoryFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind =
-  {
-    /**
-     * Items
-     */
-    items: Array<
-      {
-        kind: "web";
-      } & Browser
-    >;
-    /**
-     * Total
-     */
-    total: number;
-    /**
-     * Page
-     */
-    page: number;
-  };
 
 /**
  * Page[SessionSummary]
@@ -1521,7 +1527,7 @@ export type ListEnvironmentsResponses = {
   /**
    * Successful Response
    */
-  200: PageAnnotatedUnionBrowserCodeSandboxMcpMemoryFieldInfoAnnotationNoneTypeRequiredTrueDiscriminatorKind;
+  200: EnvironmentPage;
 };
 
 export type ListEnvironmentsResponse =
