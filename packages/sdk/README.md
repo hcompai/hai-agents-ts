@@ -49,7 +49,7 @@ const { data: session } = await createSession({
 const sessionId = session!.id;
 
 // Poll until the session reaches a terminal state.
-const terminal = new Set(["completed", "failed", "timed_out", "interrupted"]);
+const terminal = new Set(["idle", "completed", "failed", "timed_out", "interrupted"]);
 let status = session!.status.status;
 while (!terminal.has(status)) {
   await new Promise((resolve) => setTimeout(resolve, 5000));
