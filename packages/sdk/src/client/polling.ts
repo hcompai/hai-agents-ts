@@ -1,12 +1,10 @@
-import { createSession, getSessionChanges, type Options } from "./sdk.gen";
+import type { HaiAgentsClient } from "./Client.js";
 import type {
-  CreateSessionData,
-  GetSessionChangesData,
-  SessionRequest,
+  CreateSessionRequest,
   TrajectoryChanges,
   TrajectoryEvent,
   TrajectoryStatus,
-} from "./types.gen";
+} from "./api/index.js";
 
 export const TERMINAL_SESSION_STATUSES = [
   "completed",
@@ -22,10 +20,7 @@ export type SessionRunResult = {
   nextFromIndex: number;
 };
 
-export type WaitForSessionOptions = Omit<
-  Options<GetSessionChangesData, true>,
-  "path" | "query"
-> & {
+export type WaitForSessionOptions = {
   id: string;
   fromIndex?: number;
   waitForSeconds?: number;
@@ -33,11 +28,7 @@ export type WaitForSessionOptions = Omit<
   maxPolls?: number;
 };
 
-export type RunSessionUntilDoneOptions = Omit<
-  Options<CreateSessionData, true>,
-  "body"
-> & {
-  body: SessionRequest;
+export type RunSessionUntilDoneOptions = CreateSessionRequest & {
   waitForSeconds?: number;
   maxPolls?: number;
 };
@@ -46,49 +37,32 @@ export const isTerminalSessionStatus = (status: TrajectoryStatus): boolean =>
   (TERMINAL_SESSION_STATUSES as readonly string[]).includes(status);
 
 export async function waitForSession(
+  client: HaiAgentsClient,
   options: WaitForSessionOptions,
 ): Promise<SessionRunResult> {
-  const {
-    id,
-    fromIndex = 0,
-    waitForSeconds = 20,
-    limit,
-    maxPolls,
-    ...requestOptions
-  } = options;
+  const { id, fromIndex = 0, waitForSeconds = 20, limit, maxPolls } = options;
   const events: TrajectoryEvent[] = [];
   let nextFromIndex = fromIndex;
 
   for (let polls = 0; maxPolls === undefined || polls < maxPolls; polls += 1) {
-    const { data, response } = await getSessionChanges({
-      ...requestOptions,
-      throwOnError: true,
-      path: { id },
-      query: {
-        from_index: nextFromIndex,
-        include_events: true,
-        limit,
-        wait_for_seconds: waitForSeconds,
-      },
+    const changes = await client.sessions.getSessionChanges({
+      id,
+      from_index: nextFromIndex,
+      include_events: true,
+      limit: limit ?? undefined,
+      wait_for_seconds: waitForSeconds,
     });
 
-    if (response.status === 204 || !data) {
+    if (!changes) {
       continue;
     }
 
-    const batch = data.new_events ?? [];
-    for (const event of batch) {
-      events.push(event);
-    }
+    const batch = changes.new_events ?? [];
+    events.push(...batch);
     nextFromIndex += batch.length;
 
-    if (isTerminalSessionStatus(data.status)) {
-      return {
-        id,
-        finalChanges: data,
-        events,
-        nextFromIndex,
-      };
+    if (isTerminalSessionStatus(changes.status)) {
+      return { id, finalChanges: changes, events, nextFromIndex };
     }
   }
 
@@ -96,19 +70,10 @@ export async function waitForSession(
 }
 
 export async function runSessionUntilDone(
+  client: HaiAgentsClient,
   options: RunSessionUntilDoneOptions,
 ): Promise<SessionRunResult> {
-  const { body, waitForSeconds, maxPolls, ...requestOptions } = options;
-  const { data: session } = await createSession({
-    ...requestOptions,
-    throwOnError: true,
-    body,
-  });
-
-  return waitForSession({
-    ...requestOptions,
-    id: session.id,
-    waitForSeconds,
-    maxPolls,
-  });
+  const { waitForSeconds, maxPolls, ...createRequest } = options;
+  const session = await client.sessions.createSession(createRequest);
+  return waitForSession(client, { id: session.id, waitForSeconds, maxPolls });
 }
