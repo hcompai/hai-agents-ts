@@ -108,6 +108,13 @@ export type Browser = {
 };
 
 /**
+ * EnvironmentKind
+ *
+ * Environment family.
+ */
+export type EnvironmentKind = "web" | "code" | "mcp" | "memory";
+
+/**
  * EnvironmentPage
  *
  * Named page subclass so OpenAPI emits a clean ``EnvironmentPage`` schema name.
@@ -402,6 +409,12 @@ export type Session = {
   id: string;
   request: SessionRequest;
   status: SessionStatus;
+  /**
+   * Latest Answer
+   *
+   * The agent's most recent final answer: free-form text, or structured data when the agent runs with a custom answer format. Null until the agent first answers. Mirrors the answer streamed from the changes endpoint, surfaced here for non-interactive runs.
+   */
+  latest_answer?: unknown;
   /**
    * Created At
    */
@@ -797,6 +810,28 @@ export type ListSessionsData = {
      * Parent Session Id
      */
     parent_session_id?: string | null;
+    /**
+     * Search
+     *
+     * Case-insensitive match on the session's first message or answer.
+     */
+    search?: string | null;
+    /**
+     * Created Before
+     */
+    created_before?: string | null;
+    /**
+     * Created After
+     */
+    created_after?: string | null;
+    /**
+     * Finished Before
+     */
+    finished_before?: string | null;
+    /**
+     * Finished After
+     */
+    finished_after?: string | null;
     /**
      * Page
      *
@@ -1383,9 +1418,15 @@ export type ListSkillsData = {
     /**
      * Name
      *
-     * Filter by name prefix.
+     * Case-insensitive substring match on skill name.
      */
     name?: string | null;
+    /**
+     * Search
+     *
+     * Case-insensitive match on skill name or description.
+     */
+    search?: string | null;
     /**
      * Page
      *
@@ -1548,6 +1589,24 @@ export type ListEnvironmentsData = {
   body?: never;
   path?: never;
   query?: {
+    /**
+     * Id
+     *
+     * Case-insensitive substring match on environment id.
+     */
+    id?: string | null;
+    /**
+     * Kind
+     *
+     * Filter by environment kind.
+     */
+    kind?: EnvironmentKind | null;
+    /**
+     * Search
+     *
+     * Case-insensitive match on environment id or description.
+     */
+    search?: string | null;
     /**
      * Page
      *
@@ -1739,6 +1798,18 @@ export type ListAgentsData = {
   body?: never;
   path?: never;
   query?: {
+    /**
+     * Agent Name
+     *
+     * Case-insensitive substring match on agent name.
+     */
+    agent_name?: string | null;
+    /**
+     * Search
+     *
+     * Case-insensitive match on agent name or description.
+     */
+    search?: string | null;
     /**
      * Page
      *
