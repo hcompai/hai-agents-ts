@@ -446,7 +446,7 @@ export const getSessionResource = <ThrowOnError extends boolean = false>(
 /**
  * List Skills
  *
- * List reserved + caller's org skills, optionally filtered by name prefix.
+ * List reserved + caller's org skills, optionally filtered by name or text search.
  */
 export const listSkills = <ThrowOnError extends boolean = false>(
   options?: Options<ListSkillsData, ThrowOnError>,

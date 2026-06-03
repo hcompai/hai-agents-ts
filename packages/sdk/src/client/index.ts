@@ -79,6 +79,7 @@ export type {
   DeleteSkillErrors,
   DeleteSkillResponse,
   DeleteSkillResponses,
+  EnvironmentKind,
   EnvironmentPage,
   Feedback,
   ForceSessionAnswerData,
