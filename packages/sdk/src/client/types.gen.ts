@@ -403,6 +403,12 @@ export type Session = {
   request: SessionRequest;
   status: SessionStatus;
   /**
+   * Latest Answer
+   *
+   * The agent's most recent final answer: free-form text, or structured data when the agent runs with a custom answer format. Null until the agent first answers. Mirrors the answer streamed from the changes endpoint, surfaced here for non-interactive runs.
+   */
+  latest_answer?: unknown;
+  /**
    * Created At
    */
   created_at: string;
