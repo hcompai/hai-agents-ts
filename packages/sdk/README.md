@@ -22,6 +22,8 @@
   &nbsp;·&nbsp;
   <a href="https://www.npmjs.com/package/hai-agents">npm</a>
   &nbsp;·&nbsp;
+  <a href="https://github.com/hcompai/hai-agents-python">Python SDK</a>
+  &nbsp;·&nbsp;
   <a href="https://hcompany.ai">H Company</a>
 </p>
 
