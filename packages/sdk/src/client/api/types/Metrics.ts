@@ -7,15 +7,15 @@ import type * as HaiAgents from "../index.js";
  */
 export interface Metrics {
     /** Steps taken so far. */
-    steps?: number | undefined;
+    steps?: number;
     /** Per-model token usage and cost. */
-    cost_per_model?: HaiAgents.ModelCost[] | undefined;
+    costPerModel?: HaiAgents.ModelCost[];
     /** Total input cost in USD; null if any model is unpriced. */
-    input_cost?: (number | null) | undefined;
+    inputCost?: number | null;
     /** Total output cost in USD; null if any model is unpriced. */
-    output_cost?: (number | null) | undefined;
+    outputCost?: number | null;
     /** Total reasoning cost in USD; null if any model is unpriced. */
-    reasoning_cost?: (number | null) | undefined;
+    reasoningCost?: number | null;
     /** Total cost in USD; null if any model is unpriced. */
-    total_cost?: (number | null) | undefined;
+    totalCost?: number | null;
 }

@@ -21,14 +21,10 @@ import type * as HaiAgents from "../index.js";
  */
 export interface TrajectoryChanges {
     status: HaiAgents.TrajectoryStatus;
-    started_at?: (string | null) | undefined;
-    finished_at?: (string | null) | undefined;
-    error?: (string | null) | undefined;
-    new_events?: HaiAgents.TrajectoryEvent[] | undefined;
-    answer?: (TrajectoryChanges.Answer | null) | undefined;
-    metrics?: HaiAgents.Metrics | undefined;
-}
-
-export namespace TrajectoryChanges {
-    export type Answer = string | Record<string, unknown>;
+    startedAt?: Date | null;
+    finishedAt?: Date | null;
+    error?: string | null;
+    newEvents?: HaiAgents.TrajectoryEvent[];
+    answer?: HaiAgents.TrajectoryChangesAnswer | null;
+    metrics?: HaiAgents.Metrics;
 }

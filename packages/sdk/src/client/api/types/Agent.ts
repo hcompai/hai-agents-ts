@@ -11,33 +11,13 @@ export interface Agent {
     /** What the agent does. Parent agents read this to decide when to delegate to it. */
     description: string;
     /** Environments the agent runs in. Each entry is a registered environment's id or an inline definition. At least one, at most one per kind. */
-    environments: Agent.Environments.Item[];
+    environments: HaiAgents.AgentEnvironmentsItem[];
     /** Model that serves the agent. Defaults to the platform model if omitted. */
-    model?: (string | null) | undefined;
+    model?: string | null;
     /** Instructions appended to the agent's system prompt to steer behavior. */
-    instructions?: (string | null) | undefined;
+    instructions?: string | null;
     /** Agents this one can delegate to. Each entry is a registered agent's name or an inline definition. */
-    subagents?: (Agent.Subagents.Item[] | null) | undefined;
+    subagents?: HaiAgents.AgentSubagentsItem[] | null;
     /** Skills the agent can draw on. Each entry is a registered skill's name or an inline definition. */
-    skills?: (Agent.Skills.Item[] | null) | undefined;
-}
-
-export namespace Agent {
-    export type Environments = Environments.Item[];
-
-    export namespace Environments {
-        export type Item = string | HaiAgents.Environment;
-    }
-
-    export type Subagents = Subagents.Item[];
-
-    export namespace Subagents {
-        export type Item = string | HaiAgents.Agent;
-    }
-
-    export type Skills = Skills.Item[];
-
-    export namespace Skills {
-        export type Item = string | HaiAgents.Skill;
-    }
+    skills?: HaiAgents.AgentSkillsItem[] | null;
 }

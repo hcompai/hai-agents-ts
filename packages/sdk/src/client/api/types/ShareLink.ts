@@ -8,5 +8,5 @@
  * ``/share/v1/sessions/{id}`` once the v2 share router lands.
  */
 export interface ShareLink {
-    share_url: string;
+    shareUrl: string;
 }

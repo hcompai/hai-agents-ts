@@ -7,17 +7,17 @@ export interface ModelCost {
     /** Model id. */
     name: string;
     /** Input tokens consumed. */
-    input_tokens: number;
+    inputTokens: number;
     /** Output tokens produced. */
-    output_tokens: number;
+    outputTokens: number;
     /** Reasoning tokens produced. */
-    reasoning_tokens: number;
+    reasoningTokens: number;
     /** Input cost in USD; null if the model is unpriced. */
-    input_cost?: (number | null) | undefined;
+    inputCost?: number | null;
     /** Output cost in USD; null if the model is unpriced. */
-    output_cost?: (number | null) | undefined;
+    outputCost?: number | null;
     /** Reasoning cost in USD; null if the model is unpriced. */
-    reasoning_cost?: (number | null) | undefined;
+    reasoningCost?: number | null;
     /** Total cost in USD; null if the model is unpriced. */
-    total_cost?: (number | null) | undefined;
+    totalCost?: number | null;
 }

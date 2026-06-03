@@ -3,9 +3,9 @@
 /**
  * @example
  *     {
- *         agent_name: "agent_name"
+ *         agentName: "agent_name"
  *     }
  */
 export interface GetAgentRequest {
-    agent_name: string;
+    agentName: string;
 }

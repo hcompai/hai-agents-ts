@@ -8,8 +8,8 @@
  */
 export interface GetSessionChangesRequest {
     id: string;
-    from_index?: number;
+    fromIndex?: number;
     limit?: number | null;
-    include_events?: boolean;
-    wait_for_seconds?: number;
+    includeEvents?: boolean;
+    waitForSeconds?: number;
 }

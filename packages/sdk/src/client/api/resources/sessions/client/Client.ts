@@ -8,6 +8,7 @@ import { toJson } from "../../../../core/json.js";
 import * as environments from "../../../../environments.js";
 import { handleNonStatusCodeError } from "../../../../errors/handleNonStatusCodeError.js";
 import * as errors from "../../../../errors/index.js";
+import * as serializers from "../../../../serialization/index.js";
 import * as HaiAgents from "../../../index.js";
 
 export declare namespace SessionsClient {
@@ -49,28 +50,36 @@ export class SessionsClient {
             owner,
             status,
             agent,
-            group_id: groupId,
-            parent_session_id: parentSessionId,
+            groupId,
+            parentSessionId,
             search,
-            created_before: createdBefore,
-            created_after: createdAfter,
-            finished_before: finishedBefore,
-            finished_after: finishedAfter,
+            createdBefore,
+            createdAfter,
+            finishedBefore,
+            finishedAfter,
             page,
             size,
             sort,
         } = request;
         const _queryParams: Record<string, unknown> = {
-            owner: owner != null ? owner : undefined,
+            owner:
+                owner != null
+                    ? serializers.ListSessionsRequestOwner.jsonOrThrow(owner, {
+                          unrecognizedObjectKeys: "passthrough",
+                          allowUnrecognizedUnionMembers: true,
+                          allowUnrecognizedEnumValues: true,
+                          omitUndefined: true,
+                      })
+                    : undefined,
             status: status !== undefined ? toJson(status) : undefined,
             agent: agent !== undefined ? toJson(agent) : undefined,
             group_id: groupId,
             parent_session_id: parentSessionId,
             search,
-            created_before: createdBefore !== undefined ? createdBefore : undefined,
-            created_after: createdAfter !== undefined ? createdAfter : undefined,
-            finished_before: finishedBefore !== undefined ? finishedBefore : undefined,
-            finished_after: finishedAfter !== undefined ? finishedAfter : undefined,
+            created_before: createdBefore !== undefined ? createdBefore?.toISOString() : undefined,
+            created_after: createdAfter !== undefined ? createdAfter?.toISOString() : undefined,
+            finished_before: finishedBefore !== undefined ? finishedBefore?.toISOString() : undefined,
+            finished_after: finishedAfter !== undefined ? finishedAfter?.toISOString() : undefined,
             page,
             size,
             sort: sort !== undefined ? toJson(sort) : undefined,
@@ -102,14 +111,29 @@ export class SessionsClient {
             logging: this._options.logging,
         });
         if (_response.ok) {
-            return { data: _response.body as HaiAgents.PageSessionSummary, rawResponse: _response.rawResponse };
+            return {
+                data: serializers.PageSessionSummary.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
+                rawResponse: _response.rawResponse,
+            };
         }
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
-                        _response.error.body as HaiAgents.HttpValidationError,
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
                         _response.rawResponse,
                     );
                 default:
@@ -153,7 +177,7 @@ export class SessionsClient {
         request: HaiAgents.CreateSessionRequest,
         requestOptions?: SessionsClient.RequestOptions,
     ): Promise<core.WithRawResponse<HaiAgents.Session>> {
-        const { "Idempotency-Key": idempotencyKey, body: _body } = request;
+        const { idempotencyKey, body: _body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
             _authRequest.headers,
@@ -173,7 +197,12 @@ export class SessionsClient {
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: _body,
+            body: serializers.SessionRequest.jsonOrThrow(_body, {
+                unrecognizedObjectKeys: "passthrough",
+                allowUnrecognizedUnionMembers: true,
+                allowUnrecognizedEnumValues: true,
+                omitUndefined: true,
+            }),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
             abortSignal: requestOptions?.abortSignal,
@@ -181,14 +210,29 @@ export class SessionsClient {
             logging: this._options.logging,
         });
         if (_response.ok) {
-            return { data: _response.body as HaiAgents.Session, rawResponse: _response.rawResponse };
+            return {
+                data: serializers.Session.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
+                rawResponse: _response.rawResponse,
+            };
         }
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
-                        _response.error.body as HaiAgents.HttpValidationError,
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
                         _response.rawResponse,
                     );
                 default:
@@ -245,14 +289,29 @@ export class SessionsClient {
             logging: this._options.logging,
         });
         if (_response.ok) {
-            return { data: _response.body as HaiAgents.QuotaStatus, rawResponse: _response.rawResponse };
+            return {
+                data: serializers.QuotaStatus.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
+                rawResponse: _response.rawResponse,
+            };
         }
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
-                        _response.error.body as HaiAgents.HttpValidationError,
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
                         _response.rawResponse,
                     );
                 default:
@@ -315,14 +374,29 @@ export class SessionsClient {
             logging: this._options.logging,
         });
         if (_response.ok) {
-            return { data: _response.body as HaiAgents.Session, rawResponse: _response.rawResponse };
+            return {
+                data: serializers.Session.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
+                rawResponse: _response.rawResponse,
+            };
         }
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
-                        _response.error.body as HaiAgents.HttpValidationError,
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
                         _response.rawResponse,
                     );
                 default:
@@ -392,7 +466,13 @@ export class SessionsClient {
             switch (_response.error.statusCode) {
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
-                        _response.error.body as HaiAgents.HttpValidationError,
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
                         _response.rawResponse,
                     );
                 default:
@@ -455,14 +535,29 @@ export class SessionsClient {
             logging: this._options.logging,
         });
         if (_response.ok) {
-            return { data: _response.body as HaiAgents.SessionStatus, rawResponse: _response.rawResponse };
+            return {
+                data: serializers.SessionStatus.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
+                rawResponse: _response.rawResponse,
+            };
         }
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
-                        _response.error.body as HaiAgents.HttpValidationError,
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
                         _response.rawResponse,
                     );
                 default:
@@ -525,7 +620,12 @@ export class SessionsClient {
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: _body,
+            body: serializers.SendSessionMessagesRequestBody.jsonOrThrow(_body, {
+                unrecognizedObjectKeys: "passthrough",
+                allowUnrecognizedUnionMembers: true,
+                allowUnrecognizedEnumValues: true,
+                omitUndefined: true,
+            }),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
             abortSignal: requestOptions?.abortSignal,
@@ -540,7 +640,13 @@ export class SessionsClient {
             switch (_response.error.statusCode) {
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
-                        _response.error.body as HaiAgents.HttpValidationError,
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
                         _response.rawResponse,
                     );
                 default:
@@ -615,7 +721,13 @@ export class SessionsClient {
             switch (_response.error.statusCode) {
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
-                        _response.error.body as HaiAgents.HttpValidationError,
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
                         _response.rawResponse,
                     );
                 default:
@@ -685,7 +797,13 @@ export class SessionsClient {
             switch (_response.error.statusCode) {
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
-                        _response.error.body as HaiAgents.HttpValidationError,
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
                         _response.rawResponse,
                     );
                 default:
@@ -755,7 +873,13 @@ export class SessionsClient {
             switch (_response.error.statusCode) {
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
-                        _response.error.body as HaiAgents.HttpValidationError,
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
                         _response.rawResponse,
                     );
                 default:
@@ -799,13 +923,7 @@ export class SessionsClient {
         request: HaiAgents.GetSessionChangesRequest,
         requestOptions?: SessionsClient.RequestOptions,
     ): Promise<core.WithRawResponse<HaiAgents.TrajectoryChanges | undefined>> {
-        const {
-            id,
-            from_index: fromIndex,
-            limit,
-            include_events: includeEvents,
-            wait_for_seconds: waitForSeconds,
-        } = request;
+        const { id, fromIndex, limit, includeEvents, waitForSeconds } = request;
         const _queryParams: Record<string, unknown> = {
             from_index: fromIndex,
             limit,
@@ -840,7 +958,13 @@ export class SessionsClient {
         });
         if (_response.ok) {
             return {
-                data: _response.body as HaiAgents.TrajectoryChanges | undefined,
+                data: serializers.sessions.getSessionChanges.Response.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
                 rawResponse: _response.rawResponse,
             };
         }
@@ -849,7 +973,13 @@ export class SessionsClient {
             switch (_response.error.statusCode) {
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
-                        _response.error.body as HaiAgents.HttpValidationError,
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
                         _response.rawResponse,
                     );
                 default:
@@ -922,14 +1052,29 @@ export class SessionsClient {
             logging: this._options.logging,
         });
         if (_response.ok) {
-            return { data: _response.body as HaiAgents.PageTrajectoryEvent, rawResponse: _response.rawResponse };
+            return {
+                data: serializers.PageTrajectoryEvent.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
+                rawResponse: _response.rawResponse,
+            };
         }
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
-                        _response.error.body as HaiAgents.HttpValidationError,
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
                         _response.rawResponse,
                     );
                 default:
@@ -990,7 +1135,12 @@ export class SessionsClient {
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: _body,
+            body: serializers.Feedback.jsonOrThrow(_body, {
+                unrecognizedObjectKeys: "passthrough",
+                allowUnrecognizedUnionMembers: true,
+                allowUnrecognizedEnumValues: true,
+                omitUndefined: true,
+            }),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
             abortSignal: requestOptions?.abortSignal,
@@ -1005,7 +1155,13 @@ export class SessionsClient {
             switch (_response.error.statusCode) {
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
-                        _response.error.body as HaiAgents.HttpValidationError,
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
                         _response.rawResponse,
                     );
                 default:
@@ -1036,7 +1192,7 @@ export class SessionsClient {
      * @example
      *     await client.sessions.submitEventFeedback({
      *         id: "id",
-     *         event_index: 1,
+     *         eventIndex: 1,
      *         body: {
      *             success: true
      *         }
@@ -1053,7 +1209,7 @@ export class SessionsClient {
         request: HaiAgents.SubmitEventFeedbackRequest,
         requestOptions?: SessionsClient.RequestOptions,
     ): Promise<core.WithRawResponse<void>> {
-        const { id, event_index: eventIndex, body: _body } = request;
+        const { id, eventIndex, body: _body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
             _authRequest.headers,
@@ -1072,7 +1228,12 @@ export class SessionsClient {
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: _body,
+            body: serializers.Feedback.jsonOrThrow(_body, {
+                unrecognizedObjectKeys: "passthrough",
+                allowUnrecognizedUnionMembers: true,
+                allowUnrecognizedEnumValues: true,
+                omitUndefined: true,
+            }),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
             abortSignal: requestOptions?.abortSignal,
@@ -1087,7 +1248,13 @@ export class SessionsClient {
             switch (_response.error.statusCode) {
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
-                        _response.error.body as HaiAgents.HttpValidationError,
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
                         _response.rawResponse,
                     );
                 default:
@@ -1155,14 +1322,29 @@ export class SessionsClient {
             logging: this._options.logging,
         });
         if (_response.ok) {
-            return { data: _response.body as HaiAgents.ShareLink, rawResponse: _response.rawResponse };
+            return {
+                data: serializers.ShareLink.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
+                rawResponse: _response.rawResponse,
+            };
         }
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
-                        _response.error.body as HaiAgents.HttpValidationError,
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
                         _response.rawResponse,
                     );
                 default:
@@ -1232,7 +1414,13 @@ export class SessionsClient {
             switch (_response.error.statusCode) {
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
-                        _response.error.body as HaiAgents.HttpValidationError,
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
                         _response.rawResponse,
                     );
                 default:
@@ -1309,7 +1497,13 @@ export class SessionsClient {
             switch (_response.error.statusCode) {
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
-                        _response.error.body as HaiAgents.HttpValidationError,
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
                         _response.rawResponse,
                     );
                 default:

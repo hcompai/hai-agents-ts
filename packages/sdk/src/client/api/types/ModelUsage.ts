@@ -7,9 +7,9 @@ export interface ModelUsage {
     /** Model id. */
     name: string;
     /** Input tokens consumed. */
-    input_tokens: number;
+    inputTokens: number;
     /** Output tokens produced. */
-    output_tokens: number;
+    outputTokens: number;
     /** Reasoning tokens produced. */
-    reasoning_tokens: number;
+    reasoningTokens: number;
 }

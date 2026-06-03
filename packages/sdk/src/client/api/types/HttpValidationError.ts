@@ -3,5 +3,5 @@
 import type * as HaiAgents from "../index.js";
 
 export interface HttpValidationError {
-    detail?: HaiAgents.ValidationError[] | undefined;
+    detail?: HaiAgents.ValidationError[];
 }

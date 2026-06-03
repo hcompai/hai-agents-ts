@@ -10,14 +10,14 @@ export interface ListSessionsRequest {
     owner?: HaiAgents.ListSessionsRequestOwner;
     status?: HaiAgents.TrajectoryStatus[] | null;
     agent?: string[] | null;
-    group_id?: string | null;
-    parent_session_id?: string | null;
+    groupId?: string | null;
+    parentSessionId?: string | null;
     /** Case-insensitive match on the session's first message or answer. */
     search?: string | null;
-    created_before?: string | null;
-    created_after?: string | null;
-    finished_before?: string | null;
-    finished_after?: string | null;
+    createdBefore?: Date | null;
+    createdAfter?: Date | null;
+    finishedBefore?: Date | null;
+    finishedAfter?: Date | null;
     /** Page number (1-based) */
     page?: number;
     /** Number of items per page */

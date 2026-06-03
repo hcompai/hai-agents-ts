@@ -7,10 +7,10 @@ import type * as HaiAgents from "../index.js";
  */
 export interface SessionSummary {
     id: string;
-    agent?: (string | null) | undefined;
+    agent?: string | null;
     status: HaiAgents.TrajectoryStatus;
-    first_message?: (HaiAgents.UserMessageEvent | null) | undefined;
-    created_at: string;
-    started_at?: (string | null) | undefined;
-    finished_at?: (string | null) | undefined;
+    firstMessage?: HaiAgents.UserMessageEvent | null;
+    createdAt: Date;
+    startedAt?: Date | null;
+    finishedAt?: Date | null;
 }

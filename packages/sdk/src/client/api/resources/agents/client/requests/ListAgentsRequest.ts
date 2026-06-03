@@ -8,7 +8,7 @@ import type * as HaiAgents from "../../../../index.js";
  */
 export interface ListAgentsRequest {
     /** Case-insensitive substring match on agent name. */
-    agent_name?: string | null;
+    agentName?: string | null;
     /** Case-insensitive match on agent name or description. */
     search?: string | null;
     /** Page number (1-based) */

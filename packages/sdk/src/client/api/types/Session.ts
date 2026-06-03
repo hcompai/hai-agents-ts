@@ -10,8 +10,8 @@ export interface Session {
     request: HaiAgents.SessionRequest;
     status: HaiAgents.SessionStatus;
     /** The agent's most recent final answer: free-form text, or structured data when the agent runs with a custom answer format. Null until the agent first answers. Mirrors the answer streamed from the changes endpoint, surfaced here for non-interactive runs. */
-    latest_answer?: unknown | undefined;
-    created_at: string;
-    started_at?: (string | null) | undefined;
-    finished_at?: (string | null) | undefined;
+    latestAnswer?: unknown;
+    createdAt: Date;
+    startedAt?: Date | null;
+    finishedAt?: Date | null;
 }

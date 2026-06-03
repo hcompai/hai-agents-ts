@@ -8,6 +8,7 @@ import { toJson } from "../../../../core/json.js";
 import * as environments from "../../../../environments.js";
 import { handleNonStatusCodeError } from "../../../../errors/handleNonStatusCodeError.js";
 import * as errors from "../../../../errors/index.js";
+import * as serializers from "../../../../serialization/index.js";
 import * as HaiAgents from "../../../index.js";
 
 export declare namespace AgentsClient {
@@ -45,7 +46,7 @@ export class AgentsClient {
         request: HaiAgents.ListAgentsRequest = {},
         requestOptions?: AgentsClient.RequestOptions,
     ): Promise<core.WithRawResponse<HaiAgents.PageAgent>> {
-        const { agent_name: agentName, search, page, size, sort } = request;
+        const { agentName, search, page, size, sort } = request;
         const _queryParams: Record<string, unknown> = {
             agent_name: agentName,
             search,
@@ -80,14 +81,29 @@ export class AgentsClient {
             logging: this._options.logging,
         });
         if (_response.ok) {
-            return { data: _response.body as HaiAgents.PageAgent, rawResponse: _response.rawResponse };
+            return {
+                data: serializers.PageAgent.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
+                rawResponse: _response.rawResponse,
+            };
         }
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
-                        _response.error.body as HaiAgents.HttpValidationError,
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
                         _response.rawResponse,
                     );
                 default:
@@ -146,7 +162,12 @@ export class AgentsClient {
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: request,
+            body: serializers.Agent.jsonOrThrow(request, {
+                unrecognizedObjectKeys: "passthrough",
+                allowUnrecognizedUnionMembers: true,
+                allowUnrecognizedEnumValues: true,
+                omitUndefined: true,
+            }),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
             abortSignal: requestOptions?.abortSignal,
@@ -154,14 +175,29 @@ export class AgentsClient {
             logging: this._options.logging,
         });
         if (_response.ok) {
-            return { data: _response.body as HaiAgents.Agent, rawResponse: _response.rawResponse };
+            return {
+                data: serializers.Agent.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
+                rawResponse: _response.rawResponse,
+            };
         }
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
-                        _response.error.body as HaiAgents.HttpValidationError,
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
                         _response.rawResponse,
                     );
                 default:
@@ -186,7 +222,7 @@ export class AgentsClient {
      *
      * @example
      *     await client.agents.getAgent({
-     *         agent_name: "agent_name"
+     *         agentName: "agent_name"
      *     })
      */
     public getAgent(
@@ -200,7 +236,7 @@ export class AgentsClient {
         request: HaiAgents.GetAgentRequest,
         requestOptions?: AgentsClient.RequestOptions,
     ): Promise<core.WithRawResponse<HaiAgents.Agent>> {
-        const { agent_name: agentName } = request;
+        const { agentName } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
             _authRequest.headers,
@@ -224,14 +260,29 @@ export class AgentsClient {
             logging: this._options.logging,
         });
         if (_response.ok) {
-            return { data: _response.body as HaiAgents.Agent, rawResponse: _response.rawResponse };
+            return {
+                data: serializers.Agent.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
+                rawResponse: _response.rawResponse,
+            };
         }
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
-                        _response.error.body as HaiAgents.HttpValidationError,
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
                         _response.rawResponse,
                     );
                 default:
@@ -256,7 +307,7 @@ export class AgentsClient {
      *
      * @example
      *     await client.agents.updateAgent({
-     *         agent_name: "agent_name",
+     *         agentName: "agent_name",
      *         body: {
      *             name: "name",
      *             description: "description",
@@ -275,7 +326,7 @@ export class AgentsClient {
         request: HaiAgents.UpdateAgentRequest,
         requestOptions?: AgentsClient.RequestOptions,
     ): Promise<core.WithRawResponse<HaiAgents.Agent>> {
-        const { agent_name: agentName, body: _body } = request;
+        const { agentName, body: _body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
             _authRequest.headers,
@@ -294,7 +345,12 @@ export class AgentsClient {
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: _body,
+            body: serializers.Agent.jsonOrThrow(_body, {
+                unrecognizedObjectKeys: "passthrough",
+                allowUnrecognizedUnionMembers: true,
+                allowUnrecognizedEnumValues: true,
+                omitUndefined: true,
+            }),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
             abortSignal: requestOptions?.abortSignal,
@@ -302,14 +358,29 @@ export class AgentsClient {
             logging: this._options.logging,
         });
         if (_response.ok) {
-            return { data: _response.body as HaiAgents.Agent, rawResponse: _response.rawResponse };
+            return {
+                data: serializers.Agent.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
+                rawResponse: _response.rawResponse,
+            };
         }
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
-                        _response.error.body as HaiAgents.HttpValidationError,
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
                         _response.rawResponse,
                     );
                 default:
@@ -334,7 +405,7 @@ export class AgentsClient {
      *
      * @example
      *     await client.agents.deleteAgent({
-     *         agent_name: "agent_name"
+     *         agentName: "agent_name"
      *     })
      */
     public deleteAgent(
@@ -348,7 +419,7 @@ export class AgentsClient {
         request: HaiAgents.DeleteAgentRequest,
         requestOptions?: AgentsClient.RequestOptions,
     ): Promise<core.WithRawResponse<void>> {
-        const { agent_name: agentName } = request;
+        const { agentName } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
             _authRequest.headers,
@@ -379,7 +450,13 @@ export class AgentsClient {
             switch (_response.error.statusCode) {
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
-                        _response.error.body as HaiAgents.HttpValidationError,
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
                         _response.rawResponse,
                     );
                 default:

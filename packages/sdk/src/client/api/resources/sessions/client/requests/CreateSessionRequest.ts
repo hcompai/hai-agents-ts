@@ -11,6 +11,6 @@ import type * as HaiAgents from "../../../../index.js";
  *     }
  */
 export interface CreateSessionRequest {
-    "Idempotency-Key"?: string | null;
+    idempotencyKey?: string | null;
     body: HaiAgents.SessionRequest;
 }

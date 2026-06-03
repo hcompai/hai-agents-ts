@@ -26,8 +26,8 @@ const session = await client.sessions.createSession({
   body: {
     agent: "h/web",
     messages: "What is the H1 on example.com?",
-    max_steps: 10,
-    max_time_s: 150,
+    maxSteps: 10,
+    maxTimeS: 150,
   },
 });
 
@@ -36,8 +36,8 @@ console.log(session.id);
 
 ## Run a task to completion
 
-`runSessionUntilDone` creates a session and long-polls `/changes` until the agent
-reaches a terminal state, returning the accumulated events and final answer.
+`runSessionUntilDone` creates a session and polls until the agent reaches a
+terminal state, returning the terminal `status`, accumulated events, and final answer.
 
 ```ts
 import { runSessionUntilDone } from "hai-agents";
@@ -49,7 +49,7 @@ const result = await runSessionUntilDone(client, {
   includeEvents: true, // set false to poll status only, without streaming events
 });
 
-console.log(result.answer);
+console.log(result.status, result.answer);
 ```
 
 ## Error handling

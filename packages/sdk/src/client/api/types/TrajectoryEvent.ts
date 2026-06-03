@@ -24,6 +24,6 @@
  */
 export interface TrajectoryEvent {
     type: string;
-    data?: unknown | undefined;
-    timestamp: string;
+    data?: unknown;
+    timestamp: Date;
 }

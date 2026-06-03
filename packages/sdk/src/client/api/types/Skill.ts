@@ -11,7 +11,7 @@ export interface Skill {
     /** Markdown instructions the agent loads when it uses the skill. */
     body: string;
     /** Optional URL the content was sourced from. */
-    source?: (string | null) | undefined;
+    source?: string | null;
     /** Optional regex hinting at URLs where this skill applies. */
-    url_pattern?: (string | null) | undefined;
+    urlPattern?: string | null;
 }

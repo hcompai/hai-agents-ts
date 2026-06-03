@@ -7,30 +7,19 @@ import type * as HaiAgents from "../index.js";
  */
 export interface SessionRequest {
     /** Agent to run: a registered agent's name, or an inline Agent definition. */
-    agent: SessionRequest.Agent;
+    agent: HaiAgents.SessionRequestAgent;
     /** Initial task for the agent. A plain string, a single message, or a list of messages. */
-    messages?: (SessionRequest.Messages | null) | undefined;
+    messages?: HaiAgents.SessionRequestMessages | null;
     /** Maximum reasoning steps the agent may take. Unbounded if null. */
-    max_steps?: (number | null) | undefined;
+    maxSteps?: number | null;
     /** Maximum wall-clock seconds the agent may run. Unbounded if null. */
-    max_time_s?: (number | null) | undefined;
+    maxTimeS?: number | null;
     /** Seconds to keep the session open for follow-up messages after each answer. Null ends the session as soon as the agent answers. */
-    idle_timeout_s?: (number | null) | undefined;
+    idleTimeoutS?: number | null;
     /** Optional id to group and list related sessions together. */
-    group_id?: (string | null) | undefined;
+    groupId?: string | null;
     /** Id of the parent session, when this is a child run. */
-    parent_session_id?: (string | null) | undefined;
+    parentSessionId?: string | null;
     /** JSON Schema the final answer must conform to. Null returns a free-form text answer. */
-    answer_format?: (Record<string, unknown> | null) | undefined;
-}
-
-export namespace SessionRequest {
-    /**
-     * Agent to run: a registered agent's name, or an inline Agent definition.
-     */
-    export type Agent = string | HaiAgents.Agent;
-    /**
-     * Initial task for the agent. A plain string, a single message, or a list of messages.
-     */
-    export type Messages = string | HaiAgents.UserMessageEvent | HaiAgents.UserMessageEvent[];
+    answerFormat?: Record<string, unknown> | null;
 }

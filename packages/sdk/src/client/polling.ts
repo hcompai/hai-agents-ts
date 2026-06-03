@@ -18,9 +18,10 @@ export const MAX_REQUEST_BYTES = 5 * 1024 * 1024;
 
 export type SessionRunResult = {
   id: string;
-  finalChanges: TrajectoryChanges;
+  status: TrajectoryStatus;
   events: TrajectoryEvent[];
   nextFromIndex: number;
+  finalChanges?: TrajectoryChanges;
 };
 
 export type WaitForSessionOptions = {
@@ -60,6 +61,33 @@ export function assertRequestUnderLimit(payload: unknown, maxBytes: number = MAX
   }
 }
 
+// The terminal answer lives in /changes; fetch it once if streaming didn't surface it.
+async function finalChanges(
+  client: HaiAgentsClient,
+  id: string,
+  lastChanges: TrajectoryChanges | undefined,
+  limit: number | null | undefined,
+): Promise<TrajectoryChanges | undefined> {
+  if (lastChanges && lastChanges.answer != null) {
+    return lastChanges;
+  }
+  const fetched = await client.sessions.getSessionChanges({
+    id,
+    fromIndex: 0,
+    includeEvents: false,
+    limit: limit ?? undefined,
+    waitForSeconds: 0,
+  });
+  return fetched ?? lastChanges;
+}
+
+/**
+ * Poll a session until it reaches a terminal status.
+ *
+ * Terminal state is read from `/status` (authoritative); `/changes` only feeds events
+ * and the final answer, since it 204s whenever no new events exist past `fromIndex` --
+ * even after the session has finished.
+ */
 export async function waitForSession(
   client: HaiAgentsClient,
   options: WaitForSessionOptions,
@@ -76,6 +104,7 @@ export async function waitForSession(
   } = options;
   const events: TrajectoryEvent[] = [];
   let nextFromIndex = fromIndex;
+  let lastChanges: TrajectoryChanges | undefined;
   const deadline = timeoutMs === undefined ? undefined : Date.now() + timeoutMs;
 
   for (let polls = 0; maxPolls === undefined || polls < maxPolls; polls += 1) {
@@ -83,26 +112,31 @@ export async function waitForSession(
       throw new Error(`Session ${id} did not reach a terminal status within ${timeoutMs}ms`);
     }
 
-    const changes = await client.sessions.getSessionChanges({
-      id,
-      from_index: nextFromIndex,
-      include_events: includeEvents,
-      limit: limit ?? undefined,
-      wait_for_seconds: waitForSeconds,
-    });
-
-    if (changes) {
-      if (includeEvents) {
-        const batch = changes.new_events ?? [];
+    if (includeEvents) {
+      const changes = await client.sessions.getSessionChanges({
+        id,
+        fromIndex: nextFromIndex,
+        includeEvents: true,
+        limit: limit ?? undefined,
+        waitForSeconds,
+      });
+      if (changes) {
+        lastChanges = changes;
+        const batch = changes.newEvents ?? [];
         events.push(...batch);
         nextFromIndex += batch.length;
       }
-      if (isTerminalSessionStatus(changes.status)) {
-        return { id, finalChanges: changes, events, nextFromIndex };
-      }
     }
 
-    if (pollBackoffMs > 0) {
+    const { status } = await client.sessions.getSessionStatus({ id });
+    if (isTerminalSessionStatus(status)) {
+      return { id, status, events, nextFromIndex, finalChanges: await finalChanges(client, id, lastChanges, limit) };
+    }
+
+    // The long-poll above paces the loop when streaming events; otherwise sleep.
+    if (!includeEvents) {
+      await sleep(pollBackoffMs || waitForSeconds * 1000);
+    } else if (pollBackoffMs > 0) {
       await sleep(pollBackoffMs);
     }
   }

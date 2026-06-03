@@ -5,7 +5,7 @@ import type * as HaiAgents from "../../../../index.js";
 /**
  * @example
  *     {
- *         agent_name: "agent_name",
+ *         agentName: "agent_name",
  *         body: {
  *             name: "name",
  *             description: "description",
@@ -14,6 +14,6 @@ import type * as HaiAgents from "../../../../index.js";
  *     }
  */
 export interface UpdateAgentRequest {
-    agent_name: string;
+    agentName: string;
     body: HaiAgents.Agent;
 }

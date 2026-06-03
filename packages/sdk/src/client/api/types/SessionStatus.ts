@@ -9,11 +9,11 @@ export interface SessionStatus {
     /** Current lifecycle state of the session. */
     status: HaiAgents.TrajectoryStatus;
     /** Error message if the session failed; null otherwise. */
-    error?: (string | null) | undefined;
+    error?: string | null;
     /** Number of steps the agent has taken. */
-    steps?: number | undefined;
+    steps?: number;
     /** Per-model token usage. Empty until the agent calls a model. */
-    usage_per_model?: HaiAgents.ModelUsage[] | undefined;
+    usagePerModel?: HaiAgents.ModelUsage[];
     /** Session ids of any subagents this session spawned. */
-    subagent_session_ids?: string[] | undefined;
+    subagentSessionIds?: string[];
 }

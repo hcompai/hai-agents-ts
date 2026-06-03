@@ -6,7 +6,7 @@ import type * as HaiAgents from "../../../../index.js";
  * @example
  *     {
  *         id: "id",
- *         event_index: 1,
+ *         eventIndex: 1,
  *         body: {
  *             success: true
  *         }
@@ -14,6 +14,6 @@ import type * as HaiAgents from "../../../../index.js";
  */
 export interface SubmitEventFeedbackRequest {
     id: string;
-    event_index: number;
+    eventIndex: number;
     body: HaiAgents.Feedback;
 }

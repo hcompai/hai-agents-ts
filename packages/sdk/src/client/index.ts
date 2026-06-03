@@ -4,6 +4,7 @@ export { HaiAgentsClient } from "./Client.js";
 export { HaiAgentsEnvironment } from "./environments.js";
 export { HaiAgentsError, HaiAgentsTimeoutError } from "./errors/index.js";
 export * from "./exports.js";
+export * as serialization from "./serialization/index.js";
 export {
   MAX_REQUEST_BYTES,
   TERMINAL_SESSION_STATUSES,

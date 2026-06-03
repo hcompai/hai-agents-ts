@@ -5,5 +5,5 @@
  */
 export interface Feedback {
     success: boolean;
-    message?: (string | null) | undefined;
+    message?: string | null;
 }
