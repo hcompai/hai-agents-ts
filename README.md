@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  TypeScript SDK for <a href="https://hcompany.ai">H Company's Agent API</a>. Launch autonomous agents that browse the web and use tools, stream their progress, and steer them mid-run. Fully typed, with first-class ESM and CommonJS support.
+  TypeScript SDK for the H Company Agent API. Launch autonomous agents powered by Holo, stream their progress, and steer them mid-run.
 </p>
 
 <p align="center">
@@ -21,6 +21,8 @@
   <a href="https://portal.hcompany.ai">Get an API key</a>
   &nbsp;·&nbsp;
   <a href="https://www.npmjs.com/package/hai-agents">npm</a>
+  &nbsp;·&nbsp;
+  <a href="https://hcompany.ai">H Company</a>
 </p>
 
 ## Install
@@ -152,8 +154,8 @@ console.log(`limit: ${MAX_REQUEST_BYTES} bytes`);
 
 ## Documentation
 
-- [Agent API documentation](https://hub.hcompany.ai/agent-api) — guides, core concepts, and the full API reference
-- [Developer portal](https://portal.hcompany.ai) — manage API keys and usage
+- [Agent API documentation](https://hub.hcompany.ai/agent-api): guides, core concepts, and the full API reference
+- [Developer portal](https://portal.hcompany.ai): manage API keys and usage
 - [H Company](https://hcompany.ai)
 
 ## License
