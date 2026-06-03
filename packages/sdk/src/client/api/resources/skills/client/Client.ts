@@ -63,7 +63,7 @@ export class SkillsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 "api/v2/skills",
             ),
             method: "GET",
@@ -138,7 +138,7 @@ export class SkillsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 "api/v2/skills",
             ),
             method: "POST",
@@ -211,7 +211,7 @@ export class SkillsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 `api/v2/skills/${core.url.encodePathParam(name)}`,
             ),
             method: "GET",
@@ -286,7 +286,7 @@ export class SkillsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 `api/v2/skills/${core.url.encodePathParam(name)}`,
             ),
             method: "PUT",
@@ -359,7 +359,7 @@ export class SkillsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 `api/v2/skills/${core.url.encodePathParam(name)}`,
             ),
             method: "DELETE",

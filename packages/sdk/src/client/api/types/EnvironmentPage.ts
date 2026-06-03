@@ -11,7 +11,7 @@ import type * as HaiAgents from "../index.js";
  * Pydantic FieldInfo into generated SDKs.
  */
 export interface EnvironmentPage {
-    items: HaiAgents.EnvironmentPageItemsItem[];
+    items: HaiAgents.Environment[];
     total: number;
     page: number;
 }

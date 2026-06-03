@@ -1,9 +1,31 @@
 {
   "name": "hai-agents",
   "version": "0.7.0",
-  "description": "TypeScript SDK for H Company's agent API",
+  "description": "TypeScript SDK for H Company's Agent Platform — class-based client with sync/async support, fully typed.",
   "type": "module",
   "license": "MIT",
+  "author": "H Company <contact@hcompany.ai>",
+  "homepage": "https://hcompany.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hcompai/hai-agents-ts.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hcompai/hai-agents-ts/issues"
+  },
+  "keywords": [
+    "agent",
+    "agents",
+    "computer-use",
+    "browser-use",
+    "llm",
+    "sdk",
+    "h-company"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "sideEffects": false,
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",

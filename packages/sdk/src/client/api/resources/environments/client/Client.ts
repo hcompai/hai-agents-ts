@@ -64,7 +64,7 @@ export class EnvironmentsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 "api/v2/environments",
             ),
             method: "GET",
@@ -123,14 +123,14 @@ export class EnvironmentsClient {
     public createEnvironment(
         request: HaiAgents.CreateEnvironmentRequest,
         requestOptions?: EnvironmentsClient.RequestOptions,
-    ): core.HttpResponsePromise<HaiAgents.CreateEnvironmentResponse> {
+    ): core.HttpResponsePromise<HaiAgents.Environment> {
         return core.HttpResponsePromise.fromPromise(this.__createEnvironment(request, requestOptions));
     }
 
     private async __createEnvironment(
         request: HaiAgents.CreateEnvironmentRequest,
         requestOptions?: EnvironmentsClient.RequestOptions,
-    ): Promise<core.WithRawResponse<HaiAgents.CreateEnvironmentResponse>> {
+    ): Promise<core.WithRawResponse<HaiAgents.Environment>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
             _authRequest.headers,
@@ -141,7 +141,7 @@ export class EnvironmentsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 "api/v2/environments",
             ),
             method: "POST",
@@ -157,7 +157,7 @@ export class EnvironmentsClient {
             logging: this._options.logging,
         });
         if (_response.ok) {
-            return { data: _response.body as HaiAgents.CreateEnvironmentResponse, rawResponse: _response.rawResponse };
+            return { data: _response.body as HaiAgents.Environment, rawResponse: _response.rawResponse };
         }
 
         if (_response.error.reason === "status-code") {
@@ -195,14 +195,14 @@ export class EnvironmentsClient {
     public getEnvironment(
         request: HaiAgents.GetEnvironmentRequest,
         requestOptions?: EnvironmentsClient.RequestOptions,
-    ): core.HttpResponsePromise<HaiAgents.GetEnvironmentResponse> {
+    ): core.HttpResponsePromise<HaiAgents.Environment> {
         return core.HttpResponsePromise.fromPromise(this.__getEnvironment(request, requestOptions));
     }
 
     private async __getEnvironment(
         request: HaiAgents.GetEnvironmentRequest,
         requestOptions?: EnvironmentsClient.RequestOptions,
-    ): Promise<core.WithRawResponse<HaiAgents.GetEnvironmentResponse>> {
+    ): Promise<core.WithRawResponse<HaiAgents.Environment>> {
         const { id } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
@@ -214,7 +214,7 @@ export class EnvironmentsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 `api/v2/environments/${core.url.encodePathParam(id)}`,
             ),
             method: "GET",
@@ -227,7 +227,7 @@ export class EnvironmentsClient {
             logging: this._options.logging,
         });
         if (_response.ok) {
-            return { data: _response.body as HaiAgents.GetEnvironmentResponse, rawResponse: _response.rawResponse };
+            return { data: _response.body as HaiAgents.Environment, rawResponse: _response.rawResponse };
         }
 
         if (_response.error.reason === "status-code") {
@@ -272,14 +272,14 @@ export class EnvironmentsClient {
     public updateEnvironment(
         request: HaiAgents.UpdateEnvironmentRequest,
         requestOptions?: EnvironmentsClient.RequestOptions,
-    ): core.HttpResponsePromise<HaiAgents.UpdateEnvironmentResponse> {
+    ): core.HttpResponsePromise<HaiAgents.Environment> {
         return core.HttpResponsePromise.fromPromise(this.__updateEnvironment(request, requestOptions));
     }
 
     private async __updateEnvironment(
         request: HaiAgents.UpdateEnvironmentRequest,
         requestOptions?: EnvironmentsClient.RequestOptions,
-    ): Promise<core.WithRawResponse<HaiAgents.UpdateEnvironmentResponse>> {
+    ): Promise<core.WithRawResponse<HaiAgents.Environment>> {
         const { id, body: _body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
@@ -291,7 +291,7 @@ export class EnvironmentsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 `api/v2/environments/${core.url.encodePathParam(id)}`,
             ),
             method: "PUT",
@@ -307,7 +307,7 @@ export class EnvironmentsClient {
             logging: this._options.logging,
         });
         if (_response.ok) {
-            return { data: _response.body as HaiAgents.UpdateEnvironmentResponse, rawResponse: _response.rawResponse };
+            return { data: _response.body as HaiAgents.Environment, rawResponse: _response.rawResponse };
         }
 
         if (_response.error.reason === "status-code") {
@@ -364,7 +364,7 @@ export class EnvironmentsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 `api/v2/environments/${core.url.encodePathParam(id)}`,
             ),
             method: "DELETE",

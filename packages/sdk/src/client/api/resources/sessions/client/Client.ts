@@ -85,7 +85,7 @@ export class SessionsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 "api/v2/sessions",
             ),
             method: "GET",
@@ -165,7 +165,7 @@ export class SessionsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 "api/v2/sessions",
             ),
             method: "POST",
@@ -232,7 +232,7 @@ export class SessionsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 "api/v2/sessions/quota",
             ),
             method: "GET",
@@ -302,7 +302,7 @@ export class SessionsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 `api/v2/sessions/${core.url.encodePathParam(id)}`,
             ),
             method: "GET",
@@ -372,7 +372,7 @@ export class SessionsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 `api/v2/sessions/${core.url.encodePathParam(id)}`,
             ),
             method: "DELETE",
@@ -442,7 +442,7 @@ export class SessionsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 `api/v2/sessions/${core.url.encodePathParam(id)}/status`,
             ),
             method: "GET",
@@ -517,7 +517,7 @@ export class SessionsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 `api/v2/sessions/${core.url.encodePathParam(id)}/messages`,
             ),
             method: "POST",
@@ -595,7 +595,7 @@ export class SessionsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 `api/v2/sessions/${core.url.encodePathParam(id)}/pause`,
             ),
             method: "POST",
@@ -665,7 +665,7 @@ export class SessionsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 `api/v2/sessions/${core.url.encodePathParam(id)}/resume`,
             ),
             method: "POST",
@@ -735,7 +735,7 @@ export class SessionsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 `api/v2/sessions/${core.url.encodePathParam(id)}/force_answer`,
             ),
             method: "POST",
@@ -822,7 +822,7 @@ export class SessionsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 `api/v2/sessions/${core.url.encodePathParam(id)}/changes`,
             ),
             method: "GET",
@@ -905,7 +905,7 @@ export class SessionsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 `api/v2/sessions/${core.url.encodePathParam(id)}/events`,
             ),
             method: "GET",
@@ -982,7 +982,7 @@ export class SessionsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 `api/v2/sessions/${core.url.encodePathParam(id)}/feedback`,
             ),
             method: "POST",
@@ -1064,7 +1064,7 @@ export class SessionsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 `api/v2/sessions/${core.url.encodePathParam(id)}/events/${core.url.encodePathParam(eventIndex)}/feedback`,
             ),
             method: "PUT",
@@ -1142,7 +1142,7 @@ export class SessionsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 `api/v2/sessions/${core.url.encodePathParam(id)}/share`,
             ),
             method: "POST",
@@ -1212,7 +1212,7 @@ export class SessionsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 `api/v2/sessions/${core.url.encodePathParam(id)}/share`,
             ),
             method: "DELETE",
@@ -1289,7 +1289,7 @@ export class SessionsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 `api/v2/sessions/${core.url.encodePathParam(id)}/resources/${core.url.encodePathParam(bucket)}/${core.url.encodePathParam(key)}`,
             ),
             method: "GET",

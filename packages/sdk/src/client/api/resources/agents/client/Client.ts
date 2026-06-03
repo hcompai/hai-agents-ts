@@ -63,7 +63,7 @@ export class AgentsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 "api/v2/agents",
             ),
             method: "GET",
@@ -138,7 +138,7 @@ export class AgentsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 "api/v2/agents",
             ),
             method: "POST",
@@ -211,7 +211,7 @@ export class AgentsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 `api/v2/agents/${core.url.encodePathParam(agentName)}`,
             ),
             method: "GET",
@@ -286,7 +286,7 @@ export class AgentsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 `api/v2/agents/${core.url.encodePathParam(agentName)}`,
             ),
             method: "PUT",
@@ -359,7 +359,7 @@ export class AgentsClient {
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
-                    environments.HaiAgentsEnvironment.Default,
+                    environments.HaiAgentsEnvironment.Eu,
                 `api/v2/agents/${core.url.encodePathParam(agentName)}`,
             ),
             method: "DELETE",

@@ -26,7 +26,7 @@ export namespace Agent {
     export type Environments = Environments.Item[];
 
     export namespace Environments {
-        export type Item = string | HaiAgents.AgentEnvironmentsItemOne;
+        export type Item = string | HaiAgents.Environment;
     }
 
     export type Subagents = Subagents.Item[];
