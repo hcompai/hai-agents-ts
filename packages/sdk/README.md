@@ -5,7 +5,7 @@
 
 # hai-agents
 
-TypeScript SDK for [H Company's Agent Platform](https://hcompany.ai). A fully typed client covering sessions, agents, memories, skills, and environments.
+TypeScript SDK for [H Company's Agent Platform](https://hcompany.ai). A fully typed, class-based client covering sessions, agents, memories, skills, and environments.
 
 ## Install
 
@@ -13,118 +13,116 @@ TypeScript SDK for [H Company's Agent Platform](https://hcompany.ai). A fully ty
 npm install hai-agents
 ```
 
-Grab an API key at [portal.hcompany.ai](https://portal.hcompany.ai).
+Requires Node.js 18 or newer. Grab an API key at [portal.hcompany.ai](https://portal.hcompany.ai).
 
-## Usage
-
-Every operation takes per-call options. Set `baseUrl` to the Agent Platform and
-provide your `hk-...` key via the `auth` callback:
+## Quickstart
 
 ```ts
-import {
-  cancelSession,
-  createSession,
-  getSessionStatus,
-  getSessionChanges,
-  sendSessionMessages,
-  submitSessionFeedback,
-} from "hai-agents";
+import { HaiAgentsClient } from "hai-agents";
 
-const config = {
-  baseUrl: "https://agp.eu.hcompany.ai",
-  auth: () => process.env.H_API_KEY!,
-};
+const client = new HaiAgentsClient({ token: process.env.H_API_KEY });
 
-// Start a browsing session with the hosted `h/web` agent.
-const { data: session } = await createSession({
-  ...config,
+const session = await client.sessions.createSession({
   body: {
     agent: "h/web",
-    messages: [{ type: "user_message", message: "What is the H1 on example.com?" }],
-    max_steps: 10,
-    max_time_s: 150,
+    messages: "What is the H1 on example.com?",
+    maxSteps: 10,
+    maxTimeS: 150,
   },
 });
 
-const sessionId = session!.id;
+console.log(session.id);
+```
 
-// Poll until the session reaches a terminal state.
-const terminal = new Set(["completed", "failed", "timed_out", "interrupted"]);
-let status = session!.status.status;
-while (!terminal.has(status)) {
-  await new Promise((resolve) => setTimeout(resolve, 5000));
-  const { data } = await getSessionStatus({ ...config, path: { id: sessionId } });
-  status = data!.status;
+## Run a task to completion
+
+`runSessionUntilDone` creates a session and polls until the agent reaches a
+terminal state, returning the terminal `status`, accumulated events, and final answer.
+
+```ts
+import { runSessionUntilDone } from "hai-agents";
+
+const result = await runSessionUntilDone(client, {
+  body: { agent: "h/web", messages: "What is the H1 on example.com?" },
+  timeoutMs: 180_000, // overall wall-clock budget
+  pollBackoffMs: 1_000, // delay between polls, on top of the server long-poll
+  includeEvents: true, // set false to poll status only, without streaming events
+});
+
+console.log(result.status, result.answer);
+```
+
+## Error handling
+
+Operations reject with `HaiAgentsError` on a non-2xx response. Inspect
+`statusCode` and `body`; there is no `{ data, error }` tuple to unwrap.
+
+```ts
+import { HaiAgentsError } from "hai-agents";
+
+try {
+  const session = await client.sessions.getSession({ id });
+  console.log(session.status);
+} catch (err) {
+  if (err instanceof HaiAgentsError) {
+    console.error(err.statusCode, err.message, err.body);
+  }
+  throw err;
 }
-
-// Read the agent's final answer.
-const { data: changes } = await getSessionChanges({
-  ...config,
-  path: { id: sessionId },
-  query: { from_index: 0 },
-});
-console.log(changes!.answer);
 ```
 
-## Sending messages and feedback
+## Regions
 
-`sendSessionMessages` accepts either one user message object or a batch wrapper.
-It does not accept a raw array.
+The client targets the EU region by default. Select a region with `environment`,
+or point at a custom URL with `baseUrl`.
 
 ```ts
-await sendSessionMessages({
-  ...config,
-  path: { id: sessionId },
-  body: {
-    type: "user_message",
-    message: "Please keep the answer under one sentence.",
-  },
+import { HaiAgentsClient, HaiAgentsEnvironment } from "hai-agents";
+
+const usClient = new HaiAgentsClient({
+  token: process.env.H_API_KEY,
+  environment: HaiAgentsEnvironment.Us,
 });
 
-await sendSessionMessages({
-  ...config,
-  path: { id: sessionId },
-  body: {
-    type: "batch",
-    messages: [
-      {
-        type: "user_message",
-        message: "Actually, include the page title too.",
-      },
-    ],
-  },
+const proxied = new HaiAgentsClient({
+  token: process.env.H_API_KEY,
+  baseUrl: "https://my-proxy.example.com",
 });
 ```
 
-Feedback is binary success feedback with an optional message:
+## Messages and feedback
 
 ```ts
-await submitSessionFeedback({
-  ...config,
-  path: { id: sessionId },
-  body: {
-    success: true,
-    message: "The answer matched the page heading.",
-  },
+await client.sessions.sendSessionMessages({
+  id: session.id,
+  body: { type: "user_message", message: "Keep the answer under one sentence." },
+});
+
+await client.sessions.submitSessionFeedback({
+  id: session.id,
+  body: { success: true, message: "The answer matched the page heading." },
 });
 ```
 
 ## Cancelling a session
 
-`cancelSession` asks the platform to interrupt the run. The response confirms
-that the request was accepted; the session may still report `pending` or
-`running` briefly while the worker stops. Poll status until it reaches a
-terminal state such as `interrupted`.
+`cancelSession` asks the platform to interrupt the run. The session may still
+report `running` briefly while the worker stops; poll until it reaches a terminal
+state such as `interrupted`.
 
 ```ts
-await cancelSession({ ...config, path: { id: sessionId } });
+await client.sessions.cancelSession({ id: session.id });
+```
 
-let cancelledStatus = "running";
-while (!terminal.has(cancelledStatus)) {
-  await new Promise((resolve) => setTimeout(resolve, 3000));
-  const { data } = await getSessionStatus({ ...config, path: { id: sessionId } });
-  cancelledStatus = data!.status;
-}
+## Request size limit
 
-console.log(cancelledStatus);
+The platform rejects request bodies above 5MB. `runSessionUntilDone` enforces
+this on the create payload; for ad-hoc requests, validate first to fail fast with
+a clear message instead of a server error.
+
+```ts
+import { assertRequestUnderLimit, MAX_REQUEST_BYTES } from "hai-agents";
+
+assertRequestUnderLimit({ body: { agent: "h/web", messages } });
+console.log(`limit: ${MAX_REQUEST_BYTES} bytes`);
 ```
