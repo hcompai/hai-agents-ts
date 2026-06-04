@@ -20,7 +20,7 @@ export declare namespace SessionsClient {
 export class SessionsClient {
     protected readonly _options: NormalizedClientOptionsWithAuth<SessionsClient.Options>;
 
-    constructor(options: SessionsClient.Options) {
+    constructor(options: SessionsClient.Options = {}) {
         this._options = normalizeClientOptionsWithAuth(options);
     }
 
