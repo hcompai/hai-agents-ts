@@ -37,14 +37,14 @@ Requires Node.js 18 or newer. Grab an API key at [portal.hcompany.ai](https://po
 
 ## Quickstart
 
-Launch the built-in `h/web-surfer-holo3-1-35b` agent, which ships with its own browser, and describe the task in plain language. `runSessionUntilDone` polls until the agent finishes and returns the final answer.
+Launch the built-in `h/web-surfer-holo3-1-35b` agent, which ships with its own browser, and describe the task in plain language. `runSession` polls until the agent finishes and returns the final answer.
 
 ```ts
-import { HaiAgentsClient, runSessionUntilDone } from "hai-agents";
+import { HaiAgentsClient, runSession } from "hai-agents";
 
-const client = new HaiAgentsClient({ token: process.env.H_API_KEY });
+const client = new HaiAgentsClient({ apiKey: process.env.H_API_KEY });
 
-const result = await runSessionUntilDone(client, {
+const result = await runSession(client, {
   body: {
     agent: "h/web-surfer-holo3-1-35b",
     messages: "What are the top 3 stories on Hacker News right now?",
