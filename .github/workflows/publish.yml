@@ -51,7 +51,7 @@ jobs:
       - name: Publish
         if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && !inputs.dry_run)
         working-directory: packages/sdk
-        run: npm publish --provenance --access public
+        run: npm publish --access public
 
   release:
     needs: publish
