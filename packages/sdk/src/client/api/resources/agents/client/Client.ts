@@ -20,7 +20,7 @@ export declare namespace AgentsClient {
 export class AgentsClient {
     protected readonly _options: NormalizedClientOptionsWithAuth<AgentsClient.Options>;
 
-    constructor(options: AgentsClient.Options) {
+    constructor(options: AgentsClient.Options = {}) {
         this._options = normalizeClientOptionsWithAuth(options);
     }
 

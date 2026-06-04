@@ -21,7 +21,7 @@ export class HaiAgentsClient {
     protected _environments: EnvironmentsClient | undefined;
     protected _agents: AgentsClient | undefined;
 
-    constructor(options: HaiAgentsClient.Options) {
+    constructor(options: HaiAgentsClient.Options = {}) {
         this._options = normalizeClientOptionsWithAuth(options);
     }
 

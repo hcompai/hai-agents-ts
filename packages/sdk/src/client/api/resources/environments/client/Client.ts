@@ -20,7 +20,7 @@ export declare namespace EnvironmentsClient {
 export class EnvironmentsClient {
     protected readonly _options: NormalizedClientOptionsWithAuth<EnvironmentsClient.Options>;
 
-    constructor(options: EnvironmentsClient.Options) {
+    constructor(options: EnvironmentsClient.Options = {}) {
         this._options = normalizeClientOptionsWithAuth(options);
     }
 

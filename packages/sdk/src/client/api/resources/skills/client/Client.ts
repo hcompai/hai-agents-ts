@@ -20,7 +20,7 @@ export declare namespace SkillsClient {
 export class SkillsClient {
     protected readonly _options: NormalizedClientOptionsWithAuth<SkillsClient.Options>;
 
-    constructor(options: SkillsClient.Options) {
+    constructor(options: SkillsClient.Options = {}) {
         this._options = normalizeClientOptionsWithAuth(options);
     }
 
