@@ -22,4 +22,6 @@ export interface SessionRequest {
     parentSessionId?: string | null;
     /** JSON Schema the final answer must conform to. Null returns a free-form text answer. */
     answerFormat?: Record<string, unknown> | null;
+    /** Target version of the agent artifact to use. */
+    agentArtifact?: string | null;
 }
