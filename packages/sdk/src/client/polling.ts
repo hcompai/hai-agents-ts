@@ -38,7 +38,7 @@ export type WaitForSessionOptions = {
   maxPolls?: number;
 };
 
-export type RunSessionUntilDoneOptions = CreateSessionRequest & {
+export type RunSessionOptions = CreateSessionRequest & {
   waitForSeconds?: number;
   includeEvents?: boolean;
   timeoutMs?: number;
@@ -144,9 +144,9 @@ export async function waitForSession(
   throw new Error(`Session ${id} did not reach a terminal status before maxPolls=${maxPolls}`);
 }
 
-export async function runSessionUntilDone(
+export async function runSession(
   client: HaiAgentsClient,
-  options: RunSessionUntilDoneOptions,
+  options: RunSessionOptions,
 ): Promise<SessionRunResult> {
   const { waitForSeconds, includeEvents, timeoutMs, pollBackoffMs, maxPolls, ...createRequest } = options;
   assertRequestUnderLimit(createRequest);

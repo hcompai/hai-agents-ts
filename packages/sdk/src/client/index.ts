@@ -10,11 +10,11 @@ export {
   TERMINAL_SESSION_STATUSES,
   assertRequestUnderLimit,
   isTerminalSessionStatus,
-  runSessionUntilDone,
+  runSession,
   waitForSession,
 } from "./polling.js";
 export type {
-  RunSessionUntilDoneOptions,
+  RunSessionOptions,
   SessionRunResult,
   WaitForSessionOptions,
 } from "./polling.js";
