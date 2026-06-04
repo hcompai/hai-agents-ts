@@ -22,6 +22,7 @@ export const SessionRequest: core.serialization.ObjectSchema<serializers.Session
             "answer_format",
             core.serialization.record(core.serialization.string(), core.serialization.unknown()).optionalNullable(),
         ),
+        agentArtifact: core.serialization.property("agent_artifact", core.serialization.string().optionalNullable()),
     });
 
 export declare namespace SessionRequest {
@@ -34,5 +35,6 @@ export declare namespace SessionRequest {
         group_id?: (string | null | undefined) | null;
         parent_session_id?: (string | null | undefined) | null;
         answer_format?: (Record<string, unknown> | null | undefined) | null;
+        agent_artifact?: (string | null | undefined) | null;
     }
 }
