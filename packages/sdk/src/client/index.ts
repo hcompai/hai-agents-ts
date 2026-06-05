@@ -1,10 +1,11 @@
 export * as HaiAgents from "./api/index.js";
 export type { BaseClientOptions, BaseRequestOptions } from "./BaseClient.js";
-export { HaiAgentsClient } from "./Client.js";
+export { HaiAgentsClient } from "./oo.js";
 export { HaiAgentsEnvironment } from "./environments.js";
 export { HaiAgentsError, HaiAgentsTimeoutError } from "./errors/index.js";
 export * from "./exports.js";
 export * as serialization from "./serialization/index.js";
+export { SessionHandle } from "./polling.js";
 export {
   MAX_REQUEST_BYTES,
   TERMINAL_SESSION_STATUSES,
@@ -14,6 +15,7 @@ export {
   waitForSession,
 } from "./polling.js";
 export type {
+  CreateSessionParams,
   RunSessionOptions,
   SessionRunResult,
   WaitForSessionOptions,
