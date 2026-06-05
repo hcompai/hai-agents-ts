@@ -1,6 +1,11 @@
 import type { HaiAgentsClient } from "./Client.js";
 import type {
   CreateSessionRequest,
+  GetSessionChangesRequest,
+  SendSessionMessagesRequest,
+  Session,
+  SessionRequest,
+  SessionStatus,
   TrajectoryChanges,
   TrajectoryEvent,
   TrajectoryStatus,
@@ -22,7 +27,20 @@ export type SessionRunResult = {
   events: TrajectoryEvent[];
   nextFromIndex: number;
   finalChanges?: TrajectoryChanges;
+  /** The session's final answer, if it produced one (shortcut for finalChanges.answer). */
+  answer?: TrajectoryChanges["answer"];
 };
+
+/** Flat create-session parameters: the request body fields plus the idempotency key. */
+export type CreateSessionParams = SessionRequest & {
+  idempotencyKey?: string | null;
+};
+
+/** Split flat params into the nested { idempotencyKey, body } shape the generated client expects. */
+export function toCreateRequest(params: CreateSessionParams): CreateSessionRequest {
+  const { idempotencyKey, ...body } = params;
+  return { idempotencyKey: idempotencyKey ?? undefined, body };
+}
 
 export type WaitForSessionOptions = {
   id: string;
@@ -38,7 +56,7 @@ export type WaitForSessionOptions = {
   maxPolls?: number;
 };
 
-export type RunSessionOptions = CreateSessionRequest & {
+export type RunSessionOptions = CreateSessionParams & {
   waitForSeconds?: number;
   includeEvents?: boolean;
   timeoutMs?: number;
@@ -130,7 +148,8 @@ export async function waitForSession(
 
     const { status } = await client.sessions.getSessionStatus({ id });
     if (isTerminalSessionStatus(status)) {
-      return { id, status, events, nextFromIndex, finalChanges: await finalChanges(client, id, lastChanges, limit) };
+      const changes = await finalChanges(client, id, lastChanges, limit);
+      return { id, status, events, nextFromIndex, finalChanges: changes, answer: changes?.answer };
     }
 
     // The long-poll above paces the loop when streaming events; otherwise sleep.
@@ -148,9 +167,9 @@ export async function runSession(
   client: HaiAgentsClient,
   options: RunSessionOptions,
 ): Promise<SessionRunResult> {
-  const { waitForSeconds, includeEvents, timeoutMs, pollBackoffMs, maxPolls, ...createRequest } = options;
-  assertRequestUnderLimit(createRequest);
-  const session = await client.sessions.createSession(createRequest);
+  const { waitForSeconds, includeEvents, timeoutMs, pollBackoffMs, maxPolls, ...createParams } = options;
+  assertRequestUnderLimit(createParams);
+  const session = await client.sessions.createSession(toCreateRequest(createParams));
   return waitForSession(client, {
     id: session.id,
     waitForSeconds,
@@ -159,4 +178,49 @@ export async function runSession(
     pollBackoffMs,
     maxPolls,
   });
+}
+
+/** A created session bound to its client: object-oriented sugar over the polling helpers. */
+export class SessionHandle {
+  constructor(
+    private readonly client: HaiAgentsClient,
+    public readonly id: string,
+  ) {}
+
+  get(): Promise<Session> {
+    return this.client.sessions.getSession({ id: this.id });
+  }
+
+  status(): Promise<SessionStatus> {
+    return this.client.sessions.getSessionStatus({ id: this.id });
+  }
+
+  changes(options?: Omit<GetSessionChangesRequest, "id">): Promise<TrajectoryChanges | undefined> {
+    return this.client.sessions.getSessionChanges({ id: this.id, ...options });
+  }
+
+  sendMessage(message: SendSessionMessagesRequest["body"]): Promise<void> {
+    return this.client.sessions.sendSessionMessages({ id: this.id, body: message });
+  }
+
+  pause(): Promise<void> {
+    return this.client.sessions.pauseSession({ id: this.id });
+  }
+
+  resume(): Promise<void> {
+    return this.client.sessions.resumeSession({ id: this.id });
+  }
+
+  cancel(): Promise<void> {
+    return this.client.sessions.cancelSession({ id: this.id });
+  }
+
+  forceAnswer(): Promise<void> {
+    return this.client.sessions.forceSessionAnswer({ id: this.id });
+  }
+
+  /** Block until the session reaches a terminal status; resolves with the result and final answer. */
+  waitForCompletion(options?: Omit<WaitForSessionOptions, "id">): Promise<SessionRunResult> {
+    return waitForSession(this.client, { id: this.id, ...options });
+  }
 }
