@@ -396,7 +396,7 @@ export class SkillsClient {
     }
 
     /**
-     * Delete by name. Reserved rows: H employee only.
+     * Delete by name. Reserved rows: H admin only.
      *
      * @param {HaiAgents.DeleteSkillRequest} request
      * @param {SkillsClient.RequestOptions} requestOptions - Request-specific configuration.
