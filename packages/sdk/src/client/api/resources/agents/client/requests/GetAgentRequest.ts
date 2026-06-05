@@ -8,4 +8,6 @@
  */
 export interface GetAgentRequest {
     agentName: string;
+    /** Materialise string environment/skill/subagent leaves into full specs. */
+    resolve?: boolean;
 }
