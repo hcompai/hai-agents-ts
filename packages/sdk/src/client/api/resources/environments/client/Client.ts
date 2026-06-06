@@ -409,7 +409,7 @@ export class EnvironmentsClient {
     }
 
     /**
-     * Delete by identifier. Reserved rows: H admin only.
+     * Delete by identifier. Reserved rows: H employee only.
      *
      * @param {HaiAgents.DeleteEnvironmentRequest} request
      * @param {EnvironmentsClient.RequestOptions} requestOptions - Request-specific configuration.
