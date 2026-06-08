@@ -403,7 +403,7 @@ export class AgentsClient {
     }
 
     /**
-     * Delete by identifier. Reserved rows: H admin only.
+     * Delete by identifier. Reserved rows: H employee only.
      *
      * @param {HaiAgents.DeleteAgentRequest} request
      * @param {AgentsClient.RequestOptions} requestOptions - Request-specific configuration.

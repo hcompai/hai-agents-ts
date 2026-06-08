@@ -151,9 +151,6 @@ export class SessionsClient {
     /**
      * Create an agentic session.
      *
-     * Pass ``Idempotency-Key`` for safe retries: identical requests within 24h
-     * return the original session; reuse with a different body returns 422.
-     *
      * @param {HaiAgents.CreateSessionRequest} request
      * @param {SessionsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
