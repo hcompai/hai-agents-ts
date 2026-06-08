@@ -20,4 +20,6 @@ export interface Agent {
     subagents?: HaiAgents.AgentSubagentsItem[] | null;
     /** Skills the agent can draw on. Each entry is a registered skill's name or an inline definition. */
     skills?: HaiAgents.AgentSkillsItem[] | null;
+    /** JSON Schema the agent's final answer must conform to. Null returns a free-form text answer. */
+    answerFormat?: Record<string, unknown> | null;
 }

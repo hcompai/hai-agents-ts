@@ -20,8 +20,8 @@ export interface SessionRequest {
     groupId?: string | null;
     /** Id of the parent session, when this is a child run. */
     parentSessionId?: string | null;
-    /** JSON Schema the final answer must conform to. Null returns a free-form text answer. */
-    answerFormat?: Record<string, unknown> | null;
     /** Target version of the agent artifact to use. */
     agentArtifact?: string | null;
+    /** Per-run overrides applied to the resolved request, keyed by a dotted path. List members are selected with an explicit [field=value] clause, e.g. {"agent.environments[kind=web].start_url": "https://bing.com"}. Each value must match the type of the field its path targets. */
+    overrides?: Record<string, unknown>;
 }

@@ -18,11 +18,8 @@ export const SessionRequest: core.serialization.ObjectSchema<serializers.Session
             "parent_session_id",
             core.serialization.string().optionalNullable(),
         ),
-        answerFormat: core.serialization.property(
-            "answer_format",
-            core.serialization.record(core.serialization.string(), core.serialization.unknown()).optionalNullable(),
-        ),
         agentArtifact: core.serialization.property("agent_artifact", core.serialization.string().optionalNullable()),
+        overrides: core.serialization.record(core.serialization.string(), core.serialization.unknown()).optional(),
     });
 
 export declare namespace SessionRequest {
@@ -34,7 +31,7 @@ export declare namespace SessionRequest {
         idle_timeout_s?: (number | null | undefined) | null;
         group_id?: (string | null | undefined) | null;
         parent_session_id?: (string | null | undefined) | null;
-        answer_format?: (Record<string, unknown> | null | undefined) | null;
         agent_artifact?: (string | null | undefined) | null;
+        overrides?: Record<string, unknown> | null;
     }
 }

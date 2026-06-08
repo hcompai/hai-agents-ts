@@ -17,6 +17,10 @@ export const Agent: core.serialization.ObjectSchema<serializers.Agent.Raw, HaiAg
             .list(core.serialization.lazy(() => serializers.AgentSubagentsItem))
             .optionalNullable(),
         skills: core.serialization.list(AgentSkillsItem).optionalNullable(),
+        answerFormat: core.serialization.property(
+            "answer_format",
+            core.serialization.record(core.serialization.string(), core.serialization.unknown()).optionalNullable(),
+        ),
     },
 );
 
@@ -29,5 +33,6 @@ export declare namespace Agent {
         instructions?: (string | null | undefined) | null;
         subagents?: (serializers.AgentSubagentsItem.Raw[] | null | undefined) | null;
         skills?: (AgentSkillsItem.Raw[] | null | undefined) | null;
+        answer_format?: (Record<string, unknown> | null | undefined) | null;
     }
 }
