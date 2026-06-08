@@ -6,3 +6,5 @@ export * as sessions from "./sessions/index.js";
 export * from "./sessions/types/index.js";
 export * as skills from "./skills/index.js";
 export * from "./skills/types/index.js";
+export * from "./vaults/client/requests/index.js";
+export * as vaults from "./vaults/index.js";
