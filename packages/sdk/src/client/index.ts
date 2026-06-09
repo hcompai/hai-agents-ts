@@ -10,6 +10,7 @@ export {
   MAX_REQUEST_BYTES,
   TERMINAL_SESSION_STATUSES,
   assertRequestUnderLimit,
+  attachToolDefinitions,
   isTerminalSessionStatus,
   runSession,
   waitForSession,
@@ -20,3 +21,5 @@ export type {
   SessionRunResult,
   WaitForSessionOptions,
 } from "./polling.js";
+export { asTools, tool, toolDefinition } from "./tools.js";
+export type { Tool, ToolFn } from "./tools.js";
