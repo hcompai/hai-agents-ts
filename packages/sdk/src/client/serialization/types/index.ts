@@ -3,6 +3,7 @@ export * from "./AgentEnvironmentsItem.js";
 export * from "./AgentSkillsItem.js";
 export * from "./AgentSubagentsItem.js";
 export * from "./Browser.js";
+export * from "./BrowserKind.js";
 export * from "./BrowserMode.js";
 export * from "./Environment.js";
 export * from "./EnvironmentKind.js";

@@ -8,14 +8,17 @@ import type * as HaiAgents from "../index.js";
 export interface Browser {
     /** Catalog identifier for this environment. */
     id: string;
+    kind?: HaiAgents.BrowserKind;
     /** Run without a visible window. */
-    headless: boolean;
+    headless?: boolean;
     /** Viewport width in pixels. */
-    width: number;
+    width?: number;
     /** Viewport height in pixels. */
-    height: number;
-    /** Initial URL to open. Null starts on a blank page. */
-    startUrl: string | null;
+    height?: number;
+    /** Initial URL to open. */
+    startUrl?: string;
     /** How the agent perceives and drives the browser. 'visual': act on screenshots by viewport coordinates. 'multimodal': the same, with the page also included as markdown text alongside each screenshot. 'text': read-only markdown with URL navigation, no screenshots. */
     mode?: HaiAgents.BrowserMode;
+    /** Characters of page text shown per page in 'text' mode. */
+    pageChars?: number;
 }
