@@ -1,4 +1,4 @@
-/** Client-executed tools: the agent requests them, your process runs them. */
+/** Custom tools: the agent requests them, your process runs them. */
 
 export type ToolFn = (args: Record<string, unknown>) => unknown | Promise<unknown>;
 
@@ -10,7 +10,7 @@ export type Tool = {
   fn: ToolFn;
 };
 
-/** Validate and return a client-executed tool definition. */
+/** Validate and return a custom tool definition. */
 export function tool(spec: Tool): Tool {
   if (!spec.name) {
     throw new Error("Tool needs a non-empty name.");

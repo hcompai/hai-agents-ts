@@ -59,7 +59,7 @@ console.log(result.status); // "completed"
 console.log(result.answer);
 ```
 
-## Client tools
+## Custom tools
 
 Give the agent tools that run in your own process. Declare each tool with a JSON schema and a function; the SDK registers them on the session, executes them when the agent calls them, and posts the results back so the agent can continue.
 

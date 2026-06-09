@@ -55,7 +55,7 @@ export type WaitForSessionOptions = {
   /** Delay between polls, on top of the server long-poll wait. */
   pollBackoffMs?: number;
   maxPolls?: number;
-  /** Client-executed tools to run when the agent calls them. */
+  /** Custom tools to run when the agent calls them. */
   tools?: readonly Tool[];
 };
 
@@ -65,7 +65,7 @@ export type RunSessionOptions = CreateSessionParams & {
   timeoutMs?: number;
   pollBackoffMs?: number;
   maxPolls?: number;
-  /** Client-executed tools to run when the agent calls them. */
+  /** Custom tools to run when the agent calls them. */
   tools?: readonly Tool[];
 };
 
@@ -95,7 +95,7 @@ export function attachToolDefinitions(params: CreateSessionParams, tools: readon
 
 type PendingToolCall = { id: string; name: string; arguments?: Record<string, unknown> };
 
-/** Pending client tool calls advertised by `ActiveStateChangeEvent`s in an event batch. */
+/** Pending custom tool calls advertised by `ActiveStateChangeEvent`s in an event batch. */
 function pendingToolCalls(batch: readonly TrajectoryEvent[]): PendingToolCall[] {
   const calls = new Map<string, PendingToolCall>();
   for (const event of batch) {
