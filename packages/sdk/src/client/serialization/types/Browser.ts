@@ -3,11 +3,13 @@
 import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
+import { BrowserKind } from "./BrowserKind.js";
 import { BrowserMode } from "./BrowserMode.js";
 
 export const Browser: core.serialization.ObjectSchema<serializers.Browser.Raw, HaiAgents.Browser> =
     core.serialization.object({
         id: core.serialization.string(),
+        kind: BrowserKind.optional(),
         headless: core.serialization.boolean(),
         width: core.serialization.number(),
         height: core.serialization.number(),
@@ -18,6 +20,7 @@ export const Browser: core.serialization.ObjectSchema<serializers.Browser.Raw, H
 export declare namespace Browser {
     export interface Raw {
         id: string;
+        kind?: BrowserKind.Raw | null;
         headless: boolean;
         width: number;
         height: number;

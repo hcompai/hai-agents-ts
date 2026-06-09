@@ -8,6 +8,7 @@ import type * as HaiAgents from "../index.js";
 export interface Browser {
     /** Catalog identifier for this environment. */
     id: string;
+    kind?: HaiAgents.BrowserKind;
     /** Run without a visible window. */
     headless: boolean;
     /** Viewport width in pixels. */
