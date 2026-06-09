@@ -2,10 +2,4 @@
 
 import type * as HaiAgents from "../index.js";
 
-export type Environment = HaiAgents.Environment.Web;
-
-export namespace Environment {
-    export interface Web extends HaiAgents.Browser {
-        kind: "web";
-    }
-}
+export type Environment = HaiAgents.Browser;

@@ -130,14 +130,13 @@ export class EnvironmentsClient {
     /**
      * Create an environment.
      *
-     * @param {HaiAgents.CreateEnvironmentRequest} request
+     * @param {HaiAgents.Browser} request
      * @param {EnvironmentsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
      * @throws {@link HaiAgents.UnprocessableEntityError}
      *
      * @example
      *     await client.environments.createEnvironment({
-     *         kind: "web",
      *         id: "id",
      *         headless: true,
      *         width: 1,
@@ -145,14 +144,14 @@ export class EnvironmentsClient {
      *     })
      */
     public createEnvironment(
-        request: HaiAgents.CreateEnvironmentRequest,
+        request: HaiAgents.Browser,
         requestOptions?: EnvironmentsClient.RequestOptions,
     ): core.HttpResponsePromise<HaiAgents.Environment> {
         return core.HttpResponsePromise.fromPromise(this.__createEnvironment(request, requestOptions));
     }
 
     private async __createEnvironment(
-        request: HaiAgents.CreateEnvironmentRequest,
+        request: HaiAgents.Browser,
         requestOptions?: EnvironmentsClient.RequestOptions,
     ): Promise<core.WithRawResponse<HaiAgents.Environment>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
@@ -173,7 +172,7 @@ export class EnvironmentsClient {
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: serializers.CreateEnvironmentRequest.jsonOrThrow(request, {
+            body: serializers.Browser.jsonOrThrow(request, {
                 unrecognizedObjectKeys: "passthrough",
                 allowUnrecognizedUnionMembers: true,
                 allowUnrecognizedEnumValues: true,
@@ -320,7 +319,6 @@ export class EnvironmentsClient {
      *     await client.environments.updateEnvironment({
      *         id: "id",
      *         body: {
-     *             kind: "web",
      *             id: "id",
      *             headless: true,
      *             width: 1,
@@ -358,7 +356,7 @@ export class EnvironmentsClient {
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: serializers.UpdateEnvironmentRequestBody.jsonOrThrow(_body, {
+            body: serializers.Browser.jsonOrThrow(_body, {
                 unrecognizedObjectKeys: "passthrough",
                 allowUnrecognizedUnionMembers: true,
                 allowUnrecognizedEnumValues: true,
