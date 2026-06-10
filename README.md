@@ -85,6 +85,37 @@ for (const job of result.answer?.jobs ?? []) {
 
 A completed answer that does not match the schema throws `AnswerValidationError` (raw payload on `.raw`). Sessions that end without completing (cancelled, timed out) resolve with their raw answer untouched.
 
+## Custom tools
+
+Give the agent tools that run in your own process. Declare each tool with a JSON schema and a function; the SDK registers them on the session, executes them when the agent calls them, and posts the results back so the agent can continue.
+
+```ts
+import { HaiAgentsClient, runSession, tool } from "hai-agents";
+
+const getWeather = tool({
+  name: "get_weather",
+  description: "Get the current weather for a city.",
+  inputSchema: {
+    type: "object",
+    properties: { city: { type: "string" } },
+    required: ["city"],
+  },
+  fn: async ({ city }) => `Sunny in ${city}, 24C`,
+});
+
+const client = new HaiAgentsClient();
+
+const result = await runSession(client, {
+  agent: "h/web-surfer-holo3-1-35b",
+  messages: "What should I wear in Paris today?",
+  tools: [getWeather],
+});
+
+console.log(result.answer);
+```
+
+Tool functions may be sync or async. Exceptions are reported back to the agent as tool errors instead of crashing the run.
+
 ## Documentation
 
 Guides, core concepts, and the full API reference live at **[hub.hcompany.ai/agent-api](https://hub.hcompany.ai/agent-api)**, covering streaming progress, steering a live session, regions, structured output, and error handling.

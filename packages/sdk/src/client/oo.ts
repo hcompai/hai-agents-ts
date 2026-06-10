@@ -3,6 +3,7 @@ import {
   SessionHandle,
   assertRequestUnderLimit,
   attachAnswerSchema,
+  attachToolDefinitions,
   runSession,
   toCreateRequest,
   type AnswerSchema,
@@ -11,6 +12,7 @@ import {
   type SessionRunResult,
 } from "./polling.js";
 import type { TrajectoryChanges } from "./api/index.js";
+import { asTools, type Tool } from "./tools.js";
 
 /**
  * The public SDK client. Extends the Fern-generated client with create-and-run
@@ -27,13 +29,16 @@ export class HaiAgentsClient extends FernClient {
 
   /** Create a session and return a handle to it without waiting. */
   public async startSession<TAnswer = TrajectoryChanges["answer"]>(
-    params: CreateSessionParams & { answerSchema?: AnswerSchema<TAnswer> },
+    params: CreateSessionParams & { answerSchema?: AnswerSchema<TAnswer>; tools?: readonly Tool[] },
   ): Promise<SessionHandle<TAnswer>> {
-    const { answerSchema, ...createParams } = params;
-    const prepared = answerSchema ? await attachAnswerSchema(createParams, answerSchema) : createParams;
+    const { answerSchema, tools, ...createParams } = params;
+    const normalizedTools = asTools(tools ?? []);
+    const withTools =
+      normalizedTools.length > 0 ? attachToolDefinitions(createParams, normalizedTools) : createParams;
+    const prepared = answerSchema ? await attachAnswerSchema(withTools, answerSchema) : withTools;
     assertRequestUnderLimit(prepared);
     const session = await this.sessions.createSession(toCreateRequest(prepared));
-    return new SessionHandle(this, session.id, answerSchema);
+    return new SessionHandle(this, session.id, answerSchema, normalizedTools.length > 0 ? normalizedTools : undefined);
   }
 
   /** Wrap an existing session id in a handle. */

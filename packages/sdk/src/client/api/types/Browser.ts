@@ -21,4 +21,6 @@ export interface Browser {
     mode?: HaiAgents.BrowserMode;
     /** Characters of page text shown per page in 'text' mode. */
     pageChars?: number;
+    /** Id of a vault config to bind to this browser, letting the agent sign in to sites with secrets resolved from the vault. The vault must belong to the caller's organization. Omit to run without secret access. */
+    vaultId?: string | null;
 }

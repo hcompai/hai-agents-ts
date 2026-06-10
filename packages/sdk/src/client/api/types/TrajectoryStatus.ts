@@ -6,8 +6,9 @@
  * Lifecycle::
  *
  *     PENDING → RUNNING → {COMPLETED, FAILED, TIMED_OUT, INTERRUPTED}
- *        |        ↑  ↑
- *        |        |  └─────→ IDLE (interactive: agent waiting for next task)
+ *        |        ↑  ↑ ↑
+ *        |        |  | └───→ IDLE (interactive: agent waiting for next task)
+ *        |        |  └─────→ AWAITING_TOOL_RESULTS (waiting for custom tool results)
  *        |        ↓
  *        └─────→ PAUSED
  */
@@ -16,6 +17,7 @@ export const TrajectoryStatus = {
     Running: "running",
     Paused: "paused",
     Idle: "idle",
+    AwaitingToolResults: "awaiting_tool_results",
     Completed: "completed",
     Failed: "failed",
     TimedOut: "timed_out",
