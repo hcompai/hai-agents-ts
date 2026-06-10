@@ -2,12 +2,15 @@ import { HaiAgentsClient as FernClient } from "./Client.js";
 import {
   SessionHandle,
   assertRequestUnderLimit,
+  attachAnswerSchema,
   runSession,
   toCreateRequest,
+  type AnswerSchema,
   type CreateSessionParams,
   type RunSessionOptions,
   type SessionRunResult,
 } from "./polling.js";
+import type { TrajectoryChanges } from "./api/index.js";
 
 /**
  * The public SDK client. Extends the Fern-generated client with create-and-run
@@ -16,15 +19,21 @@ import {
  */
 export class HaiAgentsClient extends FernClient {
   /** Create a session and resolve once it completes, returning the result and final answer. */
-  public runSession(options: RunSessionOptions): Promise<SessionRunResult> {
+  public runSession<TAnswer = TrajectoryChanges["answer"]>(
+    options: RunSessionOptions<TAnswer>,
+  ): Promise<SessionRunResult<TAnswer>> {
     return runSession(this, options);
   }
 
   /** Create a session and return a handle to it without waiting. */
-  public async startSession(params: CreateSessionParams): Promise<SessionHandle> {
-    assertRequestUnderLimit(params);
-    const session = await this.sessions.createSession(toCreateRequest(params));
-    return new SessionHandle(this, session.id);
+  public async startSession<TAnswer = TrajectoryChanges["answer"]>(
+    params: CreateSessionParams & { answerSchema?: AnswerSchema<TAnswer> },
+  ): Promise<SessionHandle<TAnswer>> {
+    const { answerSchema, ...createParams } = params;
+    const prepared = answerSchema ? await attachAnswerSchema(createParams, answerSchema) : createParams;
+    assertRequestUnderLimit(prepared);
+    const session = await this.sessions.createSession(toCreateRequest(prepared));
+    return new SessionHandle(this, session.id, answerSchema);
   }
 
   /** Wrap an existing session id in a handle. */

@@ -7,6 +7,7 @@ export * from "./exports.js";
 export * as serialization from "./serialization/index.js";
 export { SessionHandle } from "./polling.js";
 export {
+  AnswerValidationError,
   MAX_REQUEST_BYTES,
   TERMINAL_SESSION_STATUSES,
   assertRequestUnderLimit,
@@ -15,6 +16,7 @@ export {
   waitForSession,
 } from "./polling.js";
 export type {
+  AnswerSchema,
   CreateSessionParams,
   RunSessionOptions,
   SessionRunResult,

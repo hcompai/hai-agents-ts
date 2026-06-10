@@ -59,6 +59,32 @@ console.log(result.status); // "completed"
 console.log(result.answer);
 ```
 
+## Structured output
+
+Pass a [Zod v4](https://zod.dev) schema as `answerSchema` and the agent's final answer resolves as a parsed, typed value. The schema is sent as the agent's answer format; the raw wire value stays at `result.finalChanges.answer`. Zod is an optional peer dependency, only needed when you use this.
+
+```ts
+import { HaiAgentsClient, runSession } from "hai-agents";
+import { z } from "zod";
+
+const Jobs = z.object({
+  jobs: z.array(z.object({ title: z.string(), company: z.string() })),
+});
+
+const client = new HaiAgentsClient();
+const result = await runSession(client, {
+  agent: "h/web-surfer-holo3-1-35b",
+  messages: "Find 3 open ML engineering roles in Paris.",
+  answerSchema: Jobs,
+});
+
+for (const job of result.answer?.jobs ?? []) {
+  console.log(job.title, "@", job.company); // typed via z.infer
+}
+```
+
+A completed answer that does not match the schema throws `AnswerValidationError` (raw payload on `.raw`). Sessions that end without completing (cancelled, timed out) resolve with their raw answer untouched.
+
 ## Documentation
 
 Guides, core concepts, and the full API reference live at **[hub.hcompany.ai/agent-api](https://hub.hcompany.ai/agent-api)**, covering streaming progress, steering a live session, regions, structured output, and error handling.
