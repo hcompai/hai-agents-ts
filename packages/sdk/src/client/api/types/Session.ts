@@ -9,6 +9,8 @@ export interface Session {
     id: string;
     request: HaiAgents.SessionRequest;
     status: HaiAgents.SessionStatus;
+    /** URL of the session's Agent View page on the H Platform (live view and replay). */
+    agentViewUrl?: string | null;
     /** The agent's most recent final answer: free-form text, or structured data when the agent runs with a custom answer format. Null until the agent first answers. Mirrors the answer streamed from the changes endpoint, surfaced here for non-interactive runs. */
     latestAnswer?: unknown;
     createdAt: Date;

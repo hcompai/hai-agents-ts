@@ -11,6 +11,7 @@ export const SessionSummary: core.serialization.ObjectSchema<serializers.Session
         id: core.serialization.string(),
         agent: core.serialization.string().optionalNullable(),
         status: TrajectoryStatus,
+        agentViewUrl: core.serialization.property("agent_view_url", core.serialization.string().optionalNullable()),
         firstMessage: core.serialization.property("first_message", UserMessageEvent.optionalNullable()),
         createdAt: core.serialization.property("created_at", core.serialization.date()),
         startedAt: core.serialization.property("started_at", core.serialization.date().optionalNullable()),
@@ -22,6 +23,7 @@ export declare namespace SessionSummary {
         id: string;
         agent?: (string | null | undefined) | null;
         status: TrajectoryStatus.Raw;
+        agent_view_url?: (string | null | undefined) | null;
         first_message?: (UserMessageEvent.Raw | null | undefined) | null;
         created_at: string;
         started_at?: (string | null | undefined) | null;
