@@ -22,4 +22,6 @@ export interface Agent {
     skills?: HaiAgents.AgentSkillsItem[] | null;
     /** JSON Schema the agent's final answer must conform to. Null returns a free-form text answer. */
     answerFormat?: Record<string, unknown> | null;
+    /** Custom tools executed by the API client. The agent emits a tool call, pauses, and resumes once the client sends back the matching tool result. */
+    tools?: HaiAgents.ToolDefinition[] | null;
 }

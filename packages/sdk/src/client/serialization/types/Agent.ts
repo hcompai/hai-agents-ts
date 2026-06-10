@@ -5,6 +5,7 @@ import * as core from "../../core/index.js";
 import * as serializers from "../index.js";
 import { AgentEnvironmentsItem } from "./AgentEnvironmentsItem.js";
 import { AgentSkillsItem } from "./AgentSkillsItem.js";
+import { ToolDefinition } from "./ToolDefinition.js";
 
 export const Agent: core.serialization.ObjectSchema<serializers.Agent.Raw, HaiAgents.Agent> = core.serialization.object(
     {
@@ -21,6 +22,7 @@ export const Agent: core.serialization.ObjectSchema<serializers.Agent.Raw, HaiAg
             "answer_format",
             core.serialization.record(core.serialization.string(), core.serialization.unknown()).optionalNullable(),
         ),
+        tools: core.serialization.list(ToolDefinition).optionalNullable(),
     },
 );
 
@@ -34,5 +36,6 @@ export declare namespace Agent {
         subagents?: (serializers.AgentSubagentsItem.Raw[] | null | undefined) | null;
         skills?: (AgentSkillsItem.Raw[] | null | undefined) | null;
         answer_format?: (Record<string, unknown> | null | undefined) | null;
+        tools?: (ToolDefinition.Raw[] | null | undefined) | null;
     }
 }

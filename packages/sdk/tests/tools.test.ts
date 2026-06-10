@@ -57,10 +57,12 @@ describe("attachToolDefinitions", () => {
     expect((params.agent as Record<string, unknown>)["tools"]).toEqual([toolDefinition(add)]);
   });
 
-  it("targets overrides for a referenced agent", () => {
+  it("targets overrides with wire-format definitions for a referenced agent", () => {
     const params = attachToolDefinitions({ agent: "h/web-surfer" }, [add]);
     expect(params.agent).toBe("h/web-surfer");
-    expect(params.overrides).toEqual({ "agent.tools": [toolDefinition(add)] });
+    expect(params.overrides).toEqual({
+      "agent.tools": [{ name: add.name, description: add.description, input_schema: add.inputSchema }],
+    });
   });
 });
 

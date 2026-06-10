@@ -88,9 +88,15 @@ export function assertRequestUnderLimit(payload: unknown, maxBytes: number = MAX
 export function attachToolDefinitions(params: CreateSessionParams, tools: readonly Tool[]): CreateSessionParams {
   const definitions = tools.map(toolDefinition);
   if (typeof params.agent === "string") {
-    return { ...params, overrides: { ...(params.overrides ?? {}), "agent.tools": definitions } };
+    // Override values bypass the serde layer, so they must be in wire format.
+    const wireDefinitions = definitions.map((d) => ({
+      name: d.name,
+      description: d.description,
+      input_schema: d.inputSchema,
+    }));
+    return { ...params, overrides: { ...(params.overrides ?? {}), "agent.tools": wireDefinitions } };
   }
-  return { ...params, agent: { ...params.agent, tools: definitions } as SessionRequest["agent"] };
+  return { ...params, agent: { ...params.agent, tools: definitions } };
 }
 
 type PendingToolCall = { id: string; name: string; arguments?: Record<string, unknown> };

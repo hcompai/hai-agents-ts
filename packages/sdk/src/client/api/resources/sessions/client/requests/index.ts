@@ -10,6 +10,7 @@ export type { ListSessionsRequest } from "./ListSessionsRequest.js";
 export type { PauseSessionRequest } from "./PauseSessionRequest.js";
 export type { ResumeSessionRequest } from "./ResumeSessionRequest.js";
 export type { SendSessionMessagesRequest } from "./SendSessionMessagesRequest.js";
+export type { SendSessionToolResultsRequest } from "./SendSessionToolResultsRequest.js";
 export type { ShareSessionRequest } from "./ShareSessionRequest.js";
 export type { SubmitEventFeedbackRequest } from "./SubmitEventFeedbackRequest.js";
 export type { SubmitSessionFeedbackRequest } from "./SubmitSessionFeedbackRequest.js";
