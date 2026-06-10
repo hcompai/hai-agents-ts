@@ -148,6 +148,32 @@ describe("waitForSession tool dispatch", () => {
     expect(posts).toEqual([{ type: "tool_result", tool_call_id: "c2", result: 4, is_error: false }]);
   });
 
+  it("recovers pending calls when joining past the advertising event", async () => {
+    const pending = [{ id: "c1", name: "add", arguments: { a: 1, b: 1 } }];
+    const statuses = ["awaiting_tool_results", "completed"];
+    let statusIdx = 0;
+    const posts: unknown[] = [];
+    const client = {
+      sessions: {
+        getSessionChanges: async ({ fromIndex }: { fromIndex?: number }) =>
+          fromIndex === 0
+            ? ({ newEvents: [awaitingEvent(pending)], answer: "done" } as unknown as TrajectoryChanges)
+            : null,
+        getSessionStatus: async () => ({ status: statuses[Math.min(statusIdx++, statuses.length - 1)] }),
+      },
+      fetch: async (_input: unknown, init?: { body?: string }) => {
+        posts.push(JSON.parse(init?.body ?? "null"));
+        return new Response("", { status: 200 });
+      },
+    } as unknown as HaiAgentsClient;
+
+    const result = await waitForSession(client, { id: "s1", fromIndex: 9, tools: [add], waitForSeconds: 0 });
+
+    expect(result.status).toBe("completed");
+    expect(posts).toHaveLength(1);
+    expect((posts[0] as { tool_call_id: string }).tool_call_id).toBe("c1");
+  });
+
   it("does not dispatch when the live status left awaiting_tool_results", async () => {
     const { client, posts } = fakeClient([
       { status: "running", changes: { newEvents: [awaitingEvent([{ id: "c1", name: "add", arguments: { a: 1, b: 1 } }])] } },

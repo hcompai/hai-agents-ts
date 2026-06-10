@@ -187,6 +187,17 @@ async function finalChanges(
   return fetched ?? lastChanges;
 }
 
+/** A wait that joins mid-stream may start past the advertising event; replay from 0 to find the latest batch. */
+async function recoverPendingToolCalls(client: HaiAgentsClient, id: string): Promise<PendingToolCall[]> {
+  const changes = await client.sessions.getSessionChanges({
+    id,
+    fromIndex: 0,
+    includeEvents: true,
+    waitForSeconds: 0,
+  });
+  return latestPendingToolCalls(changes?.newEvents ?? [], []);
+}
+
 /**
  * Poll a session until it reaches a terminal status.
  *
@@ -252,6 +263,9 @@ export async function waitForSession(
       advertised = latestPendingToolCalls(batch, advertised);
       // Status gate: on a replayed stream the live status decides whether calls are still open.
       if ((status as string) === "awaiting_tool_results") {
+        if (advertised.length === 0) {
+          advertised = await recoverPendingToolCalls(client, id);
+        }
         const calls = advertised.filter((call) => !answered.has(call.id));
         if (calls.length > 0) {
           const results = await Promise.all(calls.map((call) => executeToolCall(toolsByName, call)));
