@@ -10,6 +10,7 @@ export const TrajectoryStatus: core.serialization.Schema<serializers.TrajectoryS
         "running",
         "paused",
         "idle",
+        "awaiting_tool_results",
         "completed",
         "failed",
         "timed_out",
@@ -17,5 +18,14 @@ export const TrajectoryStatus: core.serialization.Schema<serializers.TrajectoryS
     ]);
 
 export declare namespace TrajectoryStatus {
-    export type Raw = "pending" | "running" | "paused" | "idle" | "completed" | "failed" | "timed_out" | "interrupted";
+    export type Raw =
+        | "pending"
+        | "running"
+        | "paused"
+        | "idle"
+        | "awaiting_tool_results"
+        | "completed"
+        | "failed"
+        | "timed_out"
+        | "interrupted";
 }

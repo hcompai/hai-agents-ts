@@ -10,6 +10,7 @@ import type {
   TrajectoryEvent,
   TrajectoryStatus,
 } from "./api/index.js";
+import { asTools, toolDefinition, type Tool } from "./tools.js";
 
 export const TERMINAL_SESSION_STATUSES = [
   "completed",
@@ -54,6 +55,8 @@ export type WaitForSessionOptions = {
   /** Delay between polls, on top of the server long-poll wait. */
   pollBackoffMs?: number;
   maxPolls?: number;
+  /** Custom tools to run when the agent calls them. */
+  tools?: readonly Tool[];
 };
 
 export type RunSessionOptions = CreateSessionParams & {
@@ -62,6 +65,8 @@ export type RunSessionOptions = CreateSessionParams & {
   timeoutMs?: number;
   pollBackoffMs?: number;
   maxPolls?: number;
+  /** Custom tools to run when the agent calls them. */
+  tools?: readonly Tool[];
 };
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
@@ -76,6 +81,85 @@ export function assertRequestUnderLimit(payload: unknown, maxBytes: number = MAX
     throw new Error(
       `Request payload is ${mb(bytes)}MB, over the ${mb(maxBytes)}MB limit. Downscale images before sending.`,
     );
+  }
+}
+
+/** Carry the tool definitions via the `agent.tools` override; the server applies it to referenced and inline agents alike. */
+export function attachToolDefinitions(params: CreateSessionParams, tools: readonly Tool[]): CreateSessionParams {
+  return { ...params, overrides: { ...(params.overrides ?? {}), "agent.tools": tools.map(toolDefinition) } };
+}
+
+type PendingToolCall = { id: string; name: string; arguments?: Record<string, unknown> };
+
+/**
+ * Pending custom tool calls per the latest `ActiveStateChangeEvent`.
+ *
+ * The agent re-publishes the surviving list whenever a call settles, so the latest
+ * event is the source of truth; `previous` carries it across polls whose batches
+ * contain no state change.
+ */
+function latestPendingToolCalls(
+  batch: readonly TrajectoryEvent[],
+  previous: PendingToolCall[],
+): PendingToolCall[] {
+  let calls = previous;
+  for (const event of batch) {
+    if (event.type !== "ActiveStateChangeEvent") {
+      continue;
+    }
+    const data = (event.data ?? {}) as Record<string, unknown>;
+    calls =
+      data["state"] === "awaiting_tool_results"
+        ? [...((data["pending_tool_calls"] ?? []) as PendingToolCall[])]
+        : [];
+  }
+  return calls;
+}
+
+function jsonSafe(value: unknown): unknown {
+  try {
+    JSON.stringify(value);
+    return value === undefined ? null : value;
+  } catch {
+    return String(value);
+  }
+}
+
+type ToolResultPayload = { type: "tool_result"; tool_call_id: string; result: unknown; is_error: boolean };
+
+/** Run one pending call locally and shape the `tool_result` payload. */
+async function executeToolCall(
+  toolsByName: ReadonlyMap<string, Tool>,
+  call: PendingToolCall,
+): Promise<ToolResultPayload> {
+  const localTool = toolsByName.get(call.name);
+  if (localTool === undefined) {
+    return {
+      type: "tool_result",
+      tool_call_id: call.id,
+      result: `Tool ${JSON.stringify(call.name)} is not registered with this client.`,
+      is_error: true,
+    };
+  }
+  try {
+    const result = await localTool.fn(call.arguments ?? {});
+    return { type: "tool_result", tool_call_id: call.id, result: jsonSafe(result), is_error: false };
+  } catch (error) {
+    const message = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+    return { type: "tool_result", tool_call_id: call.id, result: message, is_error: true };
+  }
+}
+
+async function postToolResults(client: HaiAgentsClient, id: string, results: ToolResultPayload[]): Promise<void> {
+  const body = results.length === 1 ? results[0] : { type: "batch", results };
+  const response = await client.fetch(`api/v2/sessions/${encodeURIComponent(id)}/tool_results`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  // 409 means the session finished and resolved the calls itself; the status poll will exit the loop.
+  if (!(response.status >= 200 && response.status < 300) && response.status !== 409) {
+    throw new Error(`Posting tool results to session ${id} failed: HTTP ${response.status} ${await response.text()}`);
   }
 }
 
@@ -99,6 +183,17 @@ async function finalChanges(
   return fetched ?? lastChanges;
 }
 
+/** A wait that joins mid-stream may start past the advertising event; replay from 0 to find the latest batch. */
+async function recoverPendingToolCalls(client: HaiAgentsClient, id: string): Promise<PendingToolCall[]> {
+  const changes = await client.sessions.getSessionChanges({
+    id,
+    fromIndex: 0,
+    includeEvents: true,
+    waitForSeconds: 0,
+  });
+  return latestPendingToolCalls(changes?.newEvents ?? [], []);
+}
+
 /**
  * Poll a session until it reaches a terminal status.
  *
@@ -119,7 +214,14 @@ export async function waitForSession(
     timeoutMs,
     pollBackoffMs = 0,
     maxPolls,
+    tools,
   } = options;
+  const toolsByName = new Map(asTools(tools ?? []).map((t) => [t.name, t]));
+  if (toolsByName.size > 0 && !includeEvents) {
+    throw new Error("tools require includeEvents=true: pending calls arrive on the event stream.");
+  }
+  const answered = new Set<string>();
+  let advertised: PendingToolCall[] = [];
   const events: TrajectoryEvent[] = [];
   let nextFromIndex = fromIndex;
   let lastChanges: TrajectoryChanges | undefined;
@@ -130,6 +232,7 @@ export async function waitForSession(
       throw new Error(`Session ${id} did not reach a terminal status within ${timeoutMs}ms`);
     }
 
+    let batch: TrajectoryEvent[] = [];
     if (includeEvents) {
       const changes = await client.sessions.getSessionChanges({
         id,
@@ -140,7 +243,7 @@ export async function waitForSession(
       });
       if (changes) {
         lastChanges = changes;
-        const batch = changes.newEvents ?? [];
+        batch = changes.newEvents ?? [];
         events.push(...batch);
         nextFromIndex += batch.length;
       }
@@ -150,6 +253,24 @@ export async function waitForSession(
     if (isTerminalSessionStatus(status)) {
       const changes = await finalChanges(client, id, lastChanges, limit);
       return { id, status, events, nextFromIndex, finalChanges: changes, answer: changes?.answer };
+    }
+
+    if (toolsByName.size > 0) {
+      advertised = latestPendingToolCalls(batch, advertised);
+      // Status gate: on a replayed stream the live status decides whether calls are still open.
+      if ((status as string) === "awaiting_tool_results") {
+        if (advertised.length === 0) {
+          advertised = await recoverPendingToolCalls(client, id);
+        }
+        const calls = advertised.filter((call) => !answered.has(call.id));
+        if (calls.length > 0) {
+          const results = await Promise.all(calls.map((call) => executeToolCall(toolsByName, call)));
+          await postToolResults(client, id, results);
+          for (const call of calls) {
+            answered.add(call.id);
+          }
+        }
+      }
     }
 
     // The long-poll above paces the loop when streaming events; otherwise sleep.
@@ -167,9 +288,11 @@ export async function runSession(
   client: HaiAgentsClient,
   options: RunSessionOptions,
 ): Promise<SessionRunResult> {
-  const { waitForSeconds, includeEvents, timeoutMs, pollBackoffMs, maxPolls, ...createParams } = options;
-  assertRequestUnderLimit(createParams);
-  const session = await client.sessions.createSession(toCreateRequest(createParams));
+  const { waitForSeconds, includeEvents, timeoutMs, pollBackoffMs, maxPolls, tools, ...createParams } = options;
+  const normalizedTools = asTools(tools ?? []);
+  const params = normalizedTools.length > 0 ? attachToolDefinitions(createParams, normalizedTools) : createParams;
+  assertRequestUnderLimit(params);
+  const session = await client.sessions.createSession(toCreateRequest(params));
   return waitForSession(client, {
     id: session.id,
     waitForSeconds,
@@ -177,6 +300,7 @@ export async function runSession(
     timeoutMs,
     pollBackoffMs,
     maxPolls,
+    tools: normalizedTools,
   });
 }
 
@@ -185,6 +309,7 @@ export class SessionHandle {
   constructor(
     private readonly client: HaiAgentsClient,
     public readonly id: string,
+    private readonly tools?: readonly Tool[],
   ) {}
 
   get(): Promise<Session> {
@@ -221,6 +346,6 @@ export class SessionHandle {
 
   /** Block until the session reaches a terminal status; resolves with the result and final answer. */
   waitForCompletion(options?: Omit<WaitForSessionOptions, "id">): Promise<SessionRunResult> {
-    return waitForSession(this.client, { id: this.id, ...options });
+    return waitForSession(this.client, { id: this.id, tools: this.tools, ...options });
   }
 }

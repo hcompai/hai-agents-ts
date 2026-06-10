@@ -16,6 +16,7 @@ export const Browser: core.serialization.ObjectSchema<serializers.Browser.Raw, H
         startUrl: core.serialization.property("start_url", core.serialization.string().optional()),
         mode: BrowserMode.optional(),
         pageChars: core.serialization.property("page_chars", core.serialization.number().optional()),
+        vaultId: core.serialization.property("vault_id", core.serialization.string().optionalNullable()),
     });
 
 export declare namespace Browser {
@@ -28,5 +29,6 @@ export declare namespace Browser {
         start_url?: string | null;
         mode?: BrowserMode.Raw | null;
         page_chars?: number | null;
+        vault_id?: (string | null | undefined) | null;
     }
 }
