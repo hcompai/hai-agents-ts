@@ -95,22 +95,29 @@ export function attachToolDefinitions(params: CreateSessionParams, tools: readon
 
 type PendingToolCall = { id: string; name: string; arguments?: Record<string, unknown> };
 
-/** Pending custom tool calls advertised by `ActiveStateChangeEvent`s in an event batch. */
-function pendingToolCalls(batch: readonly TrajectoryEvent[]): PendingToolCall[] {
-  const calls = new Map<string, PendingToolCall>();
+/**
+ * Pending custom tool calls per the latest `ActiveStateChangeEvent`.
+ *
+ * The agent re-publishes the surviving list whenever a call settles, so the latest
+ * event is the source of truth; `previous` carries it across polls whose batches
+ * contain no state change.
+ */
+function latestPendingToolCalls(
+  batch: readonly TrajectoryEvent[],
+  previous: PendingToolCall[],
+): PendingToolCall[] {
+  let calls = previous;
   for (const event of batch) {
     if (event.type !== "ActiveStateChangeEvent") {
       continue;
     }
     const data = (event.data ?? {}) as Record<string, unknown>;
-    if (data["state"] !== "awaiting_tool_results") {
-      continue;
-    }
-    for (const call of (data["pending_tool_calls"] ?? []) as PendingToolCall[]) {
-      calls.set(call.id, call);
-    }
+    calls =
+      data["state"] === "awaiting_tool_results"
+        ? [...((data["pending_tool_calls"] ?? []) as PendingToolCall[])]
+        : [];
   }
-  return [...calls.values()];
+  return calls;
 }
 
 function jsonSafe(value: unknown): unknown {
@@ -207,6 +214,7 @@ export async function waitForSession(
     throw new Error("tools require includeEvents=true: pending calls arrive on the event stream.");
   }
   const answered = new Set<string>();
+  let advertised: PendingToolCall[] = [];
   const events: TrajectoryEvent[] = [];
   let nextFromIndex = fromIndex;
   let lastChanges: TrajectoryChanges | undefined;
@@ -241,12 +249,16 @@ export async function waitForSession(
     }
 
     if (toolsByName.size > 0) {
-      const calls = pendingToolCalls(batch).filter((call) => !answered.has(call.id));
-      if (calls.length > 0) {
-        const results = await Promise.all(calls.map((call) => executeToolCall(toolsByName, call)));
-        await postToolResults(client, id, results);
-        for (const call of calls) {
-          answered.add(call.id);
+      advertised = latestPendingToolCalls(batch, advertised);
+      // Status gate: on a replayed stream the live status decides whether calls are still open.
+      if ((status as string) === "awaiting_tool_results") {
+        const calls = advertised.filter((call) => !answered.has(call.id));
+        if (calls.length > 0) {
+          const results = await Promise.all(calls.map((call) => executeToolCall(toolsByName, call)));
+          await postToolResults(client, id, results);
+          for (const call of calls) {
+            answered.add(call.id);
+          }
         }
       }
     }

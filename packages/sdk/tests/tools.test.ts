@@ -29,7 +29,7 @@ function awaitingEvent(calls: { id: string; name: string; arguments?: Record<str
   };
 }
 
-type Step = { changes?: Partial<TrajectoryChanges>; status: TrajectoryStatus };
+type Step = { changes?: Partial<TrajectoryChanges>; status: TrajectoryStatus | "awaiting_tool_results" };
 
 function fakeClient(steps: Step[], postStatus = 200) {
   const posts: unknown[] = [];
@@ -39,7 +39,7 @@ function fakeClient(steps: Step[], postStatus = 200) {
     sessions: {
       getSessionChanges: async () => {
         const step = steps[Math.min(changesIdx++, steps.length - 1)];
-        return { status: step.status, newEvents: [], answer: null, ...step.changes } as TrajectoryChanges;
+        return { status: step.status, newEvents: [], answer: null, ...step.changes } as unknown as TrajectoryChanges;
       },
       getSessionStatus: async () => ({ status: steps[Math.min(statusIdx++, steps.length - 1)].status }),
     },
@@ -78,8 +78,8 @@ describe("waitForSession tool dispatch", () => {
       { id: "c3", name: "ghost" },
     ];
     const { client, posts } = fakeClient([
-      { status: "running", changes: { newEvents: [awaitingEvent(pending)] } },
-      { status: "running", changes: { newEvents: [awaitingEvent(pending)] } },
+      { status: "awaiting_tool_results", changes: { newEvents: [awaitingEvent(pending)] } },
+      { status: "awaiting_tool_results", changes: { newEvents: [awaitingEvent(pending)] } },
       { status: "completed", changes: { answer: "done" } },
     ]);
 
@@ -98,7 +98,7 @@ describe("waitForSession tool dispatch", () => {
 
   it("posts a single result without batch wrapping", async () => {
     const { client, posts } = fakeClient([
-      { status: "running", changes: { newEvents: [awaitingEvent([{ id: "c1", name: "add", arguments: { a: 1, b: 1 } }])] } },
+      { status: "awaiting_tool_results", changes: { newEvents: [awaitingEvent([{ id: "c1", name: "add", arguments: { a: 1, b: 1 } }])] } },
       { status: "completed" },
     ]);
 
@@ -110,7 +110,7 @@ describe("waitForSession tool dispatch", () => {
   it("tolerates 409 from tool_results when the session already finished", async () => {
     const { client } = fakeClient(
       [
-        { status: "running", changes: { newEvents: [awaitingEvent([{ id: "c1", name: "add", arguments: { a: 1, b: 1 } }])] } },
+        { status: "awaiting_tool_results", changes: { newEvents: [awaitingEvent([{ id: "c1", name: "add", arguments: { a: 1, b: 1 } }])] } },
         { status: "completed" },
       ],
       409,
@@ -123,13 +123,40 @@ describe("waitForSession tool dispatch", () => {
   it("throws on a non-409 post failure", async () => {
     const { client } = fakeClient(
       [
-        { status: "running", changes: { newEvents: [awaitingEvent([{ id: "c1", name: "add", arguments: { a: 1, b: 1 } }])] } },
+        { status: "awaiting_tool_results", changes: { newEvents: [awaitingEvent([{ id: "c1", name: "add", arguments: { a: 1, b: 1 } }])] } },
         { status: "completed" },
       ],
       500,
     );
 
     await expect(waitForSession(client, { id: "s1", tools: [add], waitForSeconds: 0 })).rejects.toThrow(/HTTP 500/);
+  });
+
+  it("executes only the latest advertised pending list", async () => {
+    const stale = awaitingEvent([
+      { id: "c1", name: "add", arguments: { a: 1, b: 1 } },
+      { id: "c2", name: "add", arguments: { a: 2, b: 2 } },
+    ]);
+    const refreshed = awaitingEvent([{ id: "c2", name: "add", arguments: { a: 2, b: 2 } }]);
+    const { client, posts } = fakeClient([
+      { status: "awaiting_tool_results", changes: { newEvents: [stale, refreshed] } },
+      { status: "completed" },
+    ]);
+
+    await waitForSession(client, { id: "s1", tools: [add], waitForSeconds: 0 });
+
+    expect(posts).toEqual([{ type: "tool_result", tool_call_id: "c2", result: 4, is_error: false }]);
+  });
+
+  it("does not dispatch when the live status left awaiting_tool_results", async () => {
+    const { client, posts } = fakeClient([
+      { status: "running", changes: { newEvents: [awaitingEvent([{ id: "c1", name: "add", arguments: { a: 1, b: 1 } }])] } },
+      { status: "completed" },
+    ]);
+
+    await waitForSession(client, { id: "s1", tools: [add], waitForSeconds: 0 });
+
+    expect(posts).toEqual([]);
   });
 
   it("rejects tools with includeEvents=false", async () => {
