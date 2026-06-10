@@ -9,6 +9,8 @@ export interface SessionSummary {
     id: string;
     agent?: string | null;
     status: HaiAgents.TrajectoryStatus;
+    /** URL of the session's Agent View page on the H Platform (live view and replay). */
+    agentViewUrl?: string | null;
     firstMessage?: HaiAgents.UserMessageEvent | null;
     createdAt: Date;
     startedAt?: Date | null;
