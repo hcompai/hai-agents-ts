@@ -84,19 +84,9 @@ export function assertRequestUnderLimit(payload: unknown, maxBytes: number = MAX
   }
 }
 
-/** Carry the tool definitions on the agent spec (inline) or via an `agent.tools` override (reference). */
+/** Carry the tool definitions via the `agent.tools` override; the server applies it to referenced and inline agents alike. */
 export function attachToolDefinitions(params: CreateSessionParams, tools: readonly Tool[]): CreateSessionParams {
-  const definitions = tools.map(toolDefinition);
-  if (typeof params.agent === "string") {
-    // Override values bypass the serde layer, so they must be in wire format.
-    const wireDefinitions = definitions.map((d) => ({
-      name: d.name,
-      description: d.description,
-      input_schema: d.inputSchema,
-    }));
-    return { ...params, overrides: { ...(params.overrides ?? {}), "agent.tools": wireDefinitions } };
-  }
-  return { ...params, agent: { ...params.agent, tools: definitions } };
+  return { ...params, overrides: { ...(params.overrides ?? {}), "agent.tools": tools.map(toolDefinition) } };
 }
 
 type PendingToolCall = { id: string; name: string; arguments?: Record<string, unknown> };

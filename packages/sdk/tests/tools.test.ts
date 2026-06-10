@@ -52,17 +52,13 @@ function fakeClient(steps: Step[], postStatus = 200) {
 }
 
 describe("attachToolDefinitions", () => {
-  it("targets agent.tools on an inline agent", () => {
-    const params = attachToolDefinitions({ agent: { name: "a", environments: [] } as never }, [add]);
-    expect((params.agent as Record<string, unknown>)["tools"]).toEqual([toolDefinition(add)]);
-  });
-
-  it("targets overrides with wire-format definitions for a referenced agent", () => {
-    const params = attachToolDefinitions({ agent: "h/web-surfer" }, [add]);
-    expect(params.agent).toBe("h/web-surfer");
-    expect(params.overrides).toEqual({
-      "agent.tools": [{ name: add.name, description: add.description, input_schema: add.inputSchema }],
-    });
+  it("targets the agent.tools override for referenced and inline agents", () => {
+    const expected = { "agent.tools": [{ name: add.name, description: add.description, input_schema: add.inputSchema }] };
+    const referenced = attachToolDefinitions({ agent: "h/web-surfer" }, [add]);
+    expect(referenced.agent).toBe("h/web-surfer");
+    expect(referenced.overrides).toEqual(expected);
+    const inline = attachToolDefinitions({ agent: { name: "a", environments: [] } as never }, [add]);
+    expect(inline.overrides).toEqual(expected);
   });
 });
 

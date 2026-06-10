@@ -1,7 +1,5 @@
 /** Custom tools: the agent requests them, your process runs them. */
 
-import type { ToolDefinition } from "./api/index.js";
-
 export type ToolFn = (args: Record<string, unknown>) => unknown | Promise<unknown>;
 
 export type Tool = {
@@ -33,7 +31,7 @@ export function asTools(tools: readonly Tool[]): Tool[] {
   return tools.map(tool);
 }
 
-/** The `ToolDefinition` carried by the agent spec. */
-export function toolDefinition(t: Tool): ToolDefinition {
-  return { name: t.name, description: t.description, inputSchema: t.inputSchema };
+/** The wire-format `ToolDefinition` carried by the `agent.tools` override. */
+export function toolDefinition(t: Tool): Record<string, unknown> {
+  return { name: t.name, description: t.description, input_schema: t.inputSchema };
 }
