@@ -8,12 +8,12 @@ import { ToolResultEventType } from "./ToolResultEventType.js";
 export const ToolResultEvent: core.serialization.ObjectSchema<
     serializers.ToolResultEvent.Raw,
     HaiAgents.ToolResultEvent
-> = core.serialization.object({
+> = core.serialization.withJsonDefaults(core.serialization.object({
     type: ToolResultEventType.optional(),
     toolCallId: core.serialization.property("tool_call_id", core.serialization.string()),
     result: core.serialization.unknown().optional(),
     isError: core.serialization.property("is_error", core.serialization.boolean().optional()),
-});
+}), { type: "tool_result" });
 
 export declare namespace ToolResultEvent {
     export interface Raw {

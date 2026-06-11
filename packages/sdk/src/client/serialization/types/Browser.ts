@@ -7,7 +7,7 @@ import { BrowserKind } from "./BrowserKind.js";
 import { BrowserMode } from "./BrowserMode.js";
 
 export const Browser: core.serialization.ObjectSchema<serializers.Browser.Raw, HaiAgents.Browser> =
-    core.serialization.object({
+    core.serialization.withJsonDefaults(core.serialization.object({
         id: core.serialization.string(),
         kind: BrowserKind.optional(),
         headless: core.serialization.boolean().optional(),
@@ -17,7 +17,7 @@ export const Browser: core.serialization.ObjectSchema<serializers.Browser.Raw, H
         mode: BrowserMode.optional(),
         pageChars: core.serialization.property("page_chars", core.serialization.number().optional()),
         vaultId: core.serialization.property("vault_id", core.serialization.string().optionalNullable()),
-    });
+    }), { kind: "web" });
 
 export declare namespace Browser {
     export interface Raw {
