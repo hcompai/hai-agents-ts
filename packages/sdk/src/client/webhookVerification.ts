@@ -69,7 +69,7 @@ export function verifyWebhook(
     try {
         parsed = JSON.parse(raw.toString("utf8"));
     } catch (e) {
-        throw new WebhookVerificationError(`unparseable payload: ${e}`);
+        throw new WebhookVerificationError(`unparsable payload: ${e}`);
     }
     const event = parsed as WebhookEvent;
     if (typeof event?.type !== "string" || typeof event?.id !== "string" || typeof event?.data !== "object" || event.data === null) {
