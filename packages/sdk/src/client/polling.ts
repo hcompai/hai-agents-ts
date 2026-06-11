@@ -76,14 +76,12 @@ export async function attachAnswerSchema(
   schema: AnswerSchema<unknown>,
 ): Promise<CreateSessionParams> {
   const jsonSchema = await answerJsonSchema(schema);
+  if (params.overrides?.["agent.answer_format"] != null) {
+    throw new Error("answerSchema conflicts with overrides['agent.answer_format']; pass only one.");
+  }
   const agent = params.agent;
   if (typeof agent === "string") {
-    const overrides: Record<string, unknown> = { ...(params.overrides ?? {}) };
-    if (overrides["agent.answer_format"] != null) {
-      throw new Error("answerSchema conflicts with overrides['agent.answer_format']; pass only one.");
-    }
-    overrides["agent.answer_format"] = jsonSchema;
-    return { ...params, overrides };
+    return { ...params, overrides: { ...(params.overrides ?? {}), "agent.answer_format": jsonSchema } };
   }
   if (agent && typeof agent === "object") {
     if (agent.answerFormat != null) {

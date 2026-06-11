@@ -59,6 +59,9 @@ describe("attachAnswerSchema", () => {
     await expect(
       attachAnswerSchema({ agent: "h/x", overrides: { "agent.answer_format": {} } } as never, Jobs),
     ).rejects.toThrow(/conflicts/);
+    await expect(
+      attachAnswerSchema({ agent: { name: "a" }, overrides: { "agent.answer_format": {} } } as never, Jobs),
+    ).rejects.toThrow(/conflicts/);
   });
 });
 
