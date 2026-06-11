@@ -19,6 +19,13 @@ export const TERMINAL_SESSION_STATUSES = [
   "interrupted",
 ] as const satisfies readonly TrajectoryStatus[];
 
+// Polling also stops on "idle": the agent finished its turn and is waiting for the next
+// user message, which a one-shot wait will never send.
+export const SETTLED_SESSION_STATUSES = [
+  ...TERMINAL_SESSION_STATUSES,
+  "idle",
+] as const satisfies readonly TrajectoryStatus[];
+
 /** Server rejects request bodies above this size; enforced client-side for a clear early error. */
 export const MAX_REQUEST_BYTES = 5 * 1024 * 1024;
 
@@ -30,7 +37,8 @@ export type SessionRunResult<TAnswer = TrajectoryChanges["answer"]> = {
   finalChanges?: TrajectoryChanges;
   /**
    * The session's final answer: the parsed `answerSchema` value when one was requested and
-   * the session completed, otherwise the raw wire value (also at `finalChanges.answer`).
+   * the session completed or idled with an answer, otherwise the raw wire value (also at
+   * `finalChanges.answer`).
    */
   answer?: TAnswer;
 };
@@ -97,8 +105,12 @@ function parseAnswer<TAnswer>(
   status: TrajectoryStatus,
   schema: AnswerSchema<TAnswer> | undefined,
 ): TAnswer | undefined {
-  if (schema === undefined || status !== "completed") {
+  if (schema === undefined || (status !== "completed" && status !== "idle")) {
     return raw as TAnswer | undefined;
+  }
+  // An idle session may legitimately have no answer yet; a completed one must parse.
+  if (status === "idle" && raw == null) {
+    return undefined;
   }
   // The wire answer may arrive as JSON text rather than an object.
   let candidate: unknown = raw;
@@ -161,6 +173,9 @@ const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout
 
 export const isTerminalSessionStatus = (status: TrajectoryStatus): boolean =>
   (TERMINAL_SESSION_STATUSES as readonly string[]).includes(status);
+
+export const isSettledSessionStatus = (status: TrajectoryStatus): boolean =>
+  (SETTLED_SESSION_STATUSES as readonly string[]).includes(status);
 
 export function assertRequestUnderLimit(payload: unknown, maxBytes: number = MAX_REQUEST_BYTES): void {
   const bytes = new TextEncoder().encode(JSON.stringify(payload ?? {})).length;
@@ -283,9 +298,9 @@ async function recoverPendingToolCalls(client: HaiAgentsClient, id: string): Pro
 }
 
 /**
- * Poll a session until it reaches a terminal status.
+ * Poll a session until it settles: a terminal status, or idle awaiting the next message.
  *
- * Terminal state is read from `/status` (authoritative); `/changes` only feeds events
+ * Status is read from `/status` (authoritative); `/changes` only feeds events
  * and the final answer, since it 204s whenever no new events exist past `fromIndex` --
  * even after the session has finished.
  */
@@ -318,7 +333,7 @@ export async function waitForSession<TAnswer = TrajectoryChanges["answer"]>(
 
   for (let polls = 0; maxPolls === undefined || polls < maxPolls; polls += 1) {
     if (deadline !== undefined && Date.now() >= deadline) {
-      throw new Error(`Session ${id} did not reach a terminal status within ${timeoutMs}ms`);
+      throw new Error(`Session ${id} did not settle within ${timeoutMs}ms`);
     }
 
     let batch: TrajectoryEvent[] = [];
@@ -339,7 +354,7 @@ export async function waitForSession<TAnswer = TrajectoryChanges["answer"]>(
     }
 
     const { status } = await client.sessions.getSessionStatus({ id });
-    if (isTerminalSessionStatus(status)) {
+    if (isSettledSessionStatus(status)) {
       const changes = await finalChanges(client, id, lastChanges, limit);
       const answer = parseAnswer(changes?.answer, status, answerSchema);
       return { id, status, events, nextFromIndex, finalChanges: changes, answer };
@@ -371,7 +386,7 @@ export async function waitForSession<TAnswer = TrajectoryChanges["answer"]>(
     }
   }
 
-  throw new Error(`Session ${id} did not reach a terminal status before maxPolls=${maxPolls}`);
+  throw new Error(`Session ${id} did not settle before maxPolls=${maxPolls}`);
 }
 
 export async function runSession<TAnswer = TrajectoryChanges["answer"]>(
@@ -439,7 +454,7 @@ export class SessionHandle<TAnswer = TrajectoryChanges["answer"]> {
     return this.client.sessions.forceSessionAnswer({ id: this.id });
   }
 
-  /** Block until the session reaches a terminal status; resolves with the result and final answer. */
+  /** Block until the session settles (terminal or idle); resolves with the result and final answer. */
   waitForCompletion(options?: Omit<WaitForSessionOptions<TAnswer>, "id">): Promise<SessionRunResult<TAnswer>> {
     return waitForSession(this.client, { id: this.id, answerSchema: this.answerSchema, tools: this.tools, ...options });
   }

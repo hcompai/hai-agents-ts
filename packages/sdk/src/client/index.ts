@@ -9,9 +9,11 @@ export { SessionHandle } from "./polling.js";
 export {
   AnswerValidationError,
   MAX_REQUEST_BYTES,
+  SETTLED_SESSION_STATUSES,
   TERMINAL_SESSION_STATUSES,
   assertRequestUnderLimit,
   attachToolDefinitions,
+  isSettledSessionStatus,
   isTerminalSessionStatus,
   runSession,
   waitForSession,
