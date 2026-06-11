@@ -1,0 +1,79 @@
+/**
+ * Webhook receiving: verify the signature and parse the event payload.
+ */
+
+import { createHmac, timingSafeEqual } from "node:crypto";
+
+export const SIGNATURE_HEADER = "X-H-Webhook-Signature";
+export const TIMESTAMP_HEADER = "X-H-Webhook-Timestamp";
+export const DEFAULT_TOLERANCE_S = 300;
+
+export class WebhookVerificationError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "WebhookVerificationError";
+    }
+}
+
+export interface WebhookEventData {
+    session_id: string;
+    status: string;
+    previous_status?: string | null;
+}
+
+export interface WebhookEvent {
+    type: string;
+    id: string;
+    created_at: string;
+    data: WebhookEventData;
+}
+
+export interface VerifyWebhookOptions {
+    /** Maximum delivery age in seconds before the event is rejected as a replay. */
+    toleranceS?: number;
+}
+
+/**
+ * Authenticate a webhook delivery and return the parsed event.
+ *
+ * `body` must be the raw request body (never re-serialized JSON); `signature` and
+ * `timestamp` come from the `X-H-Webhook-Signature` and `X-H-Webhook-Timestamp`
+ * headers. Throws {@link WebhookVerificationError} when the signature is invalid
+ * or the delivery is older than the tolerance.
+ */
+export function verifyWebhook(
+    body: string | Uint8Array,
+    signature: string,
+    timestamp: string,
+    secret: string,
+    options: VerifyWebhookOptions = {},
+): WebhookEvent {
+    const toleranceS = options.toleranceS ?? DEFAULT_TOLERANCE_S;
+    const raw = typeof body === "string" ? Buffer.from(body, "utf8") : Buffer.from(body);
+    const sentAt = Number.parseInt(timestamp, 10);
+    if (Number.isNaN(sentAt)) {
+        throw new WebhookVerificationError("invalid timestamp header");
+    }
+    if (Math.abs(Date.now() / 1000 - sentAt) > toleranceS) {
+        throw new WebhookVerificationError(`delivery older than ${toleranceS}s; possible replay`);
+    }
+    const digest = createHmac("sha256", secret)
+        .update(Buffer.concat([Buffer.from(`${timestamp}.`, "utf8"), raw]))
+        .digest("hex");
+    const expected = Buffer.from(`sha256=${digest}`, "utf8");
+    const received = Buffer.from(signature ?? "", "utf8");
+    if (expected.length !== received.length || !timingSafeEqual(expected, received)) {
+        throw new WebhookVerificationError("signature mismatch");
+    }
+    let parsed: unknown;
+    try {
+        parsed = JSON.parse(raw.toString("utf8"));
+    } catch (e) {
+        throw new WebhookVerificationError(`unparseable payload: ${e}`);
+    }
+    const event = parsed as WebhookEvent;
+    if (typeof event?.type !== "string" || typeof event?.id !== "string" || typeof event?.data !== "object" || event.data === null) {
+        throw new WebhookVerificationError("unexpected payload shape");
+    }
+    return event;
+}
