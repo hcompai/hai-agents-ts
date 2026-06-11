@@ -8,12 +8,12 @@ import { UserMessageEventType } from "./UserMessageEventType.js";
 export const UserMessageEvent: core.serialization.ObjectSchema<
     serializers.UserMessageEvent.Raw,
     HaiAgents.UserMessageEvent
-> = core.serialization.object({
+> = core.serialization.withJsonDefaults(core.serialization.object({
     type: UserMessageEventType.optional(),
     message: core.serialization.string(),
     images: core.serialization.list(core.serialization.string()).optional(),
     callerId: core.serialization.property("caller_id", core.serialization.string().optional()),
-});
+}), { type: "user_message" });
 
 export declare namespace UserMessageEvent {
     export interface Raw {

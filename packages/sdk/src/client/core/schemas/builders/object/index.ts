@@ -20,3 +20,4 @@ export type {
     ObjectUtils,
     PropertySchemas,
 } from "./types.js";
+export { withJsonDefaults } from "./withJsonDefaults.js";
