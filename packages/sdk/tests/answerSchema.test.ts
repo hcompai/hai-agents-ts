@@ -90,8 +90,17 @@ describe("answer parse-back", () => {
     expect(result.answer).toBe("cancelled mid-run");
   });
 
-  it("passes null answers through", async () => {
+  it("throws AnswerValidationError when a completed answer is missing", async () => {
     const { client } = fakeClient(null);
+    const promise = waitForSession(client, { id: "sess_1", answerSchema: Jobs });
+    await expect(promise).rejects.toBeInstanceOf(AnswerValidationError);
+    await promise.catch((error: AnswerValidationError) => {
+      expect(error.raw).toBeNull();
+    });
+  });
+
+  it("passes null answers through on non-completed statuses", async () => {
+    const { client } = fakeClient(null, "failed");
     const result = await waitForSession(client, { id: "sess_1", answerSchema: Jobs });
     expect(result.answer).toBeNull();
   });

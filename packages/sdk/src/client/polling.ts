@@ -99,7 +99,7 @@ function parseAnswer<TAnswer>(
   status: TrajectoryStatus,
   schema: AnswerSchema<TAnswer> | undefined,
 ): TAnswer | undefined {
-  if (schema === undefined || raw == null || status !== "completed") {
+  if (schema === undefined || status !== "completed") {
     return raw as TAnswer | undefined;
   }
   try {
