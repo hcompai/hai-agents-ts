@@ -102,8 +102,17 @@ function parseAnswer<TAnswer>(
   if (schema === undefined || status !== "completed") {
     return raw as TAnswer | undefined;
   }
+  // The wire answer may arrive as JSON text rather than an object.
+  let candidate: unknown = raw;
+  if (typeof raw === "string") {
+    try {
+      candidate = JSON.parse(raw);
+    } catch {
+      candidate = raw;
+    }
+  }
   try {
-    return schema.parse(raw);
+    return schema.parse(candidate);
   } catch (error) {
     throw new AnswerValidationError(raw, error);
   }

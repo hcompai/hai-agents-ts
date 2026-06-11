@@ -75,6 +75,21 @@ describe("answer parse-back", () => {
     expect((body.overrides["agent.answer_format"] as Record<string, unknown>).title).toBe("Answer");
   });
 
+  it("parses a completed answer delivered as JSON text", async () => {
+    const { client } = fakeClient(JSON.stringify(VALID_ANSWER));
+    const result = await waitForSession(client, { id: "sess_1", answerSchema: Jobs });
+    expect(result.answer?.jobs[0]?.title).toBe("RE");
+  });
+
+  it("throws AnswerValidationError on non-JSON text answers", async () => {
+    const { client } = fakeClient("plain text answer");
+    const promise = waitForSession(client, { id: "sess_1", answerSchema: Jobs });
+    await expect(promise).rejects.toBeInstanceOf(AnswerValidationError);
+    await promise.catch((error: AnswerValidationError) => {
+      expect(error.raw).toBe("plain text answer");
+    });
+  });
+
   it("throws AnswerValidationError with the raw payload on mismatch", async () => {
     const { client } = fakeClient({ jobs: "not-a-list" });
     const promise = waitForSession(client, { id: "sess_1", answerSchema: Jobs });
