@@ -3,6 +3,7 @@
 /** Environment family. */
 export const EnvironmentKind = {
     Web: "web",
+    Desktop: "desktop",
     Code: "code",
     Mcp: "mcp",
     Memory: "memory",
