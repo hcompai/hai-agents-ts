@@ -2,13 +2,16 @@ import { HaiAgentsClient as FernClient } from "./Client.js";
 import {
   SessionHandle,
   assertRequestUnderLimit,
+  attachAnswerSchema,
   attachToolDefinitions,
   runSession,
   toCreateRequest,
+  type AnswerSchema,
   type CreateSessionParams,
   type RunSessionOptions,
   type SessionRunResult,
 } from "./polling.js";
+import type { TrajectoryChanges } from "./api/index.js";
 import { asTools, type Tool } from "./tools.js";
 
 /**
@@ -18,19 +21,24 @@ import { asTools, type Tool } from "./tools.js";
  */
 export class HaiAgentsClient extends FernClient {
   /** Create a session and resolve once it completes, returning the result and final answer. */
-  public runSession(options: RunSessionOptions): Promise<SessionRunResult> {
+  public runSession<TAnswer = TrajectoryChanges["answer"]>(
+    options: RunSessionOptions<TAnswer>,
+  ): Promise<SessionRunResult<TAnswer>> {
     return runSession(this, options);
   }
 
   /** Create a session and return a handle to it without waiting. */
-  public async startSession(params: CreateSessionParams & { tools?: readonly Tool[] }): Promise<SessionHandle> {
-    const { tools, ...createParams } = params;
+  public async startSession<TAnswer = TrajectoryChanges["answer"]>(
+    params: CreateSessionParams & { answerSchema?: AnswerSchema<TAnswer>; tools?: readonly Tool[] },
+  ): Promise<SessionHandle<TAnswer>> {
+    const { answerSchema, tools, ...createParams } = params;
     const normalizedTools = asTools(tools ?? []);
     const withTools =
       normalizedTools.length > 0 ? attachToolDefinitions(createParams, normalizedTools) : createParams;
-    assertRequestUnderLimit(withTools);
-    const session = await this.sessions.createSession(toCreateRequest(withTools));
-    return new SessionHandle(this, session.id, normalizedTools.length > 0 ? normalizedTools : undefined);
+    const prepared = answerSchema ? await attachAnswerSchema(withTools, answerSchema) : withTools;
+    assertRequestUnderLimit(prepared);
+    const session = await this.sessions.createSession(toCreateRequest(prepared));
+    return new SessionHandle(this, session.id, answerSchema, normalizedTools.length > 0 ? normalizedTools : undefined);
   }
 
   /** Wrap an existing session id in a handle. */

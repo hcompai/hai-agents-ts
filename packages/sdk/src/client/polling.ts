@@ -22,15 +22,101 @@ export const TERMINAL_SESSION_STATUSES = [
 /** Server rejects request bodies above this size; enforced client-side for a clear early error. */
 export const MAX_REQUEST_BYTES = 5 * 1024 * 1024;
 
-export type SessionRunResult = {
+export type SessionRunResult<TAnswer = TrajectoryChanges["answer"]> = {
   id: string;
   status: TrajectoryStatus;
   events: TrajectoryEvent[];
   nextFromIndex: number;
   finalChanges?: TrajectoryChanges;
-  /** The session's final answer, if it produced one (shortcut for finalChanges.answer). */
-  answer?: TrajectoryChanges["answer"];
+  /**
+   * The session's final answer: the parsed `answerSchema` value when one was requested and
+   * the session completed, otherwise the raw wire value (also at `finalChanges.answer`).
+   */
+  answer?: TAnswer;
 };
+
+/**
+ * Structural subset of a Zod v4 schema: anything with `parse` works for the read side,
+ * but the create side converts to JSON Schema via zod's `toJSONSchema`, so pass a real
+ * Zod v4 schema. Zod is an optional peer dependency, loaded only when this is used.
+ */
+export type AnswerSchema<TAnswer = unknown> = {
+  parse(data: unknown): TAnswer;
+};
+
+/** The session's final answer did not match the requested `answerSchema`. */
+export class AnswerValidationError extends Error {
+  constructor(
+    public readonly raw: unknown,
+    cause: unknown,
+  ) {
+    super(`Final answer does not match the requested answerSchema: ${cause}`);
+    this.name = "AnswerValidationError";
+  }
+}
+
+async function answerJsonSchema(schema: AnswerSchema<unknown>): Promise<Record<string, unknown>> {
+  const zod = (await import("zod").catch(() => undefined)) as
+    | { toJSONSchema?: (s: unknown) => Record<string, unknown> }
+    | undefined;
+  if (!zod?.toJSONSchema) {
+    throw new Error("answerSchema requires zod >= 4 (provides toJSONSchema); install it alongside the SDK.");
+  }
+  const jsonSchema = zod.toJSONSchema(schema);
+  // sagent resolves the generated answer model by title; zod schemas are anonymous.
+  if (typeof jsonSchema.title !== "string") {
+    jsonSchema.title = "Answer";
+  }
+  return jsonSchema;
+}
+
+/** Bind the schema's JSON Schema as the agent's answer format. */
+export async function attachAnswerSchema(
+  params: CreateSessionParams,
+  schema: AnswerSchema<unknown>,
+): Promise<CreateSessionParams> {
+  const jsonSchema = await answerJsonSchema(schema);
+  const agent = params.agent;
+  if (typeof agent === "string") {
+    const overrides: Record<string, unknown> = { ...(params.overrides ?? {}) };
+    if (overrides["agent.answer_format"] != null) {
+      throw new Error("answerSchema conflicts with overrides['agent.answer_format']; pass only one.");
+    }
+    overrides["agent.answer_format"] = jsonSchema;
+    return { ...params, overrides };
+  }
+  if (agent && typeof agent === "object") {
+    if (agent.answerFormat != null) {
+      throw new Error("answerSchema conflicts with agent.answerFormat; pass only one.");
+    }
+    return { ...params, agent: { ...agent, answerFormat: jsonSchema } };
+  }
+  throw new Error("answerSchema requires an agent reference on the request.");
+}
+
+function parseAnswer<TAnswer>(
+  raw: TrajectoryChanges["answer"] | undefined,
+  status: TrajectoryStatus,
+  schema: AnswerSchema<TAnswer> | undefined,
+): TAnswer | undefined {
+  if (schema === undefined || status !== "completed") {
+    return raw as TAnswer | undefined;
+  }
+  // The wire answer may arrive as JSON text rather than an object.
+  let candidate: unknown = raw;
+  if (typeof raw === "string") {
+    try {
+      candidate = JSON.parse(raw);
+    } catch {
+      candidate = raw;
+    }
+  }
+  try {
+    return schema.parse(candidate);
+  } catch (error) {
+    throw new AnswerValidationError(raw, error);
+  }
+}
 
 /** Flat create-session parameters: the request body fields plus the idempotency key. */
 export type CreateSessionParams = SessionRequest & {
@@ -43,7 +129,7 @@ export function toCreateRequest(params: CreateSessionParams): CreateSessionReque
   return { idempotencyKey: idempotencyKey ?? undefined, body };
 }
 
-export type WaitForSessionOptions = {
+export type WaitForSessionOptions<TAnswer = TrajectoryChanges["answer"]> = {
   id: string;
   fromIndex?: number;
   waitForSeconds?: number;
@@ -55,16 +141,20 @@ export type WaitForSessionOptions = {
   /** Delay between polls, on top of the server long-poll wait. */
   pollBackoffMs?: number;
   maxPolls?: number;
+  /** Zod v4 schema the completed answer is parsed into. */
+  answerSchema?: AnswerSchema<TAnswer>;
   /** Custom tools to run when the agent calls them. */
   tools?: readonly Tool[];
 };
 
-export type RunSessionOptions = CreateSessionParams & {
+export type RunSessionOptions<TAnswer = TrajectoryChanges["answer"]> = CreateSessionParams & {
   waitForSeconds?: number;
   includeEvents?: boolean;
   timeoutMs?: number;
   pollBackoffMs?: number;
   maxPolls?: number;
+  /** Zod v4 schema: sent as the agent's answer format, and the completed answer is parsed into it. */
+  answerSchema?: AnswerSchema<TAnswer>;
   /** Custom tools to run when the agent calls them. */
   tools?: readonly Tool[];
 };
@@ -201,10 +291,10 @@ async function recoverPendingToolCalls(client: HaiAgentsClient, id: string): Pro
  * and the final answer, since it 204s whenever no new events exist past `fromIndex` --
  * even after the session has finished.
  */
-export async function waitForSession(
+export async function waitForSession<TAnswer = TrajectoryChanges["answer"]>(
   client: HaiAgentsClient,
-  options: WaitForSessionOptions,
-): Promise<SessionRunResult> {
+  options: WaitForSessionOptions<TAnswer>,
+): Promise<SessionRunResult<TAnswer>> {
   const {
     id,
     fromIndex = 0,
@@ -214,6 +304,7 @@ export async function waitForSession(
     timeoutMs,
     pollBackoffMs = 0,
     maxPolls,
+    answerSchema,
     tools,
   } = options;
   const toolsByName = new Map(asTools(tools ?? []).map((t) => [t.name, t]));
@@ -252,7 +343,8 @@ export async function waitForSession(
     const { status } = await client.sessions.getSessionStatus({ id });
     if (isTerminalSessionStatus(status)) {
       const changes = await finalChanges(client, id, lastChanges, limit);
-      return { id, status, events, nextFromIndex, finalChanges: changes, answer: changes?.answer };
+      const answer = parseAnswer(changes?.answer, status, answerSchema);
+      return { id, status, events, nextFromIndex, finalChanges: changes, answer };
     }
 
     if (toolsByName.size > 0) {
@@ -284,13 +376,16 @@ export async function waitForSession(
   throw new Error(`Session ${id} did not reach a terminal status before maxPolls=${maxPolls}`);
 }
 
-export async function runSession(
+export async function runSession<TAnswer = TrajectoryChanges["answer"]>(
   client: HaiAgentsClient,
-  options: RunSessionOptions,
-): Promise<SessionRunResult> {
-  const { waitForSeconds, includeEvents, timeoutMs, pollBackoffMs, maxPolls, tools, ...createParams } = options;
+  options: RunSessionOptions<TAnswer>,
+): Promise<SessionRunResult<TAnswer>> {
+  const { waitForSeconds, includeEvents, timeoutMs, pollBackoffMs, maxPolls, answerSchema, tools, ...createParams } =
+    options;
   const normalizedTools = asTools(tools ?? []);
-  const params = normalizedTools.length > 0 ? attachToolDefinitions(createParams, normalizedTools) : createParams;
+  const withTools =
+    normalizedTools.length > 0 ? attachToolDefinitions(createParams, normalizedTools) : createParams;
+  const params = answerSchema ? await attachAnswerSchema(withTools, answerSchema) : withTools;
   assertRequestUnderLimit(params);
   const session = await client.sessions.createSession(toCreateRequest(params));
   return waitForSession(client, {
@@ -300,15 +395,17 @@ export async function runSession(
     timeoutMs,
     pollBackoffMs,
     maxPolls,
+    answerSchema,
     tools: normalizedTools,
   });
 }
 
 /** A created session bound to its client: object-oriented sugar over the polling helpers. */
-export class SessionHandle {
+export class SessionHandle<TAnswer = TrajectoryChanges["answer"]> {
   constructor(
     private readonly client: HaiAgentsClient,
     public readonly id: string,
+    private readonly answerSchema?: AnswerSchema<TAnswer>,
     private readonly tools?: readonly Tool[],
   ) {}
 
@@ -345,7 +442,7 @@ export class SessionHandle {
   }
 
   /** Block until the session reaches a terminal status; resolves with the result and final answer. */
-  waitForCompletion(options?: Omit<WaitForSessionOptions, "id">): Promise<SessionRunResult> {
-    return waitForSession(this.client, { id: this.id, tools: this.tools, ...options });
+  waitForCompletion(options?: Omit<WaitForSessionOptions<TAnswer>, "id">): Promise<SessionRunResult<TAnswer>> {
+    return waitForSession(this.client, { id: this.id, answerSchema: this.answerSchema, tools: this.tools, ...options });
   }
 }
