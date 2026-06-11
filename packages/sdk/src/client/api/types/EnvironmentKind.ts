@@ -3,8 +3,5 @@
 /** Environment family. */
 export const EnvironmentKind = {
     Web: "web",
-    Code: "code",
-    Mcp: "mcp",
-    Memory: "memory",
 } as const;
 export type EnvironmentKind = (typeof EnvironmentKind)[keyof typeof EnvironmentKind];
