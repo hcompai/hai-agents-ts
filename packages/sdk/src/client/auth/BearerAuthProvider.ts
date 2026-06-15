@@ -4,7 +4,7 @@ import * as core from "../core/index.js";
 import * as errors from "../errors/index.js";
 
 const TOKEN_PARAM = "apiKey" as const;
-const ENV_TOKEN = "H_API_KEY" as const;
+const ENV_TOKEN = "HAI_API_KEY" as const;
 
 export class BearerAuthProvider implements core.AuthProvider {
     private readonly options: BearerAuthProvider.Options;

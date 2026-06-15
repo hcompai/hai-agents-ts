@@ -10,6 +10,8 @@ export * from "./EnvironmentKind.js";
 export * from "./EnvironmentPage.js";
 export * from "./Feedback.js";
 export * from "./HttpValidationError.js";
+export * from "./McpServer.js";
+export * from "./McpServerTransport.js";
 export * from "./Metrics.js";
 export * from "./ModelCost.js";
 export * from "./ModelUsage.js";
