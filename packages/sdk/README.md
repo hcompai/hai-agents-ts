@@ -36,7 +36,7 @@ npm install hai-agents
 Requires Node.js 18 or newer. Grab an API key at [portal.hcompany.ai](https://portal.hcompany.ai) and export it:
 
 ```bash
-export H_API_KEY=hk-...
+export HAI_API_KEY=hk-...
 ```
 
 ## Quickstart
@@ -46,7 +46,7 @@ Launch the built-in `h/web-surfer-holo3-1-35b` agent, which ships with its own b
 ```ts
 import { HaiAgentsClient, runSession } from "hai-agents";
 
-const client = new HaiAgentsClient(); // reads H_API_KEY from the environment
+const client = new HaiAgentsClient(); // reads HAI_API_KEY from the environment
 
 const result = await runSession(client, {
   agent: "h/web-surfer-holo3-1-35b",
