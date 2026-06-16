@@ -20,4 +20,6 @@ export interface ModelCost {
     reasoningCost?: number | null;
     /** Total cost in USD; null if the model is unpriced. */
     totalCost?: number | null;
+    /** Accepts any additional properties */
+    [key: string]: any;
 }
