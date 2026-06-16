@@ -3,23 +3,23 @@
 import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
-import { ToolResultEventType } from "./ToolResultEventType.js";
+import { JsonValue } from "./JsonValue.js";
+import { ToolRequest } from "./ToolRequest.js";
+import { ToolResultEventKind } from "./ToolResultEventKind.js";
 
 export const ToolResultEvent: core.serialization.ObjectSchema<
     serializers.ToolResultEvent.Raw,
     HaiAgents.ToolResultEvent
 > = core.serialization.withJsonDefaults(core.serialization.object({
-    type: ToolResultEventType.optional(),
-    toolCallId: core.serialization.property("tool_call_id", core.serialization.string()),
-    result: core.serialization.unknown().optional(),
-    isError: core.serialization.property("is_error", core.serialization.boolean().optional()),
-}), { type: "tool_result" });
+    kind: ToolResultEventKind.optional(),
+    toolReq: core.serialization.property("tool_req", ToolRequest),
+    result: JsonValue.optional(),
+}), { kind: "tool_result" });
 
 export declare namespace ToolResultEvent {
     export interface Raw {
-        type?: ToolResultEventType.Raw | null;
-        tool_call_id: string;
-        result?: unknown | null;
-        is_error?: boolean | null;
+        kind?: ToolResultEventKind.Raw | null;
+        tool_req: ToolRequest.Raw;
+        result?: (JsonValue.Raw | undefined) | null;
     }
 }

@@ -3,20 +3,20 @@
 import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
-import { TrajectoryEvent } from "./TrajectoryEvent.js";
+import { SessionEvent } from "./SessionEvent.js";
 
-export const PageTrajectoryEvent: core.serialization.ObjectSchema<
-    serializers.PageTrajectoryEvent.Raw,
-    HaiAgents.PageTrajectoryEvent
+export const PageSessionEvent: core.serialization.ObjectSchema<
+    serializers.PageSessionEvent.Raw,
+    HaiAgents.PageSessionEvent
 > = core.serialization.object({
-    items: core.serialization.list(TrajectoryEvent),
+    items: core.serialization.list(SessionEvent),
     total: core.serialization.number(),
     page: core.serialization.number(),
 });
 
-export declare namespace PageTrajectoryEvent {
+export declare namespace PageSessionEvent {
     export interface Raw {
-        items: TrajectoryEvent.Raw[];
+        items: SessionEvent.Raw[];
         total: number;
         page: number;
     }
