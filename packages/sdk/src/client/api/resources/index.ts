@@ -12,3 +12,6 @@ export * as skills from "./skills/index.js";
 export * from "./skills/types/index.js";
 export * from "./vaults/client/requests/index.js";
 export * as vaults from "./vaults/index.js";
+export * from "./webhooks/client/requests/index.js";
+export * as webhooks from "./webhooks/index.js";
+export * from "./webhooks/types/index.js";
