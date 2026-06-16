@@ -27,3 +27,5 @@ export type {
 } from "./polling.js";
 export { asTools, tool, toolDefinition } from "./tools.js";
 export type { Tool, ToolFn } from "./tools.js";
+export { WebhookVerificationError, verifyWebhook } from "./webhookVerification.js";
+export type { WebhookEvent, WebhookEventData } from "./webhookVerification.js";

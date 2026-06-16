@@ -5,6 +5,7 @@ import { EnvironmentsClient } from "./api/resources/environments/client/Client.j
 import { SessionsClient } from "./api/resources/sessions/client/Client.js";
 import { SkillsClient } from "./api/resources/skills/client/Client.js";
 import { VaultsClient } from "./api/resources/vaults/client/Client.js";
+import { WebhooksClient } from "./api/resources/webhooks/client/Client.js";
 import type { BaseClientOptions, BaseRequestOptions } from "./BaseClient.js";
 import { type NormalizedClientOptionsWithAuth, normalizeClientOptionsWithAuth } from "./BaseClient.js";
 import * as core from "./core/index.js";
@@ -21,6 +22,7 @@ export class HaiAgentsClient {
     protected _skills: SkillsClient | undefined;
     protected _environments: EnvironmentsClient | undefined;
     protected _agents: AgentsClient | undefined;
+    protected _webhooks: WebhooksClient | undefined;
     protected _vaults: VaultsClient | undefined;
 
     constructor(options: HaiAgentsClient.Options = {}) {
@@ -41,6 +43,10 @@ export class HaiAgentsClient {
 
     public get agents(): AgentsClient {
         return (this._agents ??= new AgentsClient(this._options));
+    }
+
+    public get webhooks(): WebhooksClient {
+        return (this._webhooks ??= new WebhooksClient(this._options));
     }
 
     public get vaults(): VaultsClient {
