@@ -3,15 +3,6 @@
 import type * as HaiAgents from "../../../index.js";
 
 export type SendSessionToolResultsRequestBody =
-    | HaiAgents.SendSessionToolResultsRequestBody.ToolResult
-    | HaiAgents.SendSessionToolResultsRequestBody.Batch;
-
-export namespace SendSessionToolResultsRequestBody {
-    export interface ToolResult extends HaiAgents.ToolResultEvent {
-        type: "tool_result";
-    }
-
-    export interface Batch extends HaiAgents.ToolResultBatch {
-        type: "batch";
-    }
-}
+    | HaiAgents.ToolResultEvent
+    | HaiAgents.ErrorEvent
+    | HaiAgents.ToolResultBatch;
