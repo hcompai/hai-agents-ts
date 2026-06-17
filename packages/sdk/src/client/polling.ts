@@ -1,5 +1,6 @@
 import type { HaiAgentsClient } from "./Client.js";
 import type {
+  ActiveStateChangeData,
   CreateSessionRequest,
   GetSessionChangesRequest,
   SendSessionMessagesRequest,
@@ -192,7 +193,12 @@ export function attachToolDefinitions(params: CreateSessionParams, tools: readon
   return { ...params, overrides: { ...(params.overrides ?? {}), "agent.tools": tools.map(toolDefinition) } };
 }
 
-type PendingToolCall = { id: string; tool_name: string; args?: Record<string, unknown> };
+type PendingToolCall = { id?: string | null; tool_name: string; args?: Record<string, unknown> };
+
+/** Dedup key for an advertised call: its id, or a content signature when id is null. */
+function callKey(call: PendingToolCall): string {
+  return call.id != null ? call.id : JSON.stringify({ tool_name: call.tool_name, args: call.args ?? {} });
+}
 
 /**
  * Pending custom tool calls per the latest `ActiveStateChangeEvent`.
@@ -210,10 +216,11 @@ function latestPendingToolCalls(
     if (event.type !== "ActiveStateChangeEvent") {
       continue;
     }
-    const data = (event.data ?? {}) as Record<string, unknown>;
+    // Events arrive through the serde layer, so data is camelCase (pendingToolCalls / toolName).
+    const data = (event.data ?? {}) as ActiveStateChangeData;
     calls =
-      data["state"] === "awaiting_tool_results"
-        ? [...((data["pending_tool_calls"] ?? []) as PendingToolCall[])]
+      data.state === "awaiting_tool_results"
+        ? (data.pendingToolCalls ?? []).map((c) => ({ id: c.id, tool_name: c.toolName, args: c.args }))
         : [];
   }
   return calls;
@@ -228,13 +235,13 @@ function jsonSafe(value: unknown): unknown {
   }
 }
 
-type ToolReq = { tool_name: string; args: Record<string, unknown>; id: string };
+type ToolReq = { tool_name: string; args: Record<string, unknown>; id: string | null };
 type ToolResultPayload =
   | { kind: "tool_result"; tool_req: ToolReq; result: unknown }
   | { kind: "error_event"; error: string; origin: string; tool_req: ToolReq };
 
 function toolReq(call: PendingToolCall): ToolReq {
-  return { tool_name: call.tool_name, args: call.args ?? {}, id: call.id };
+  return { tool_name: call.tool_name, args: call.args ?? {}, id: call.id ?? null };
 }
 
 /** Run one pending call locally and shape the `tool_result` payload. */
@@ -374,12 +381,12 @@ export async function waitForSession<TAnswer = SessionChanges["answer"]>(
         if (advertised.length === 0) {
           advertised = await recoverPendingToolCalls(client, id);
         }
-        const calls = advertised.filter((call) => !answered.has(call.id));
+        const calls = advertised.filter((call) => !answered.has(callKey(call)));
         if (calls.length > 0) {
           const results = await Promise.all(calls.map((call) => executeToolCall(toolsByName, call)));
           await postToolResults(client, id, results);
           for (const call of calls) {
-            answered.add(call.id);
+            answered.add(callKey(call));
           }
         }
       }

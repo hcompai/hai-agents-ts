@@ -21,10 +21,14 @@ const boom = tool({
   },
 });
 
-function awaitingEvent(calls: { id: string; tool_name: string; args?: Record<string, unknown> }[]) {
+function awaitingEvent(calls: { id?: string; tool_name: string; args?: Record<string, unknown> }[]) {
   return {
     type: "ActiveStateChangeEvent",
-    data: { state: "awaiting_tool_results", pending_tool_calls: calls },
+    // Events arrive through the serde layer, so the data is camelCase at runtime.
+    data: {
+      state: "awaiting_tool_results",
+      pendingToolCalls: calls.map((c) => ({ id: c.id, toolName: c.tool_name, args: c.args })),
+    },
     timestamp: new Date(),
   };
 }
