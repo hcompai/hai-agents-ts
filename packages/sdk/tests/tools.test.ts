@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { HaiAgentsClient } from "../src/client/Client.js";
-import type { TrajectoryChanges, TrajectoryStatus } from "../src/client/api/index.js";
+import type { SessionChanges, TrajectoryStatus } from "../src/client/api/index.js";
 import { attachToolDefinitions, waitForSession } from "../src/client/polling.js";
 import { asTools, tool, toolDefinition } from "../src/client/tools.js";
 
@@ -33,7 +33,7 @@ function awaitingEvent(calls: { id?: string; tool_name: string; args?: Record<st
   };
 }
 
-type Step = { changes?: Partial<TrajectoryChanges>; status: TrajectoryStatus | "awaiting_tool_results" };
+type Step = { changes?: Partial<SessionChanges>; status: TrajectoryStatus | "awaiting_tool_results" };
 
 function fakeClient(steps: Step[], postStatus = 200) {
   const posts: unknown[] = [];
@@ -43,7 +43,7 @@ function fakeClient(steps: Step[], postStatus = 200) {
     sessions: {
       getSessionChanges: async () => {
         const step = steps[Math.min(changesIdx++, steps.length - 1)];
-        return { status: step.status, newEvents: [], answer: null, ...step.changes } as unknown as TrajectoryChanges;
+        return { status: step.status, newEvents: [], answer: null, ...step.changes } as unknown as SessionChanges;
       },
       getSessionStatus: async () => ({ status: steps[Math.min(statusIdx++, steps.length - 1)].status }),
     },
@@ -164,7 +164,7 @@ describe("waitForSession tool dispatch", () => {
       sessions: {
         getSessionChanges: async ({ fromIndex }: { fromIndex?: number }) =>
           fromIndex === 0
-            ? ({ newEvents: [awaitingEvent(pending)], answer: "done" } as unknown as TrajectoryChanges)
+            ? ({ newEvents: [awaitingEvent(pending)], answer: "done" } as unknown as SessionChanges)
             : null,
         getSessionStatus: async () => ({ status: statuses[Math.min(statusIdx++, statuses.length - 1)] }),
       },
