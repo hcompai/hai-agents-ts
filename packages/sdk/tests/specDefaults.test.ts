@@ -13,14 +13,30 @@ import { serialization } from "../src/client/index.js";
 
 const spec = JSON.parse(readFileSync(join(__dirname, "../../../openapi.json"), "utf-8"));
 
-// Tag carried by the per-endpoint request-body wrappers instead of the model itself.
-const FIELD_DROPPED_ENTIRELY = new Set(["ToolResultBatch.type", "UserMessageBatch.type"]);
+// Schemas whose const+default field was dropped ENTIRELY from the generated model: the field only
+// ever tagged a union, and the tag is carried elsewhere (request-body wrappers for the batch types,
+// the AgentEventData variants' `n` tag for agent events), so the serializer emits nothing to default.
+// The guard test below fails if a future regeneration restores any of these.
+const FIELD_DROPPED_ENTIRELY = new Set([
+    "UserMessageBatch.type",
+    "AnswerEvent.kind",
+    "FlowEvent.kind",
+    "MessageEvent.kind",
+    "ObservationEvent.kind",
+    "PolicyEvent.kind",
+]);
 
 const MINIMAL_PARSED: Record<string, object> = {
     Browser: { id: "browser" },
     OnePasswordConfig: { opVaultId: "vault_1" },
-    ToolResultEvent: { toolCallId: "call_1", result: "ok" },
+    ToolResultEvent: { toolReq: { toolName: "click" }, result: "ok" },
     UserMessageEvent: { message: "hi" },
+    ErrorEvent: { error: "boom", origin: "loop" },
+    ToolResultBatch: { results: [] },
+    UserMessageBatch: { messages: [] },
+    AnswerEvent: { answer: "done" },
+    FlowEvent: { flow: "step", origin: "loop" },
+    MessageEvent: { callerId: "agent" },
 };
 
 function specConstDefaults(): [string, string, string][] {
@@ -51,6 +67,13 @@ describe("spec const+default discriminators", () => {
             expect(raw[propName]).toBe(expectedDefault);
         },
     );
+
+    it.each([...FIELD_DROPPED_ENTIRELY])("%s stays dropped until a regeneration restores it", (key) => {
+        const [schemaName, propName] = key.split(".");
+        const schema = (serialization as Record<string, any>)[schemaName];
+        const raw = schema.jsonOrThrow(MINIMAL_PARSED[schemaName] ?? {});
+        expect(raw[propName], `${key} is back in the serialized output; move it out of FIELD_DROPPED_ENTIRELY`).toBeUndefined();
+    });
 
     it("injects kind through the inline-agent environments path", () => {
         const raw = serialization.AgentEnvironmentsItem.jsonOrThrow({ id: "browser" });

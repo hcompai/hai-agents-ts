@@ -21,7 +21,7 @@ const boom = tool({
   },
 });
 
-function awaitingEvent(calls: { id: string; name: string; arguments?: Record<string, unknown> }[]) {
+function awaitingEvent(calls: { id: string; tool_name: string; args?: Record<string, unknown> }[]) {
   return {
     type: "ActiveStateChangeEvent",
     data: { state: "awaiting_tool_results", pending_tool_calls: calls },
@@ -71,9 +71,9 @@ describe("asTools", () => {
 describe("waitForSession tool dispatch", () => {
   it("executes pending calls exactly once and posts a batch", async () => {
     const pending = [
-      { id: "c1", name: "add", arguments: { a: 2, b: 3 } },
-      { id: "c2", name: "boom" },
-      { id: "c3", name: "ghost" },
+      { id: "c1", tool_name: "add", args: { a: 2, b: 3 } },
+      { id: "c2", tool_name: "boom" },
+      { id: "c3", tool_name: "ghost" },
     ];
     const { client, posts } = fakeClient([
       { status: "awaiting_tool_results", changes: { newEvents: [awaitingEvent(pending)] } },
@@ -85,30 +85,35 @@ describe("waitForSession tool dispatch", () => {
 
     expect(result.status).toBe("completed");
     expect(posts).toHaveLength(1);
-    const body = posts[0] as { type: string; results: { tool_call_id: string; result: unknown; is_error: boolean }[] };
+    const body = posts[0] as { type: string; results: unknown[] };
     expect(body.type).toBe("batch");
     expect(body.results).toEqual([
-      { type: "tool_result", tool_call_id: "c1", result: 5, is_error: false },
-      { type: "tool_result", tool_call_id: "c2", result: "Error: kaput", is_error: true },
-      { type: "tool_result", tool_call_id: "c3", result: 'Tool "ghost" is not registered with this client.', is_error: true },
+      { kind: "tool_result", tool_req: { tool_name: "add", args: { a: 2, b: 3 }, id: "c1" }, result: 5 },
+      { kind: "error_event", error: "Error: kaput", origin: "client", tool_req: { tool_name: "boom", args: {}, id: "c2" } },
+      {
+        kind: "error_event",
+        error: 'Tool "ghost" is not registered with this client.',
+        origin: "client",
+        tool_req: { tool_name: "ghost", args: {}, id: "c3" },
+      },
     ]);
   });
 
   it("posts a single result without batch wrapping", async () => {
     const { client, posts } = fakeClient([
-      { status: "awaiting_tool_results", changes: { newEvents: [awaitingEvent([{ id: "c1", name: "add", arguments: { a: 1, b: 1 } }])] } },
+      { status: "awaiting_tool_results", changes: { newEvents: [awaitingEvent([{ id: "c1", tool_name: "add", args: { a: 1, b: 1 } }])] } },
       { status: "completed" },
     ]);
 
     await waitForSession(client, { id: "s1", tools: [add], waitForSeconds: 0 });
 
-    expect(posts).toEqual([{ type: "tool_result", tool_call_id: "c1", result: 2, is_error: false }]);
+    expect(posts).toEqual([{ kind: "tool_result", tool_req: { tool_name: "add", args: { a: 1, b: 1 }, id: "c1" }, result: 2 }]);
   });
 
   it("tolerates 409 from tool_results when the session already finished", async () => {
     const { client } = fakeClient(
       [
-        { status: "awaiting_tool_results", changes: { newEvents: [awaitingEvent([{ id: "c1", name: "add", arguments: { a: 1, b: 1 } }])] } },
+        { status: "awaiting_tool_results", changes: { newEvents: [awaitingEvent([{ id: "c1", tool_name: "add", args: { a: 1, b: 1 } }])] } },
         { status: "completed" },
       ],
       409,
@@ -121,7 +126,7 @@ describe("waitForSession tool dispatch", () => {
   it("throws on a non-409 post failure", async () => {
     const { client } = fakeClient(
       [
-        { status: "awaiting_tool_results", changes: { newEvents: [awaitingEvent([{ id: "c1", name: "add", arguments: { a: 1, b: 1 } }])] } },
+        { status: "awaiting_tool_results", changes: { newEvents: [awaitingEvent([{ id: "c1", tool_name: "add", args: { a: 1, b: 1 } }])] } },
         { status: "completed" },
       ],
       500,
@@ -132,10 +137,10 @@ describe("waitForSession tool dispatch", () => {
 
   it("executes only the latest advertised pending list", async () => {
     const stale = awaitingEvent([
-      { id: "c1", name: "add", arguments: { a: 1, b: 1 } },
-      { id: "c2", name: "add", arguments: { a: 2, b: 2 } },
+      { id: "c1", tool_name: "add", args: { a: 1, b: 1 } },
+      { id: "c2", tool_name: "add", args: { a: 2, b: 2 } },
     ]);
-    const refreshed = awaitingEvent([{ id: "c2", name: "add", arguments: { a: 2, b: 2 } }]);
+    const refreshed = awaitingEvent([{ id: "c2", tool_name: "add", args: { a: 2, b: 2 } }]);
     const { client, posts } = fakeClient([
       { status: "awaiting_tool_results", changes: { newEvents: [stale, refreshed] } },
       { status: "completed" },
@@ -143,11 +148,11 @@ describe("waitForSession tool dispatch", () => {
 
     await waitForSession(client, { id: "s1", tools: [add], waitForSeconds: 0 });
 
-    expect(posts).toEqual([{ type: "tool_result", tool_call_id: "c2", result: 4, is_error: false }]);
+    expect(posts).toEqual([{ kind: "tool_result", tool_req: { tool_name: "add", args: { a: 2, b: 2 }, id: "c2" }, result: 4 }]);
   });
 
   it("recovers pending calls when joining past the advertising event", async () => {
-    const pending = [{ id: "c1", name: "add", arguments: { a: 1, b: 1 } }];
+    const pending = [{ id: "c1", tool_name: "add", args: { a: 1, b: 1 } }];
     const statuses = ["awaiting_tool_results", "completed"];
     let statusIdx = 0;
     const posts: unknown[] = [];
@@ -169,12 +174,12 @@ describe("waitForSession tool dispatch", () => {
 
     expect(result.status).toBe("completed");
     expect(posts).toHaveLength(1);
-    expect((posts[0] as { tool_call_id: string }).tool_call_id).toBe("c1");
+    expect((posts[0] as { tool_req: { id: string } }).tool_req.id).toBe("c1");
   });
 
   it("does not dispatch when the live status left awaiting_tool_results", async () => {
     const { client, posts } = fakeClient([
-      { status: "running", changes: { newEvents: [awaitingEvent([{ id: "c1", name: "add", arguments: { a: 1, b: 1 } }])] } },
+      { status: "running", changes: { newEvents: [awaitingEvent([{ id: "c1", tool_name: "add", args: { a: 1, b: 1 } }])] } },
       { status: "completed" },
     ]);
 
