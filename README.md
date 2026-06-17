@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://github.com/hcompai/hai-agents-ts/blob/main/assets/banner-dark.gif?raw=true" />
-    <img src="https://github.com/hcompai/hai-agents-ts/blob/main/assets/banner-light.gif?raw=true" alt="H Agent API" width="700" />
+    <img src="https://github.com/hcompai/hai-agents-ts/blob/main/assets/banner-light.gif?raw=true" alt="Computer-Use Agents" width="700" />
   </picture>
 </p>
 
@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  TypeScript SDK for the <a href="https://hcompany.ai">H Company</a> <a href="https://hub.hcompany.ai/agent-api">Agent API</a>. Launch autonomous agents powered by Holo, stream their progress, and steer them mid-run.
+  TypeScript SDK for <a href="https://hcompany.ai">H Company</a>'s <a href="https://hub.hcompany.ai/agent-api">Computer-Use Agents</a>. Launch autonomous agents powered by Holo, stream their progress, and steer them mid-run.
 </p>
 
 <p align="center">
