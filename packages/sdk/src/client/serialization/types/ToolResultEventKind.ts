@@ -4,11 +4,11 @@ import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
 
-export const ToolResultEventType: core.serialization.Schema<
-    serializers.ToolResultEventType.Raw,
-    HaiAgents.ToolResultEventType
+export const ToolResultEventKind: core.serialization.Schema<
+    serializers.ToolResultEventKind.Raw,
+    HaiAgents.ToolResultEventKind
 > = core.serialization.enum_(["tool_result"]);
 
-export declare namespace ToolResultEventType {
+export declare namespace ToolResultEventKind {
     export type Raw = "tool_result";
 }

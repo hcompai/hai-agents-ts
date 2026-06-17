@@ -1,6 +1,8 @@
 export * from "./agents/client/requests/index.js";
 export * as agents from "./agents/index.js";
 export * from "./agents/types/index.js";
+export * from "./browserProfiles/client/requests/index.js";
+export * as browserProfiles from "./browserProfiles/index.js";
 export * from "./environments/client/requests/index.js";
 export * as environments from "./environments/index.js";
 export * from "./environments/types/index.js";

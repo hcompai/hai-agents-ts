@@ -675,9 +675,9 @@ export class SessionsClient {
      *     await client.sessions.sendSessionToolResults({
      *         id: "id",
      *         body: {
-     *             type: "tool_result",
-     *             toolCallId: "tool_call_id",
-     *             type: "tool_result"
+     *             toolReq: {
+     *                 toolName: "tool_name"
+     *             }
      *         }
      *     })
      */
@@ -1006,14 +1006,14 @@ export class SessionsClient {
     public getSessionChanges(
         request: HaiAgents.GetSessionChangesRequest,
         requestOptions?: SessionsClient.RequestOptions,
-    ): core.HttpResponsePromise<HaiAgents.TrajectoryChanges | undefined> {
+    ): core.HttpResponsePromise<HaiAgents.SessionChanges | undefined> {
         return core.HttpResponsePromise.fromPromise(this.__getSessionChanges(request, requestOptions));
     }
 
     private async __getSessionChanges(
         request: HaiAgents.GetSessionChangesRequest,
         requestOptions?: SessionsClient.RequestOptions,
-    ): Promise<core.WithRawResponse<HaiAgents.TrajectoryChanges | undefined>> {
+    ): Promise<core.WithRawResponse<HaiAgents.SessionChanges | undefined>> {
         const { id, fromIndex, limit, includeEvents, waitForSeconds } = request;
         const _queryParams: Record<string, unknown> = {
             from_index: fromIndex,
@@ -1101,14 +1101,14 @@ export class SessionsClient {
     public listSessionEvents(
         request: HaiAgents.ListSessionEventsRequest,
         requestOptions?: SessionsClient.RequestOptions,
-    ): core.HttpResponsePromise<HaiAgents.PageTrajectoryEvent> {
+    ): core.HttpResponsePromise<HaiAgents.PageSessionEvent> {
         return core.HttpResponsePromise.fromPromise(this.__listSessionEvents(request, requestOptions));
     }
 
     private async __listSessionEvents(
         request: HaiAgents.ListSessionEventsRequest,
         requestOptions?: SessionsClient.RequestOptions,
-    ): Promise<core.WithRawResponse<HaiAgents.PageTrajectoryEvent>> {
+    ): Promise<core.WithRawResponse<HaiAgents.PageSessionEvent>> {
         const { id, page, size, sort, type: type_ } = request;
         const _queryParams: Record<string, unknown> = {
             page,
@@ -1144,7 +1144,7 @@ export class SessionsClient {
         });
         if (_response.ok) {
             return {
-                data: serializers.PageTrajectoryEvent.parseOrThrow(_response.body, {
+                data: serializers.PageSessionEvent.parseOrThrow(_response.body, {
                     unrecognizedObjectKeys: "passthrough",
                     allowUnrecognizedUnionMembers: true,
                     allowUnrecognizedEnumValues: true,

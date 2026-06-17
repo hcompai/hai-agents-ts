@@ -7,9 +7,9 @@ import type * as HaiAgents from "../../../../index.js";
  *     {
  *         id: "id",
  *         body: {
- *             type: "tool_result",
- *             toolCallId: "tool_call_id",
- *             type: "tool_result"
+ *             toolReq: {
+ *                 toolName: "tool_name"
+ *             }
  *         }
  *     }
  */

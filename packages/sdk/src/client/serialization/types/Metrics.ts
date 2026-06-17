@@ -5,15 +5,16 @@ import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
 import { ModelCost } from "./ModelCost.js";
 
-export const Metrics: core.serialization.ObjectSchema<serializers.Metrics.Raw, HaiAgents.Metrics> =
-    core.serialization.object({
+export const Metrics: core.serialization.ObjectSchema<serializers.Metrics.Raw, HaiAgents.Metrics> = core.serialization
+    .object({
         steps: core.serialization.number().optional(),
         costPerModel: core.serialization.property("cost_per_model", core.serialization.list(ModelCost).optional()),
         inputCost: core.serialization.property("input_cost", core.serialization.number().optionalNullable()),
         outputCost: core.serialization.property("output_cost", core.serialization.number().optionalNullable()),
         reasoningCost: core.serialization.property("reasoning_cost", core.serialization.number().optionalNullable()),
         totalCost: core.serialization.property("total_cost", core.serialization.number().optionalNullable()),
-    });
+    })
+    .passthrough();
 
 export declare namespace Metrics {
     export interface Raw {
@@ -23,5 +24,6 @@ export declare namespace Metrics {
         output_cost?: (number | null | undefined) | null;
         reasoning_cost?: (number | null | undefined) | null;
         total_cost?: (number | null | undefined) | null;
+        [key: string]: any;
     }
 }

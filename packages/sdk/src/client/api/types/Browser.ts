@@ -23,4 +23,6 @@ export interface Browser {
     pageChars?: number;
     /** Id of a vault config to bind to this browser, letting the agent sign in to sites with secrets resolved from the vault. The vault must belong to the caller's organization. Omit to run without secret access. */
     vaultId?: string | null;
+    /** Id of a browser profile to load into this browser, restoring saved cookies and storage state from a prior session. The profile must belong to the caller's organization. Omit to run with a fresh profile. */
+    browserProfileId?: string | null;
 }

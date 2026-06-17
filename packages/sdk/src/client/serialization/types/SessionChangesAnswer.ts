@@ -4,14 +4,14 @@ import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
 
-export const TrajectoryChangesAnswer: core.serialization.Schema<
-    serializers.TrajectoryChangesAnswer.Raw,
-    HaiAgents.TrajectoryChangesAnswer
+export const SessionChangesAnswer: core.serialization.Schema<
+    serializers.SessionChangesAnswer.Raw,
+    HaiAgents.SessionChangesAnswer
 > = core.serialization.undiscriminatedUnion([
     core.serialization.string(),
     core.serialization.record(core.serialization.string(), core.serialization.unknown()),
 ]);
 
-export declare namespace TrajectoryChangesAnswer {
+export declare namespace SessionChangesAnswer {
     export type Raw = string | Record<string, unknown>;
 }

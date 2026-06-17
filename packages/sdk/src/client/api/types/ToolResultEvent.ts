@@ -3,14 +3,11 @@
 import type * as HaiAgents from "../index.js";
 
 /**
- * The client is sending back the result of a custom tool call.
+ * Result of executing one tool request.
  */
 export interface ToolResultEvent {
-    type?: HaiAgents.ToolResultEventType;
-    /** Id of the pending tool call this result answers. */
-    toolCallId: string;
-    /** JSON-serializable tool output, shown to the model. */
-    result?: unknown;
-    /** Mark the call as failed; result is treated as the error text. */
-    isError?: boolean;
+    kind?: HaiAgents.ToolResultEventKind;
+    toolReq: HaiAgents.ToolRequest;
+    /** Tool output as opaque JSON; any embedded image is inlined as base64, not a URL. */
+    result?: HaiAgents.JsonValue;
 }

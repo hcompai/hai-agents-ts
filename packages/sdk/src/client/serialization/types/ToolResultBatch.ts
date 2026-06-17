@@ -3,17 +3,20 @@
 import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
-import { ToolResultEvent } from "./ToolResultEvent.js";
+import { ToolResultBatchResultsItem } from "./ToolResultBatchResultsItem.js";
+import { ToolResultBatchType } from "./ToolResultBatchType.js";
 
 export const ToolResultBatch: core.serialization.ObjectSchema<
     serializers.ToolResultBatch.Raw,
     HaiAgents.ToolResultBatch
-> = core.serialization.object({
-    results: core.serialization.list(ToolResultEvent),
-});
+> = core.serialization.withJsonDefaults(core.serialization.object({
+    type: ToolResultBatchType.optional(),
+    results: core.serialization.list(ToolResultBatchResultsItem),
+}), { type: "batch" });
 
 export declare namespace ToolResultBatch {
     export interface Raw {
-        results: ToolResultEvent.Raw[];
+        type?: ToolResultBatchType.Raw | null;
+        results: ToolResultBatchResultsItem.Raw[];
     }
 }
