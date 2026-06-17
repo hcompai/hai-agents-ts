@@ -11,7 +11,7 @@ import {
   type RunSessionOptions,
   type SessionRunResult,
 } from "./polling.js";
-import type { TrajectoryChanges } from "./api/index.js";
+import type { SessionChanges } from "./api/index.js";
 import { asTools, type Tool } from "./tools.js";
 
 /**
@@ -21,14 +21,14 @@ import { asTools, type Tool } from "./tools.js";
  */
 export class HaiAgentsClient extends FernClient {
   /** Create a session and resolve once it completes, returning the result and final answer. */
-  public runSession<TAnswer = TrajectoryChanges["answer"]>(
+  public runSession<TAnswer = SessionChanges["answer"]>(
     options: RunSessionOptions<TAnswer>,
   ): Promise<SessionRunResult<TAnswer>> {
     return runSession(this, options);
   }
 
   /** Create a session and return a handle to it without waiting. */
-  public async startSession<TAnswer = TrajectoryChanges["answer"]>(
+  public async startSession<TAnswer = SessionChanges["answer"]>(
     params: CreateSessionParams & { answerSchema?: AnswerSchema<TAnswer>; tools?: readonly Tool[] },
   ): Promise<SessionHandle<TAnswer>> {
     const { answerSchema, tools, ...createParams } = params;

@@ -6,5 +6,6 @@ import type * as HaiAgents from "../index.js";
  * Batch of custom tool results.
  */
 export interface ToolResultBatch {
-    results: HaiAgents.ToolResultEvent[];
+    type?: HaiAgents.ToolResultBatchType;
+    results: HaiAgents.ToolResultBatchResultsItem[];
 }
