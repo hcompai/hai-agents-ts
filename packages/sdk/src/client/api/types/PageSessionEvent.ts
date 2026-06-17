@@ -2,8 +2,8 @@
 
 import type * as HaiAgents from "../index.js";
 
-export interface PageTrajectoryEvent {
-    items: HaiAgents.TrajectoryEvent[];
+export interface PageSessionEvent {
+    items: HaiAgents.SessionEvent[];
     total: number;
     page: number;
 }

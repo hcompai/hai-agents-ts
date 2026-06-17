@@ -5,16 +5,21 @@ import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
 
 export const ModelCost: core.serialization.ObjectSchema<serializers.ModelCost.Raw, HaiAgents.ModelCost> =
-    core.serialization.object({
-        name: core.serialization.string(),
-        inputTokens: core.serialization.property("input_tokens", core.serialization.number()),
-        outputTokens: core.serialization.property("output_tokens", core.serialization.number()),
-        reasoningTokens: core.serialization.property("reasoning_tokens", core.serialization.number()),
-        inputCost: core.serialization.property("input_cost", core.serialization.number().optionalNullable()),
-        outputCost: core.serialization.property("output_cost", core.serialization.number().optionalNullable()),
-        reasoningCost: core.serialization.property("reasoning_cost", core.serialization.number().optionalNullable()),
-        totalCost: core.serialization.property("total_cost", core.serialization.number().optionalNullable()),
-    });
+    core.serialization
+        .object({
+            name: core.serialization.string(),
+            inputTokens: core.serialization.property("input_tokens", core.serialization.number()),
+            outputTokens: core.serialization.property("output_tokens", core.serialization.number()),
+            reasoningTokens: core.serialization.property("reasoning_tokens", core.serialization.number()),
+            inputCost: core.serialization.property("input_cost", core.serialization.number().optionalNullable()),
+            outputCost: core.serialization.property("output_cost", core.serialization.number().optionalNullable()),
+            reasoningCost: core.serialization.property(
+                "reasoning_cost",
+                core.serialization.number().optionalNullable(),
+            ),
+            totalCost: core.serialization.property("total_cost", core.serialization.number().optionalNullable()),
+        })
+        .passthrough();
 
 export declare namespace ModelCost {
     export interface Raw {
@@ -26,5 +31,6 @@ export declare namespace ModelCost {
         output_cost?: (number | null | undefined) | null;
         reasoning_cost?: (number | null | undefined) | null;
         total_cost?: (number | null | undefined) | null;
+        [key: string]: any;
     }
 }

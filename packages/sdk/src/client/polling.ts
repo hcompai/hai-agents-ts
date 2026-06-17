@@ -1,13 +1,14 @@
 import type { HaiAgentsClient } from "./Client.js";
 import type {
+  ActiveStateChangeData,
   CreateSessionRequest,
   GetSessionChangesRequest,
   SendSessionMessagesRequest,
   Session,
   SessionRequest,
   SessionStatus,
-  TrajectoryChanges,
-  TrajectoryEvent,
+  SessionChanges,
+  SessionEvent,
   TrajectoryStatus,
 } from "./api/index.js";
 import { asTools, toolDefinition, type Tool } from "./tools.js";
@@ -29,12 +30,12 @@ export const SETTLED_SESSION_STATUSES = [
 /** Server rejects request bodies above this size; enforced client-side for a clear early error. */
 export const MAX_REQUEST_BYTES = 5 * 1024 * 1024;
 
-export type SessionRunResult<TAnswer = TrajectoryChanges["answer"]> = {
+export type SessionRunResult<TAnswer = SessionChanges["answer"]> = {
   id: string;
   status: TrajectoryStatus;
-  events: TrajectoryEvent[];
+  events: SessionEvent[];
   nextFromIndex: number;
-  finalChanges?: TrajectoryChanges;
+  finalChanges?: SessionChanges;
   /**
    * The session's final answer: the parsed `answerSchema` value when one was requested and
    * the session completed or idled with an answer, otherwise the raw wire value (also at
@@ -101,7 +102,7 @@ export async function attachAnswerSchema(
 }
 
 function parseAnswer<TAnswer>(
-  raw: TrajectoryChanges["answer"] | undefined,
+  raw: SessionChanges["answer"] | undefined,
   status: TrajectoryStatus,
   schema: AnswerSchema<TAnswer> | undefined,
 ): TAnswer | undefined {
@@ -139,7 +140,7 @@ export function toCreateRequest(params: CreateSessionParams): CreateSessionReque
   return { idempotencyKey: idempotencyKey ?? undefined, body };
 }
 
-export type WaitForSessionOptions<TAnswer = TrajectoryChanges["answer"]> = {
+export type WaitForSessionOptions<TAnswer = SessionChanges["answer"]> = {
   id: string;
   fromIndex?: number;
   waitForSeconds?: number;
@@ -157,7 +158,7 @@ export type WaitForSessionOptions<TAnswer = TrajectoryChanges["answer"]> = {
   tools?: readonly Tool[];
 };
 
-export type RunSessionOptions<TAnswer = TrajectoryChanges["answer"]> = CreateSessionParams & {
+export type RunSessionOptions<TAnswer = SessionChanges["answer"]> = CreateSessionParams & {
   waitForSeconds?: number;
   includeEvents?: boolean;
   timeoutMs?: number;
@@ -192,7 +193,12 @@ export function attachToolDefinitions(params: CreateSessionParams, tools: readon
   return { ...params, overrides: { ...(params.overrides ?? {}), "agent.tools": tools.map(toolDefinition) } };
 }
 
-type PendingToolCall = { id: string; name: string; arguments?: Record<string, unknown> };
+type PendingToolCall = { id?: string | null; tool_name: string; args?: Record<string, unknown> };
+
+/** Dedup key for an advertised call: its id, or a content signature when id is null. */
+function callKey(call: PendingToolCall): string {
+  return call.id != null ? call.id : JSON.stringify({ tool_name: call.tool_name, args: call.args ?? {} });
+}
 
 /**
  * Pending custom tool calls per the latest `ActiveStateChangeEvent`.
@@ -202,7 +208,7 @@ type PendingToolCall = { id: string; name: string; arguments?: Record<string, un
  * contain no state change.
  */
 function latestPendingToolCalls(
-  batch: readonly TrajectoryEvent[],
+  batch: readonly SessionEvent[],
   previous: PendingToolCall[],
 ): PendingToolCall[] {
   let calls = previous;
@@ -210,10 +216,11 @@ function latestPendingToolCalls(
     if (event.type !== "ActiveStateChangeEvent") {
       continue;
     }
-    const data = (event.data ?? {}) as Record<string, unknown>;
+    // Events arrive through the serde layer, so data is camelCase (pendingToolCalls / toolName).
+    const data = (event.data ?? {}) as ActiveStateChangeData;
     calls =
-      data["state"] === "awaiting_tool_results"
-        ? [...((data["pending_tool_calls"] ?? []) as PendingToolCall[])]
+      data.state === "awaiting_tool_results"
+        ? (data.pendingToolCalls ?? []).map((c) => ({ id: c.id, tool_name: c.toolName, args: c.args }))
         : [];
   }
   return calls;
@@ -228,28 +235,35 @@ function jsonSafe(value: unknown): unknown {
   }
 }
 
-type ToolResultPayload = { type: "tool_result"; tool_call_id: string; result: unknown; is_error: boolean };
+type ToolReq = { tool_name: string; args: Record<string, unknown>; id: string | null };
+type ToolResultPayload =
+  | { kind: "tool_result"; tool_req: ToolReq; result: unknown }
+  | { kind: "error_event"; error: string; origin: string; tool_req: ToolReq };
+
+function toolReq(call: PendingToolCall): ToolReq {
+  return { tool_name: call.tool_name, args: call.args ?? {}, id: call.id ?? null };
+}
 
 /** Run one pending call locally and shape the `tool_result` payload. */
 async function executeToolCall(
   toolsByName: ReadonlyMap<string, Tool>,
   call: PendingToolCall,
 ): Promise<ToolResultPayload> {
-  const localTool = toolsByName.get(call.name);
+  const localTool = toolsByName.get(call.tool_name);
   if (localTool === undefined) {
     return {
-      type: "tool_result",
-      tool_call_id: call.id,
-      result: `Tool ${JSON.stringify(call.name)} is not registered with this client.`,
-      is_error: true,
+      kind: "error_event",
+      error: `Tool ${JSON.stringify(call.tool_name)} is not registered with this client.`,
+      origin: "client",
+      tool_req: toolReq(call),
     };
   }
   try {
-    const result = await localTool.fn(call.arguments ?? {});
-    return { type: "tool_result", tool_call_id: call.id, result: jsonSafe(result), is_error: false };
+    const result = await localTool.fn(call.args ?? {});
+    return { kind: "tool_result", tool_req: toolReq(call), result: jsonSafe(result) };
   } catch (error) {
     const message = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
-    return { type: "tool_result", tool_call_id: call.id, result: message, is_error: true };
+    return { kind: "error_event", error: message, origin: "client", tool_req: toolReq(call) };
   }
 }
 
@@ -270,9 +284,9 @@ async function postToolResults(client: HaiAgentsClient, id: string, results: Too
 async function finalChanges(
   client: HaiAgentsClient,
   id: string,
-  lastChanges: TrajectoryChanges | undefined,
+  lastChanges: SessionChanges | undefined,
   limit: number | null | undefined,
-): Promise<TrajectoryChanges | undefined> {
+): Promise<SessionChanges | undefined> {
   if (lastChanges && lastChanges.answer != null) {
     return lastChanges;
   }
@@ -304,7 +318,7 @@ async function recoverPendingToolCalls(client: HaiAgentsClient, id: string): Pro
  * and the final answer, since it 204s whenever no new events exist past `fromIndex` --
  * even after the session has finished.
  */
-export async function waitForSession<TAnswer = TrajectoryChanges["answer"]>(
+export async function waitForSession<TAnswer = SessionChanges["answer"]>(
   client: HaiAgentsClient,
   options: WaitForSessionOptions<TAnswer>,
 ): Promise<SessionRunResult<TAnswer>> {
@@ -326,9 +340,9 @@ export async function waitForSession<TAnswer = TrajectoryChanges["answer"]>(
   }
   const answered = new Set<string>();
   let advertised: PendingToolCall[] = [];
-  const events: TrajectoryEvent[] = [];
+  const events: SessionEvent[] = [];
   let nextFromIndex = fromIndex;
-  let lastChanges: TrajectoryChanges | undefined;
+  let lastChanges: SessionChanges | undefined;
   const deadline = timeoutMs === undefined ? undefined : Date.now() + timeoutMs;
 
   for (let polls = 0; maxPolls === undefined || polls < maxPolls; polls += 1) {
@@ -336,7 +350,7 @@ export async function waitForSession<TAnswer = TrajectoryChanges["answer"]>(
       throw new Error(`Session ${id} did not settle within ${timeoutMs}ms`);
     }
 
-    let batch: TrajectoryEvent[] = [];
+    let batch: SessionEvent[] = [];
     if (includeEvents) {
       const changes = await client.sessions.getSessionChanges({
         id,
@@ -367,12 +381,12 @@ export async function waitForSession<TAnswer = TrajectoryChanges["answer"]>(
         if (advertised.length === 0) {
           advertised = await recoverPendingToolCalls(client, id);
         }
-        const calls = advertised.filter((call) => !answered.has(call.id));
+        const calls = advertised.filter((call) => !answered.has(callKey(call)));
         if (calls.length > 0) {
           const results = await Promise.all(calls.map((call) => executeToolCall(toolsByName, call)));
           await postToolResults(client, id, results);
           for (const call of calls) {
-            answered.add(call.id);
+            answered.add(callKey(call));
           }
         }
       }
@@ -389,7 +403,7 @@ export async function waitForSession<TAnswer = TrajectoryChanges["answer"]>(
   throw new Error(`Session ${id} did not settle before maxPolls=${maxPolls}`);
 }
 
-export async function runSession<TAnswer = TrajectoryChanges["answer"]>(
+export async function runSession<TAnswer = SessionChanges["answer"]>(
   client: HaiAgentsClient,
   options: RunSessionOptions<TAnswer>,
 ): Promise<SessionRunResult<TAnswer>> {
@@ -414,7 +428,7 @@ export async function runSession<TAnswer = TrajectoryChanges["answer"]>(
 }
 
 /** A created session bound to its client: object-oriented sugar over the polling helpers. */
-export class SessionHandle<TAnswer = TrajectoryChanges["answer"]> {
+export class SessionHandle<TAnswer = SessionChanges["answer"]> {
   constructor(
     private readonly client: HaiAgentsClient,
     public readonly id: string,
@@ -430,7 +444,7 @@ export class SessionHandle<TAnswer = TrajectoryChanges["answer"]> {
     return this.client.sessions.getSessionStatus({ id: this.id });
   }
 
-  changes(options?: Omit<GetSessionChangesRequest, "id">): Promise<TrajectoryChanges | undefined> {
+  changes(options?: Omit<GetSessionChangesRequest, "id">): Promise<SessionChanges | undefined> {
     return this.client.sessions.getSessionChanges({ id: this.id, ...options });
   }
 

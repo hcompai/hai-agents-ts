@@ -17,6 +17,10 @@ export const Browser: core.serialization.ObjectSchema<serializers.Browser.Raw, H
         mode: BrowserMode.optional(),
         pageChars: core.serialization.property("page_chars", core.serialization.number().optional()),
         vaultId: core.serialization.property("vault_id", core.serialization.string().optionalNullable()),
+        browserProfileId: core.serialization.property(
+            "browser_profile_id",
+            core.serialization.string().optionalNullable(),
+        ),
     }), { kind: "web" });
 
 export declare namespace Browser {
@@ -30,5 +34,6 @@ export declare namespace Browser {
         mode?: BrowserMode.Raw | null;
         page_chars?: number | null;
         vault_id?: (string | null | undefined) | null;
+        browser_profile_id?: (string | null | undefined) | null;
     }
 }

@@ -3,30 +3,15 @@
 import type * as HaiAgents from "../../../../api/index.js";
 import * as core from "../../../../core/index.js";
 import type * as serializers from "../../../index.js";
+import { ErrorEvent } from "../../../types/ErrorEvent.js";
 import { ToolResultBatch } from "../../../types/ToolResultBatch.js";
 import { ToolResultEvent } from "../../../types/ToolResultEvent.js";
 
 export const SendSessionToolResultsRequestBody: core.serialization.Schema<
     serializers.SendSessionToolResultsRequestBody.Raw,
     HaiAgents.SendSessionToolResultsRequestBody
-> = core.serialization
-    .union("type", {
-        tool_result: ToolResultEvent,
-        batch: ToolResultBatch,
-    })
-    .transform<HaiAgents.SendSessionToolResultsRequestBody>({
-        transform: (value) => value,
-        untransform: (value) => value,
-    });
+> = core.serialization.undiscriminatedUnion([ToolResultEvent, ErrorEvent, ToolResultBatch]);
 
 export declare namespace SendSessionToolResultsRequestBody {
-    export type Raw = SendSessionToolResultsRequestBody.ToolResult | SendSessionToolResultsRequestBody.Batch;
-
-    export interface ToolResult extends ToolResultEvent.Raw {
-        type: "tool_result";
-    }
-
-    export interface Batch extends ToolResultBatch.Raw {
-        type: "batch";
-    }
+    export type Raw = ToolResultEvent.Raw | ErrorEvent.Raw | ToolResultBatch.Raw;
 }

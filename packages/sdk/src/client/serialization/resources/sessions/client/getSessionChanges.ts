@@ -3,13 +3,13 @@
 import type * as HaiAgents from "../../../../api/index.js";
 import type * as core from "../../../../core/index.js";
 import type * as serializers from "../../../index.js";
-import { TrajectoryChanges } from "../../../types/TrajectoryChanges.js";
+import { SessionChanges } from "../../../types/SessionChanges.js";
 
 export const Response: core.serialization.Schema<
     serializers.sessions.getSessionChanges.Response.Raw,
-    HaiAgents.TrajectoryChanges | undefined
-> = TrajectoryChanges.optional();
+    HaiAgents.SessionChanges | undefined
+> = SessionChanges.optional();
 
 export declare namespace Response {
-    export type Raw = TrajectoryChanges.Raw | null | undefined;
+    export type Raw = SessionChanges.Raw | null | undefined;
 }

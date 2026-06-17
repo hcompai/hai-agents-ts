@@ -18,6 +18,7 @@ export const PatchEnvironment: core.serialization.Schema<
     mode: PatchEnvironmentMode.optionalNullable(),
     pageChars: core.serialization.property("page_chars", core.serialization.number().optionalNullable()),
     vaultId: core.serialization.property("vault_id", core.serialization.string().optionalNullable()),
+    browserProfileId: core.serialization.property("browser_profile_id", core.serialization.string().optionalNullable()),
     pipPackages: core.serialization.property(
         "pip_packages",
         core.serialization.list(core.serialization.string()).optionalNullable(),
@@ -40,6 +41,7 @@ export declare namespace PatchEnvironment {
         mode?: (PatchEnvironmentMode.Raw | null | undefined) | null;
         page_chars?: (number | null | undefined) | null;
         vault_id?: (string | null | undefined) | null;
+        browser_profile_id?: (string | null | undefined) | null;
         pip_packages?: (string[] | null | undefined) | null;
         env?: (Record<string, string | null> | null | undefined) | null;
         mcp_servers?: (McpServer.Raw[] | null | undefined) | null;
