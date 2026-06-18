@@ -427,6 +427,81 @@ export async function runSession<TAnswer = SessionChanges["answer"]>(
   });
 }
 
+export type StreamSessionOptions = {
+  id: string;
+  fromIndex?: number;
+  waitForSeconds?: number;
+  limit?: number | null;
+  /** Stop on "settled" (terminal or idle) or only on "terminal" (keeps the stream open across idle turns). */
+  until?: "settled" | "terminal";
+  /** Overall wall-clock budget; throws once exceeded. */
+  timeoutMs?: number;
+};
+
+/**
+ * Yield a session's events incrementally as they arrive, until it stops.
+ *
+ * Wraps the long-poll loop: each poll yields the events past the cursor, then the
+ * loop reads the authoritative status and stops per `until` ("settled" = terminal
+ * or idle; "terminal" keeps the stream open across the idle turns of an interactive
+ * session). A final non-blocking drain loop flushes any backlog remaining when it
+ * stops. Unlike `waitForSession`, this does not execute custom tools: it is a
+ * read-only view of the event stream.
+ */
+export async function* streamSession(
+  client: HaiAgentsClient,
+  options: StreamSessionOptions,
+): AsyncGenerator<SessionEvent> {
+  const { id, fromIndex = 0, waitForSeconds = 20, limit, until = "settled", timeoutMs } = options;
+  const shouldStop = until === "terminal" ? isTerminalSessionStatus : isSettledSessionStatus;
+  let nextFromIndex = fromIndex;
+  const deadline = timeoutMs === undefined ? undefined : Date.now() + timeoutMs;
+
+  for (;;) {
+    if (deadline !== undefined && Date.now() >= deadline) {
+      throw new Error(`Session ${id} did not settle within ${timeoutMs}ms`);
+    }
+
+    const changes = await client.sessions.getSessionChanges({
+      id,
+      fromIndex: nextFromIndex,
+      includeEvents: true,
+      limit: limit ?? undefined,
+      waitForSeconds,
+    });
+    if (changes) {
+      const batch = changes.newEvents ?? [];
+      yield* batch;
+      nextFromIndex += batch.length;
+    }
+
+    const { status } = await client.sessions.getSessionStatus({ id });
+    if (shouldStop(status)) {
+      // Drain to exhaustion: one page may not cover the backlog past the cursor,
+      // since the server caps page size (and honors `limit`). Keep honoring the
+      // wall-clock budget so a large tail cannot outlive `timeoutMs`.
+      for (;;) {
+        if (deadline !== undefined && Date.now() >= deadline) {
+          throw new Error(`Session ${id} did not settle within ${timeoutMs}ms`);
+        }
+        const tail = await client.sessions.getSessionChanges({
+          id,
+          fromIndex: nextFromIndex,
+          includeEvents: true,
+          limit: limit ?? undefined,
+          waitForSeconds: 0,
+        });
+        const batch = tail?.newEvents ?? [];
+        if (batch.length === 0) {
+          return;
+        }
+        yield* batch;
+        nextFromIndex += batch.length;
+      }
+    }
+  }
+}
+
 /** A created session bound to its client: object-oriented sugar over the polling helpers. */
 export class SessionHandle<TAnswer = SessionChanges["answer"]> {
   constructor(
@@ -471,5 +546,10 @@ export class SessionHandle<TAnswer = SessionChanges["answer"]> {
   /** Block until the session settles (terminal or idle); resolves with the result and final answer. */
   waitForCompletion(options?: Omit<WaitForSessionOptions<TAnswer>, "id">): Promise<SessionRunResult<TAnswer>> {
     return waitForSession(this.client, { id: this.id, answerSchema: this.answerSchema, tools: this.tools, ...options });
+  }
+
+  /** Yield this session's events live until it settles (terminal or idle). */
+  stream(options?: Omit<StreamSessionOptions, "id">): AsyncGenerator<SessionEvent> {
+    return streamSession(this.client, { id: this.id, ...options });
   }
 }
