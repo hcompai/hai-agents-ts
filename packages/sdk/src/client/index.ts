@@ -16,6 +16,7 @@ export {
   isSettledSessionStatus,
   isTerminalSessionStatus,
   runSession,
+  streamSession,
   waitForSession,
 } from "./polling.js";
 export type {
@@ -23,6 +24,7 @@ export type {
   CreateSessionParams,
   RunSessionOptions,
   SessionRunResult,
+  StreamSessionOptions,
   WaitForSessionOptions,
 } from "./polling.js";
 export { asTools, tool, toolDefinition } from "./tools.js";
