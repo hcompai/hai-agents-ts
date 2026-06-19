@@ -5,6 +5,7 @@ import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
 import { BrowserKind } from "./BrowserKind.js";
 import { BrowserMode } from "./BrowserMode.js";
+import { BrowserNetwork } from "./BrowserNetwork.js";
 
 export const Browser: core.serialization.ObjectSchema<serializers.Browser.Raw, HaiAgents.Browser> =
     core.serialization.withJsonDefaults(core.serialization.object({
@@ -21,6 +22,7 @@ export const Browser: core.serialization.ObjectSchema<serializers.Browser.Raw, H
             "browser_profile_id",
             core.serialization.string().optionalNullable(),
         ),
+        network: BrowserNetwork.optionalNullable(),
     }), { kind: "web" });
 
 export declare namespace Browser {
@@ -35,5 +37,6 @@ export declare namespace Browser {
         page_chars?: number | null;
         vault_id?: (string | null | undefined) | null;
         browser_profile_id?: (string | null | undefined) | null;
+        network?: (BrowserNetwork.Raw | null | undefined) | null;
     }
 }
