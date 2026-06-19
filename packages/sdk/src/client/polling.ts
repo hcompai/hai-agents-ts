@@ -369,6 +369,25 @@ export async function waitForSession<TAnswer = SessionChanges["answer"]>(
 
     const { status } = await client.sessions.getSessionStatus({ id });
     if (isSettledSessionStatus(status)) {
+      if (includeEvents) {
+        for (;;) {
+          if (deadline !== undefined && Date.now() >= deadline) {
+            throw new Error(`Session ${id} did not settle within ${timeoutMs}ms`);
+          }
+          const tail = await client.sessions.getSessionChanges({
+            id,
+            fromIndex: nextFromIndex,
+            includeEvents: true,
+            limit: limit ?? undefined,
+            waitForSeconds: 0,
+          });
+          const drained = tail?.newEvents ?? [];
+          if (drained.length === 0) break;
+          lastChanges = tail;
+          events.push(...drained);
+          nextFromIndex += drained.length;
+        }
+      }
       const changes = await finalChanges(client, id, lastChanges, limit);
       const answer = parseAnswer(changes?.answer, status, answerSchema);
       return { id, status, events, nextFromIndex, finalChanges: changes, answer };
