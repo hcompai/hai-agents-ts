@@ -6,6 +6,7 @@ export * as browserProfiles from "./browserProfiles/index.js";
 export * from "./environments/client/requests/index.js";
 export * as environments from "./environments/index.js";
 export * from "./environments/types/index.js";
+export * as quota from "./quota/index.js";
 export * from "./sessions/client/requests/index.js";
 export * as sessions from "./sessions/index.js";
 export * from "./sessions/types/index.js";

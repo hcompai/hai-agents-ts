@@ -3,6 +3,7 @@
 import { AgentsClient } from "./api/resources/agents/client/Client.js";
 import { BrowserProfilesClient } from "./api/resources/browserProfiles/client/Client.js";
 import { EnvironmentsClient } from "./api/resources/environments/client/Client.js";
+import { QuotaClient } from "./api/resources/quota/client/Client.js";
 import { SessionsClient } from "./api/resources/sessions/client/Client.js";
 import { SkillsClient } from "./api/resources/skills/client/Client.js";
 import { VaultsClient } from "./api/resources/vaults/client/Client.js";
@@ -26,6 +27,7 @@ export class HaiAgentsClient {
     protected _webhooks: WebhooksClient | undefined;
     protected _browserProfiles: BrowserProfilesClient | undefined;
     protected _vaults: VaultsClient | undefined;
+    protected _quota: QuotaClient | undefined;
 
     constructor(options: HaiAgentsClient.Options = {}) {
         this._options = normalizeClientOptionsWithAuth(options);
@@ -57,6 +59,10 @@ export class HaiAgentsClient {
 
     public get vaults(): VaultsClient {
         return (this._vaults ??= new VaultsClient(this._options));
+    }
+
+    public get quota(): QuotaClient {
+        return (this._quota ??= new QuotaClient(this._options));
     }
 
     /**
