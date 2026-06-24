@@ -4,14 +4,15 @@
 
 import { createHmac, timingSafeEqual } from "node:crypto";
 
+import { HaiAgentsError } from "./errors/index.js";
+
 export const SIGNATURE_HEADER = "X-H-Webhook-Signature";
 export const TIMESTAMP_HEADER = "X-H-Webhook-Timestamp";
 export const DEFAULT_TOLERANCE_S = 300;
 
-export class WebhookVerificationError extends Error {
+export class WebhookVerificationError extends HaiAgentsError {
     constructor(message: string) {
-        super(message);
-        this.name = "WebhookVerificationError";
+        super({ message });
     }
 }
 
