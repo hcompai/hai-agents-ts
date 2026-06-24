@@ -12,6 +12,7 @@ import type {
   TrajectoryStatus,
 } from "./api/index.js";
 import { asTools, toolDefinition, type Tool } from "./tools.js";
+import { HaiAgentsError, HaiAgentsTimeoutError } from "./errors/index.js";
 
 export const TERMINAL_SESSION_STATUSES = [
   "completed",
@@ -54,13 +55,12 @@ export type AnswerSchema<TAnswer = unknown> = {
 };
 
 /** The session's final answer did not match the requested `answerSchema`. */
-export class AnswerValidationError extends Error {
+export class AnswerValidationError extends HaiAgentsError {
   constructor(
     public readonly raw: unknown,
     cause: unknown,
   ) {
-    super(`Final answer does not match the requested answerSchema: ${cause}`);
-    this.name = "AnswerValidationError";
+    super({ message: `Final answer does not match the requested answerSchema: ${cause}`, cause });
   }
 }
 
@@ -347,7 +347,7 @@ export async function waitForSession<TAnswer = SessionChanges["answer"]>(
 
   for (let polls = 0; maxPolls === undefined || polls < maxPolls; polls += 1) {
     if (deadline !== undefined && Date.now() >= deadline) {
-      throw new Error(`Session ${id} did not settle within ${timeoutMs}ms`);
+      throw new HaiAgentsTimeoutError(`Session ${id} did not settle within ${timeoutMs}ms`);
     }
 
     let batch: SessionEvent[] = [];
@@ -369,6 +369,25 @@ export async function waitForSession<TAnswer = SessionChanges["answer"]>(
 
     const { status } = await client.sessions.getSessionStatus({ id });
     if (isSettledSessionStatus(status)) {
+      if (includeEvents) {
+        for (;;) {
+          if (deadline !== undefined && Date.now() >= deadline) {
+            throw new HaiAgentsTimeoutError(`Session ${id} did not settle within ${timeoutMs}ms`);
+          }
+          const tail = await client.sessions.getSessionChanges({
+            id,
+            fromIndex: nextFromIndex,
+            includeEvents: true,
+            limit: limit ?? undefined,
+            waitForSeconds: 0,
+          });
+          const drained = tail?.newEvents ?? [];
+          if (drained.length === 0) break;
+          lastChanges = tail;
+          events.push(...drained);
+          nextFromIndex += drained.length;
+        }
+      }
       const changes = await finalChanges(client, id, lastChanges, limit);
       const answer = parseAnswer(changes?.answer, status, answerSchema);
       return { id, status, events, nextFromIndex, finalChanges: changes, answer };
@@ -400,7 +419,7 @@ export async function waitForSession<TAnswer = SessionChanges["answer"]>(
     }
   }
 
-  throw new Error(`Session ${id} did not settle before maxPolls=${maxPolls}`);
+  throw new HaiAgentsTimeoutError(`Session ${id} did not settle before maxPolls=${maxPolls}`);
 }
 
 export async function runSession<TAnswer = SessionChanges["answer"]>(
@@ -459,7 +478,7 @@ export async function* streamSession(
 
   for (;;) {
     if (deadline !== undefined && Date.now() >= deadline) {
-      throw new Error(`Session ${id} did not settle within ${timeoutMs}ms`);
+      throw new HaiAgentsTimeoutError(`Session ${id} did not settle within ${timeoutMs}ms`);
     }
 
     const changes = await client.sessions.getSessionChanges({
@@ -482,7 +501,7 @@ export async function* streamSession(
       // wall-clock budget so a large tail cannot outlive `timeoutMs`.
       for (;;) {
         if (deadline !== undefined && Date.now() >= deadline) {
-          throw new Error(`Session ${id} did not settle within ${timeoutMs}ms`);
+          throw new HaiAgentsTimeoutError(`Session ${id} did not settle within ${timeoutMs}ms`);
         }
         const tail = await client.sessions.getSessionChanges({
           id,
