@@ -1,4 +1,5 @@
 import { HaiAgentsClient as FernClient } from "./Client.js";
+import { HaiAgentsEnvironment } from "./environments.js";
 import {
   SessionHandle,
   assertRequestUnderLimit,
@@ -20,6 +21,15 @@ import { asTools, type Tool } from "./tools.js";
  * the hand-written polling helpers.
  */
 export class HaiAgentsClient extends FernClient {
+  constructor(options: FernClient.Options = {}) {
+    // Pin the default the per-resource calls already use, so passthrough `fetch` can resolve relative paths.
+    super(
+      options.baseUrl == null && options.environment == null
+        ? { ...options, environment: HaiAgentsEnvironment.Eu }
+        : options,
+    );
+  }
+
   /** Create a session and resolve once it completes, returning the result and final answer. */
   public runSession<TAnswer = SessionChanges["answer"]>(
     options: RunSessionOptions<TAnswer>,

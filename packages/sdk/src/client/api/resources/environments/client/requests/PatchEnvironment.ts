@@ -19,6 +19,7 @@ export interface PatchEnvironment {
     pageChars?: number | null;
     vaultId?: string | null;
     browserProfileId?: string | null;
+    network?: HaiAgents.BrowserNetwork | null;
     pipPackages?: string[] | null;
     env?: Record<string, string | null> | null;
     mcpServers?: HaiAgents.McpServer[] | null;
