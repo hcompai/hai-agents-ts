@@ -1534,29 +1534,19 @@ export class SessionsClient {
     /**
      * Redirect to a presigned S3 URL for a session-owned resource.
      *
-     * @param {HaiAgents.GetSessionResourceRequest} request
-     * @param {SessionsClient.RequestOptions} requestOptions - Request-specific configuration.
-     *
-     * @throws {@link HaiAgents.UnprocessableEntityError}
-     *
-     * @example
-     *     await client.sessions.getSessionResource({
-     *         id: "id",
-     *         bucket: "bucket",
-     *         key: "key"
-     *     })
+     * @throws {@link HaiAgents.NotFoundError}
      */
     public getSessionResource(
         request: HaiAgents.GetSessionResourceRequest,
         requestOptions?: SessionsClient.RequestOptions,
-    ): core.HttpResponsePromise<void> {
+    ): core.HttpResponsePromise<core.BinaryResponse> {
         return core.HttpResponsePromise.fromPromise(this.__getSessionResource(request, requestOptions));
     }
 
     private async __getSessionResource(
         request: HaiAgents.GetSessionResourceRequest,
         requestOptions?: SessionsClient.RequestOptions,
-    ): Promise<core.WithRawResponse<void>> {
+    ): Promise<core.WithRawResponse<core.BinaryResponse>> {
         const { id, bucket, key } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
@@ -1564,7 +1554,7 @@ export class SessionsClient {
             this._options?.headers,
             requestOptions?.headers,
         );
-        const _response = await core.fetcher({
+        const _response = await core.fetcher<core.BinaryResponse>({
             url: core.url.join(
                 (await core.Supplier.get(this._options.baseUrl)) ??
                     (await core.Supplier.get(this._options.environment)) ??
@@ -1574,6 +1564,7 @@ export class SessionsClient {
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            responseType: "binary-response",
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
             abortSignal: requestOptions?.abortSignal,
@@ -1581,22 +1572,13 @@ export class SessionsClient {
             logging: this._options.logging,
         });
         if (_response.ok) {
-            return { data: undefined, rawResponse: _response.rawResponse };
+            return { data: _response.body, rawResponse: _response.rawResponse };
         }
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
-                case 422:
-                    throw new HaiAgents.UnprocessableEntityError(
-                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
-                            unrecognizedObjectKeys: "passthrough",
-                            allowUnrecognizedUnionMembers: true,
-                            allowUnrecognizedEnumValues: true,
-                            skipValidation: true,
-                            breadcrumbsPrefix: ["response"],
-                        }),
-                        _response.rawResponse,
-                    );
+                case 404:
+                    throw new HaiAgents.NotFoundError(_response.error.body, _response.rawResponse);
                 default:
                     throw new errors.HaiAgentsError({
                         statusCode: _response.error.statusCode,
