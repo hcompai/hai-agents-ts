@@ -1,10 +1,9 @@
+import { HaiAgentsError } from "../../../../errors/HaiAgentsError.js";
 import type { ValidationError } from "../../Schema.js";
 import { stringifyValidationError } from "./stringifyValidationErrors.js";
 
-export class ParseError extends Error {
+export class ParseError extends HaiAgentsError {
     constructor(public readonly errors: ValidationError[]) {
-        super(errors.map(stringifyValidationError).join("; "));
-        Object.setPrototypeOf(this, new.target.prototype);
-        this.name = this.constructor.name;
+        super({ message: errors.map(stringifyValidationError).join("; ") });
     }
 }
