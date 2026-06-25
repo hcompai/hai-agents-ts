@@ -9,8 +9,6 @@ export interface Browser {
     /** Catalog identifier for this environment. */
     id: string;
     kind?: HaiAgents.BrowserKind;
-    /** Run without a visible window. */
-    headless?: boolean;
     /** Viewport width in pixels. */
     width?: number;
     /** Viewport height in pixels. */
@@ -25,4 +23,6 @@ export interface Browser {
     vaultId?: string | null;
     /** Id of a browser profile to load into this browser, restoring saved cookies and storage state from a prior session. The profile must belong to the caller's organization. Omit to run with a fresh profile. */
     browserProfileId?: string | null;
+    /** Optional network configuration for the remote browser session. Applied only when a new runner session is provisioned (not when session_id is set). */
+    network?: HaiAgents.BrowserNetwork | null;
 }

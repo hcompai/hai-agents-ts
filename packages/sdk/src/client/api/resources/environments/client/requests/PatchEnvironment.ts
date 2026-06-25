@@ -10,7 +10,6 @@ import type * as HaiAgents from "../../../../index.js";
  */
 export interface PatchEnvironment {
     id: string;
-    headless?: boolean | null;
     width?: number | null;
     height?: number | null;
     startUrl?: string | null;
@@ -19,6 +18,7 @@ export interface PatchEnvironment {
     pageChars?: number | null;
     vaultId?: string | null;
     browserProfileId?: string | null;
+    network?: HaiAgents.BrowserNetwork | null;
     pipPackages?: string[] | null;
     env?: Record<string, string | null> | null;
     mcpServers?: HaiAgents.McpServer[] | null;
