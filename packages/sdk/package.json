@@ -11,7 +11,7 @@
     "sdk",
     "h-company"
   ],
-  "homepage": "https://hub.hcompany.ai/agent-api",
+  "homepage": "https://hub.hcompany.ai/computer-use-agents",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hcompai/hai-agents-ts.git",
