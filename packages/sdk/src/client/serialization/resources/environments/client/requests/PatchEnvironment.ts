@@ -3,6 +3,7 @@
 import type * as HaiAgents from "../../../../../api/index.js";
 import * as core from "../../../../../core/index.js";
 import type * as serializers from "../../../../index.js";
+import { BrowserNetwork } from "../../../../types/BrowserNetwork.js";
 import { McpServer } from "../../../../types/McpServer.js";
 import { PatchEnvironmentMode } from "../../types/PatchEnvironmentMode.js";
 
@@ -10,7 +11,6 @@ export const PatchEnvironment: core.serialization.Schema<
     serializers.PatchEnvironment.Raw,
     Omit<HaiAgents.PatchEnvironment, "id">
 > = core.serialization.object({
-    headless: core.serialization.boolean().optionalNullable(),
     width: core.serialization.number().optionalNullable(),
     height: core.serialization.number().optionalNullable(),
     startUrl: core.serialization.property("start_url", core.serialization.string().optionalNullable()),
@@ -19,6 +19,7 @@ export const PatchEnvironment: core.serialization.Schema<
     pageChars: core.serialization.property("page_chars", core.serialization.number().optionalNullable()),
     vaultId: core.serialization.property("vault_id", core.serialization.string().optionalNullable()),
     browserProfileId: core.serialization.property("browser_profile_id", core.serialization.string().optionalNullable()),
+    network: BrowserNetwork.optionalNullable(),
     pipPackages: core.serialization.property(
         "pip_packages",
         core.serialization.list(core.serialization.string()).optionalNullable(),
@@ -33,7 +34,6 @@ export const PatchEnvironment: core.serialization.Schema<
 
 export declare namespace PatchEnvironment {
     export interface Raw {
-        headless?: (boolean | null | undefined) | null;
         width?: (number | null | undefined) | null;
         height?: (number | null | undefined) | null;
         start_url?: (string | null | undefined) | null;
@@ -42,6 +42,7 @@ export declare namespace PatchEnvironment {
         page_chars?: (number | null | undefined) | null;
         vault_id?: (string | null | undefined) | null;
         browser_profile_id?: (string | null | undefined) | null;
+        network?: (BrowserNetwork.Raw | null | undefined) | null;
         pip_packages?: (string[] | null | undefined) | null;
         env?: (Record<string, string | null> | null | undefined) | null;
         mcp_servers?: (McpServer.Raw[] | null | undefined) | null;
