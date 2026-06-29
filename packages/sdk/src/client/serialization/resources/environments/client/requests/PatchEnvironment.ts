@@ -11,12 +11,9 @@ export const PatchEnvironment: core.serialization.Schema<
     serializers.PatchEnvironment.Raw,
     Omit<HaiAgents.PatchEnvironment, "id">
 > = core.serialization.object({
-    width: core.serialization.number().optionalNullable(),
-    height: core.serialization.number().optionalNullable(),
     startUrl: core.serialization.property("start_url", core.serialization.string().optionalNullable()),
     sessionId: core.serialization.property("session_id", core.serialization.string().optionalNullable()),
     mode: PatchEnvironmentMode.optionalNullable(),
-    pageChars: core.serialization.property("page_chars", core.serialization.number().optionalNullable()),
     vaultId: core.serialization.property("vault_id", core.serialization.string().optionalNullable()),
     browserProfileId: core.serialization.property("browser_profile_id", core.serialization.string().optionalNullable()),
     network: BrowserNetwork.optionalNullable(),
@@ -34,12 +31,9 @@ export const PatchEnvironment: core.serialization.Schema<
 
 export declare namespace PatchEnvironment {
     export interface Raw {
-        width?: (number | null | undefined) | null;
-        height?: (number | null | undefined) | null;
         start_url?: (string | null | undefined) | null;
         session_id?: (string | null | undefined) | null;
         mode?: (PatchEnvironmentMode.Raw | null | undefined) | null;
-        page_chars?: (number | null | undefined) | null;
         vault_id?: (string | null | undefined) | null;
         browser_profile_id?: (string | null | undefined) | null;
         network?: (BrowserNetwork.Raw | null | undefined) | null;

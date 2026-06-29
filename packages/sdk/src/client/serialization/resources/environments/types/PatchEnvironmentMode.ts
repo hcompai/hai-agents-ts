@@ -3,12 +3,30 @@
 import type * as HaiAgents from "../../../../api/index.js";
 import * as core from "../../../../core/index.js";
 import type * as serializers from "../../../index.js";
+import { BrowserTextMode } from "../../../types/BrowserTextMode.js";
+import { BrowserVisualMode } from "../../../types/BrowserVisualMode.js";
 
 export const PatchEnvironmentMode: core.serialization.Schema<
     serializers.PatchEnvironmentMode.Raw,
     HaiAgents.PatchEnvironmentMode
-> = core.serialization.enum_(["visual", "text", "multimodal"]);
+> = core.serialization
+    .union("type", {
+        text: BrowserTextMode,
+        visual: BrowserVisualMode,
+    })
+    .transform<HaiAgents.PatchEnvironmentMode>({
+        transform: (value) => value,
+        untransform: (value) => value,
+    });
 
 export declare namespace PatchEnvironmentMode {
-    export type Raw = "visual" | "text" | "multimodal";
+    export type Raw = PatchEnvironmentMode.Text | PatchEnvironmentMode.Visual;
+
+    export interface Text extends BrowserTextMode.Raw {
+        type: "text";
+    }
+
+    export interface Visual extends BrowserVisualMode.Raw {
+        type: "visual";
+    }
 }

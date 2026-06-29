@@ -9,16 +9,10 @@ export interface Browser {
     /** Catalog identifier for this environment. */
     id: string;
     kind?: HaiAgents.BrowserKind;
-    /** Viewport width in pixels. */
-    width?: number;
-    /** Viewport height in pixels. */
-    height?: number;
     /** Initial URL to open. */
     startUrl?: string;
-    /** How the agent perceives and drives the browser. 'visual': act on screenshots by viewport coordinates. 'multimodal': the same, with the page also included as markdown text alongside each screenshot. 'text': read-only markdown with URL navigation, no screenshots. */
+    /** How the agent perceives and drives the browser. */
     mode?: HaiAgents.BrowserMode;
-    /** Characters of page text shown per page in 'text' mode. */
-    pageChars?: number;
     /** Id of a vault config to bind to this browser, letting the agent sign in to sites with secrets resolved from the vault. The vault must belong to the caller's organization. Omit to run without secret access. */
     vaultId?: string | null;
     /** Id of a browser profile to load into this browser, restoring saved cookies and storage state from a prior session. The profile must belong to the caller's organization. Omit to run with a fresh profile. */
