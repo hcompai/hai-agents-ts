@@ -3,10 +3,28 @@
 import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
+import { BrowserTextMode } from "./BrowserTextMode.js";
+import { BrowserVisualMode } from "./BrowserVisualMode.js";
 
 export const BrowserMode: core.serialization.Schema<serializers.BrowserMode.Raw, HaiAgents.BrowserMode> =
-    core.serialization.enum_(["visual", "text", "multimodal"]);
+    core.serialization
+        .union("type", {
+            text: BrowserTextMode,
+            visual: BrowserVisualMode,
+        })
+        .transform<HaiAgents.BrowserMode>({
+            transform: (value) => value,
+            untransform: (value) => value,
+        });
 
 export declare namespace BrowserMode {
-    export type Raw = "visual" | "text" | "multimodal";
+    export type Raw = BrowserMode.Text | BrowserMode.Visual;
+
+    export interface Text extends BrowserTextMode.Raw {
+        type: "text";
+    }
+
+    export interface Visual extends BrowserVisualMode.Raw {
+        type: "visual";
+    }
 }

@@ -11,11 +11,8 @@ export const Browser: core.serialization.ObjectSchema<serializers.Browser.Raw, H
     core.serialization.withJsonDefaults(core.serialization.object({
         id: core.serialization.string(),
         kind: BrowserKind.optional(),
-        width: core.serialization.number().optional(),
-        height: core.serialization.number().optional(),
         startUrl: core.serialization.property("start_url", core.serialization.string().optional()),
         mode: BrowserMode.optional(),
-        pageChars: core.serialization.property("page_chars", core.serialization.number().optional()),
         vaultId: core.serialization.property("vault_id", core.serialization.string().optionalNullable()),
         browserProfileId: core.serialization.property(
             "browser_profile_id",
@@ -28,11 +25,8 @@ export declare namespace Browser {
     export interface Raw {
         id: string;
         kind?: BrowserKind.Raw | null;
-        width?: number | null;
-        height?: number | null;
         start_url?: string | null;
         mode?: BrowserMode.Raw | null;
-        page_chars?: number | null;
         vault_id?: (string | null | undefined) | null;
         browser_profile_id?: (string | null | undefined) | null;
         network?: (BrowserNetwork.Raw | null | undefined) | null;
