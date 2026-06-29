@@ -13,10 +13,6 @@ import { serialization } from "../src/client/index.js";
 
 const spec = JSON.parse(readFileSync(join(__dirname, "../../../openapi.json"), "utf-8"));
 
-// Schemas whose const+default field was dropped ENTIRELY from the generated model: the field only
-// ever tagged a union, and the tag is carried elsewhere (request-body wrappers for the batch types,
-// the AgentEventData variants' `n` tag for agent events), so the serializer emits nothing to default.
-// The guard test below fails if a future regeneration restores any of these.
 const FIELD_DROPPED_ENTIRELY = new Set([
     "UserMessageBatch.type",
     "AnswerEvent.kind",
@@ -24,6 +20,8 @@ const FIELD_DROPPED_ENTIRELY = new Set([
     "MessageEvent.kind",
     "ObservationEvent.kind",
     "PolicyEvent.kind",
+    "BrowserVisualMode.type",
+    "BrowserTextMode.type",
 ]);
 
 const MINIMAL_PARSED: Record<string, object> = {

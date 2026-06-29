@@ -10,12 +10,9 @@ import type * as HaiAgents from "../../../../index.js";
  */
 export interface PatchEnvironment {
     id: string;
-    width?: number | null;
-    height?: number | null;
     startUrl?: string | null;
     sessionId?: string | null;
     mode?: HaiAgents.PatchEnvironmentMode | null;
-    pageChars?: number | null;
     vaultId?: string | null;
     browserProfileId?: string | null;
     network?: HaiAgents.BrowserNetwork | null;
