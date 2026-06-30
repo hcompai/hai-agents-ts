@@ -41,7 +41,7 @@ export HAI_API_KEY=hk-...
 
 ## Quickstart
 
-Launch the built-in `h/web-surfer-holo3-1-35b` agent, which ships with its own browser, and describe the task in plain language. `runSession` polls until the agent finishes and returns the final answer.
+Launch the built-in `h/web-surfer-pro` agent, which ships with its own browser, and describe the task in plain language. `runSession` polls until the agent finishes and returns the final answer.
 
 ```ts
 import { HaiAgentsClient } from "hai-agents";
@@ -49,7 +49,7 @@ import { HaiAgentsClient } from "hai-agents";
 const client = new HaiAgentsClient(); // reads HAI_API_KEY from the environment
 
 const result = await client.runSession({
-  agent: "h/web-surfer-holo3-1-35b",
+  agent: "h/web-surfer-pro",
   messages: "What are the top 3 stories on Hacker News right now?",
 });
 
@@ -67,7 +67,7 @@ You drive a session two ways. `runSession` creates it and resolves once it settl
 
 ```ts
 const session = await client.startSession({
-  agent: "h/web-surfer-holo3-1-35b",
+  agent: "h/web-surfer-pro",
   messages: "Find the top story on Hacker News",
 });
 
@@ -104,7 +104,7 @@ By default a session ends as soon as the agent answers. Set `idleTimeoutS` to ke
 
 ```ts
 const session = await client.startSession({
-  agent: "h/web-surfer-holo3-1-35b",
+  agent: "h/web-surfer-pro",
   idleTimeoutS: 600,
   messages: "Find the top story on Hacker News",
 });
@@ -128,7 +128,7 @@ const Jobs = z.object({
 
 const client = new HaiAgentsClient();
 const result = await client.runSession({
-  agent: "h/web-surfer-holo3-1-35b",
+  agent: "h/web-surfer-pro",
   messages: "Find 3 open ML engineering roles in Paris.",
   answerSchema: Jobs,
 });
@@ -161,7 +161,7 @@ const getWeather = tool({
 const client = new HaiAgentsClient();
 
 const result = await client.runSession({
-  agent: "h/web-surfer-holo3-1-35b",
+  agent: "h/web-surfer-pro",
   messages: "What should I wear in Paris today?",
   tools: [getWeather],
 });
@@ -177,7 +177,7 @@ Start a session on a browser that already knows the user. A [browser profile](ht
 
 ```ts
 const result = await client.runSession({
-  agent: "h/web-surfer-holo3-1-35b",
+  agent: "h/web-surfer-pro",
   messages: "Open my dashboard and report any new alerts",
   overrides: {
     "agent.environments[kind=web].browser_profile_id": "<profile-id>",
