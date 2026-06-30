@@ -25,7 +25,7 @@ export class SkillsClient {
     }
 
     /**
-     * List reserved + caller's org skills, optionally filtered by name or text search.
+     * List reserved + caller's org skills. Unauthenticated callers see reserved ``h/`` skills only.
      *
      * @param {HaiAgents.ListSkillsRequest} request
      * @param {SkillsClient.RequestOptions} requestOptions - Request-specific configuration.
