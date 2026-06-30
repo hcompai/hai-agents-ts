@@ -58,8 +58,8 @@ function fakeClient(steps: Step[], postStatus = 200) {
 describe("attachToolDefinitions", () => {
   it("targets the agent.tools override for referenced and inline agents", () => {
     const expected = { "agent.tools": [{ name: add.name, description: add.description, input_schema: add.inputSchema }] };
-    const referenced = attachToolDefinitions({ agent: "h/web-surfer" }, [add]);
-    expect(referenced.agent).toBe("h/web-surfer");
+    const referenced = attachToolDefinitions({ agent: "h/web-surfer-pro" }, [add]);
+    expect(referenced.agent).toBe("h/web-surfer-pro");
     expect(referenced.overrides).toEqual(expected);
     const inline = attachToolDefinitions({ agent: { name: "a", environments: [] } as never }, [add]);
     expect(inline.overrides).toEqual(expected);

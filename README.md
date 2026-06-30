@@ -18,7 +18,7 @@
 <p align="center">
   <b><a href="https://hub.hcompany.ai/computer-use-agents">Documentation</a></b>
   &nbsp;·&nbsp;
-  <a href="https://portal.hcompany.ai">Get an API key</a>
+  <a href="https://platform.hcompany.ai/settings/api-keys">Get an API key</a>
   &nbsp;·&nbsp;
   <a href="https://www.npmjs.com/package/hai-agents">npm</a>
   &nbsp;·&nbsp;
@@ -33,7 +33,7 @@
 npm install hai-agents
 ```
 
-Node.js 18 or newer is required. Get an API key at [portal.hcompany.ai](https://portal.hcompany.ai) and export it:
+Node.js 18 or newer is required. Get an API key at [platform.hcompany.ai/settings/api-keys](https://platform.hcompany.ai/settings/api-keys) and export it:
 
 ```bash
 export HAI_API_KEY=hk-...
