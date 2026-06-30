@@ -25,7 +25,7 @@ export class AgentsClient {
     }
 
     /**
-     * List reserved + caller's org agents.
+     * List reserved + caller's org agents. Unauthenticated callers see reserved ``h/`` agents only.
      *
      * @param {HaiAgents.ListAgentsRequest} request
      * @param {AgentsClient.RequestOptions} requestOptions - Request-specific configuration.
