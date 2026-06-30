@@ -25,7 +25,7 @@ export class EnvironmentsClient {
     }
 
     /**
-     * List reserved + caller's org environments.
+     * List reserved + caller's org environments. Unauthenticated callers see reserved ``h/`` environments only.
      *
      * @param {HaiAgents.ListEnvironmentsRequest} request
      * @param {EnvironmentsClient.RequestOptions} requestOptions - Request-specific configuration.
