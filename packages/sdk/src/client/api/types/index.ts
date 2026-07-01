@@ -41,8 +41,6 @@ export * from "./InitiateUploadResponse.js";
 export * from "./JsonValue.js";
 export * from "./LiveViewUrlData.js";
 export * from "./LiveViewUrlEvent.js";
-export * from "./McpServer.js";
-export * from "./McpServerTransport.js";
 export * from "./MessageEvent.js";
 export * from "./MessageEventContentItem.js";
 export * from "./Metrics.js";
