@@ -45,7 +45,7 @@ describe("attachAnswerSchema", () => {
 
   it("injects via overrides for catalog agent strings, preserving user overrides", async () => {
     const params = await attachAnswerSchema(
-      { agent: "h/web-surfer", overrides: { "agent.max_steps": 5 } } as never,
+      { agent: "h/web-surfer-pro", overrides: { "agent.max_steps": 5 } } as never,
       Jobs,
     );
     expect(params.overrides?.["agent.max_steps"]).toBe(5);
@@ -69,7 +69,7 @@ describe("answer parse-back", () => {
   it("parses a completed answer into the schema type", async () => {
     const { client, createdWith } = fakeClient(VALID_ANSWER);
     const result = await runSession(client, {
-      agent: "h/web-surfer",
+      agent: "h/web-surfer-pro",
       messages: "find jobs",
       answerSchema: Jobs,
     });
