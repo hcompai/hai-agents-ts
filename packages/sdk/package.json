@@ -1,6 +1,6 @@
 {
   "name": "hai-agents",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "TypeScript SDK for H Company's Computer-Use Agents: autonomous agents powered by Holo.",
   "keywords": [
     "agent",

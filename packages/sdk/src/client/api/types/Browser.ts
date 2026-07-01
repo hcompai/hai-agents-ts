@@ -11,6 +11,8 @@ export interface Browser {
     kind?: HaiAgents.BrowserKind;
     /** Initial URL to open. */
     startUrl?: string;
+    /** Run the browser without a visible window. */
+    headless?: boolean;
     /** How the agent perceives and drives the browser. */
     mode?: HaiAgents.BrowserMode;
     /** Id of a vault config to bind to this browser, letting the agent sign in to sites with secrets resolved from the vault. The vault must belong to the caller's organization. Omit to run without secret access. */

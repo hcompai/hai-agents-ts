@@ -11,14 +11,9 @@ import type * as HaiAgents from "../../../../index.js";
 export interface PatchEnvironment {
     id: string;
     startUrl?: string | null;
-    sessionId?: string | null;
+    headless?: boolean | null;
     mode?: HaiAgents.PatchEnvironmentMode | null;
     vaultId?: string | null;
     browserProfileId?: string | null;
     network?: HaiAgents.BrowserNetwork | null;
-    pipPackages?: string[] | null;
-    env?: Record<string, string | null> | null;
-    mcpServers?: HaiAgents.McpServer[] | null;
-    servers?: HaiAgents.McpServer[] | null;
-    namespace?: string | null;
 }
