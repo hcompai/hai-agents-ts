@@ -16,6 +16,7 @@ export class WebhookVerificationError extends HaiAgentsError {
     }
 }
 
+/** Payload of `session.status_updated` and the granular `session.*` status events. */
 export interface WebhookEventData {
     session_id: string;
     status: string;
@@ -44,18 +45,24 @@ export interface VerifyWebhookOptions {
  *
  * `body` must be the raw request body (never re-serialized JSON); `signature` and
  * `timestamp` come from the `X-H-Webhook-Signature` and `X-H-Webhook-Timestamp`
- * headers. Throws {@link WebhookVerificationError} when the signature is invalid
- * or the delivery is older than the tolerance.
+ * headers. `secret` may be an array of candidate secrets: pass both the old and
+ * the new secret during a rotation so deliveries signed with either verify.
+ * Throws {@link WebhookVerificationError} when no secret matches or the delivery
+ * is older than the tolerance.
  */
 export function verifyWebhook(
     body: string | Uint8Array,
     signature: string,
     timestamp: string,
-    secret: string,
+    secret: string | string[],
     options: VerifyWebhookOptions = {},
 ): WebhookEvent {
     const toleranceS = options.toleranceS ?? DEFAULT_TOLERANCE_S;
     const raw = typeof body === "string" ? Buffer.from(body, "utf8") : Buffer.from(body);
+    const secrets = typeof secret === "string" ? [secret] : secret;
+    if (secrets.length === 0) {
+        throw new WebhookVerificationError("no secret provided");
+    }
     const sentAt = Number.parseInt(timestamp, 10);
     if (Number.isNaN(sentAt)) {
         throw new WebhookVerificationError("invalid timestamp header");
@@ -63,12 +70,18 @@ export function verifyWebhook(
     if (Math.abs(Date.now() / 1000 - sentAt) > toleranceS) {
         throw new WebhookVerificationError(`delivery older than ${toleranceS}s; possible replay`);
     }
-    const digest = createHmac("sha256", secret)
-        .update(Buffer.concat([Buffer.from(`${timestamp}.`, "utf8"), raw]))
-        .digest("hex");
-    const expected = Buffer.from(`sha256=${digest}`, "utf8");
     const received = Buffer.from(signature ?? "", "utf8");
-    if (expected.length !== received.length || !timingSafeEqual(expected, received)) {
+    let matched = false;
+    for (const candidate of secrets) {
+        const digest = createHmac("sha256", candidate)
+            .update(Buffer.concat([Buffer.from(`${timestamp}.`, "utf8"), raw]))
+            .digest("hex");
+        const expected = Buffer.from(`sha256=${digest}`, "utf8");
+        if (expected.length === received.length && timingSafeEqual(expected, received)) {
+            matched = true;
+        }
+    }
+    if (!matched) {
         throw new WebhookVerificationError("signature mismatch");
     }
     let parsed: unknown;
