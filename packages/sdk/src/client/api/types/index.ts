@@ -93,5 +93,6 @@ export * from "./ValidationErrorLocItem.js";
 export * from "./VaultConfigList.js";
 export * from "./VaultConfigRead.js";
 export * from "./VaultHealth.js";
+export * from "./WebhookEventTypeDefinition.js";
 export * from "./WebhookRecord.js";
 export * from "./WebhookWithSecret.js";
