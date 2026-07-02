@@ -209,6 +209,85 @@ export class WebhooksClient {
     }
 
     /**
+     * List concrete webhook event types clients can subscribe to.
+     *
+     * @param {WebhooksClient.RequestOptions} requestOptions - Request-specific configuration.
+     *
+     * @throws {@link HaiAgents.UnprocessableEntityError}
+     *
+     * @example
+     *     await client.webhooks.listWebhookEvents()
+     */
+    public listWebhookEvents(
+        requestOptions?: WebhooksClient.RequestOptions,
+    ): core.HttpResponsePromise<HaiAgents.WebhookEventTypeDefinition[]> {
+        return core.HttpResponsePromise.fromPromise(this.__listWebhookEvents(requestOptions));
+    }
+
+    private async __listWebhookEvents(
+        requestOptions?: WebhooksClient.RequestOptions,
+    ): Promise<core.WithRawResponse<HaiAgents.WebhookEventTypeDefinition[]>> {
+        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
+        const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
+            _authRequest.headers,
+            this._options?.headers,
+            requestOptions?.headers,
+        );
+        const _response = await core.fetcher({
+            url: core.url.join(
+                (await core.Supplier.get(this._options.baseUrl)) ??
+                    (await core.Supplier.get(this._options.environment)) ??
+                    environments.HaiAgentsEnvironment.Eu,
+                "api/v2/webhooks/events",
+            ),
+            method: "GET",
+            headers: _headers,
+            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
+            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
+            abortSignal: requestOptions?.abortSignal,
+            fetchFn: this._options?.fetch,
+            logging: this._options.logging,
+        });
+        if (_response.ok) {
+            return {
+                data: serializers.webhooks.listWebhookEvents.Response.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
+                rawResponse: _response.rawResponse,
+            };
+        }
+
+        if (_response.error.reason === "status-code") {
+            switch (_response.error.statusCode) {
+                case 422:
+                    throw new HaiAgents.UnprocessableEntityError(
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                default:
+                    throw new errors.HaiAgentsError({
+                        statusCode: _response.error.statusCode,
+                        body: _response.error.body,
+                        rawResponse: _response.rawResponse,
+                    });
+            }
+        }
+
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v2/webhooks/events");
+    }
+
+    /**
      * Fetch a webhook by id.
      *
      * @param {HaiAgents.GetWebhookRequest} request
@@ -469,6 +548,96 @@ export class WebhooksClient {
             _response.rawResponse,
             "PATCH",
             "/api/v2/webhooks/{webhook_id}",
+        );
+    }
+
+    /**
+     * Send a signed ping event to the webhook and report the receiver's HTTP response.
+     *
+     * @param {HaiAgents.PingWebhookRequest} request
+     * @param {WebhooksClient.RequestOptions} requestOptions - Request-specific configuration.
+     *
+     * @throws {@link HaiAgents.UnprocessableEntityError}
+     *
+     * @example
+     *     await client.webhooks.pingWebhook({
+     *         webhookId: "webhook_id"
+     *     })
+     */
+    public pingWebhook(
+        request: HaiAgents.PingWebhookRequest,
+        requestOptions?: WebhooksClient.RequestOptions,
+    ): core.HttpResponsePromise<HaiAgents.WebhookPingResult> {
+        return core.HttpResponsePromise.fromPromise(this.__pingWebhook(request, requestOptions));
+    }
+
+    private async __pingWebhook(
+        request: HaiAgents.PingWebhookRequest,
+        requestOptions?: WebhooksClient.RequestOptions,
+    ): Promise<core.WithRawResponse<HaiAgents.WebhookPingResult>> {
+        const { webhookId } = request;
+        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
+        const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
+            _authRequest.headers,
+            this._options?.headers,
+            requestOptions?.headers,
+        );
+        const _response = await core.fetcher({
+            url: core.url.join(
+                (await core.Supplier.get(this._options.baseUrl)) ??
+                    (await core.Supplier.get(this._options.environment)) ??
+                    environments.HaiAgentsEnvironment.Eu,
+                `api/v2/webhooks/${core.url.encodePathParam(webhookId)}/ping`,
+            ),
+            method: "POST",
+            headers: _headers,
+            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
+            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
+            abortSignal: requestOptions?.abortSignal,
+            fetchFn: this._options?.fetch,
+            logging: this._options.logging,
+        });
+        if (_response.ok) {
+            return {
+                data: serializers.WebhookPingResult.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
+                rawResponse: _response.rawResponse,
+            };
+        }
+
+        if (_response.error.reason === "status-code") {
+            switch (_response.error.statusCode) {
+                case 422:
+                    throw new HaiAgents.UnprocessableEntityError(
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                default:
+                    throw new errors.HaiAgentsError({
+                        statusCode: _response.error.statusCode,
+                        body: _response.error.body,
+                        rawResponse: _response.rawResponse,
+                    });
+            }
+        }
+
+        return handleNonStatusCodeError(
+            _response.error,
+            _response.rawResponse,
+            "POST",
+            "/api/v2/webhooks/{webhook_id}/ping",
         );
     }
 }

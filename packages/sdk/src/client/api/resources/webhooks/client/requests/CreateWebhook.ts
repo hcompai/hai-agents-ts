@@ -8,7 +8,7 @@
  */
 export interface CreateWebhook {
     url: string;
-    /** Event types delivered to this webhook. '*' subscribes to all current and future types. */
+    /** Event types delivered to this webhook. '*' subscribes to the session.status_updated firehose; granular session.* types are delivered only when listed explicitly. */
     enabledEvents?: string[];
     description?: string | null;
 }
