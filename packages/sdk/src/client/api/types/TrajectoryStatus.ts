@@ -5,14 +5,19 @@
  *
  * Lifecycle::
  *
- *     PENDING → RUNNING → {COMPLETED, FAILED, TIMED_OUT, INTERRUPTED}
- *        |        ↑  ↑ ↑
- *        |        |  | └───→ IDLE (interactive: agent waiting for next task)
- *        |        |  └─────→ AWAITING_TOOL_RESULTS (waiting for custom tool results)
- *        |        ↓
- *        └─────→ PAUSED
+ *     QUEUED → PENDING → RUNNING → {COMPLETED, FAILED, TIMED_OUT, INTERRUPTED}
+ *        |        |        ↑  ↑ ↑
+ *        |        |        |  | └───→ IDLE (interactive: agent waiting for next task)
+ *        |        |        |  └─────→ AWAITING_TOOL_RESULTS (waiting for custom tool results)
+ *        |        |        ↓
+ *        |        └─────→ PAUSED
+ *        └────→ INTERRUPTED (cancelled before launch)
+ *
+ * QUEUED sessions were accepted above the org's concurrency quota and wait,
+ * unprovisioned, until a running session finishes.
  */
 export const TrajectoryStatus = {
+    Queued: "queued",
     Pending: "pending",
     Running: "running",
     Paused: "paused",

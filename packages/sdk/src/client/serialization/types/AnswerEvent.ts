@@ -4,14 +4,17 @@ import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
 import { AnswerEventAnswer } from "./AnswerEventAnswer.js";
+import { AnswerOutcome } from "./AnswerOutcome.js";
 
 export const AnswerEvent: core.serialization.ObjectSchema<serializers.AnswerEvent.Raw, HaiAgents.AnswerEvent> =
     core.serialization.object({
         answer: AnswerEventAnswer,
+        outcome: AnswerOutcome.optionalNullable(),
     });
 
 export declare namespace AnswerEvent {
     export interface Raw {
         answer: AnswerEventAnswer.Raw;
+        outcome?: (AnswerOutcome.Raw | null | undefined) | null;
     }
 }

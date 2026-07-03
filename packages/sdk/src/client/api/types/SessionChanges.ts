@@ -10,7 +10,9 @@ export interface SessionChanges {
     startedAt?: Date | null;
     finishedAt?: Date | null;
     error?: string | null;
+    errorCode?: HaiAgents.SessionErrorCode | null;
     newEvents?: HaiAgents.SessionEvent[];
     answer?: HaiAgents.SessionChangesAnswer | null;
+    outcome?: HaiAgents.AnswerOutcome | null;
     metrics?: HaiAgents.Metrics;
 }

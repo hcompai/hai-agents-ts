@@ -6,6 +6,7 @@ import type * as serializers from "../index.js";
 
 export const TrajectoryStatus: core.serialization.Schema<serializers.TrajectoryStatus.Raw, HaiAgents.TrajectoryStatus> =
     core.serialization.enum_([
+        "queued",
         "pending",
         "running",
         "paused",
@@ -19,6 +20,7 @@ export const TrajectoryStatus: core.serialization.Schema<serializers.TrajectoryS
 
 export declare namespace TrajectoryStatus {
     export type Raw =
+        | "queued"
         | "pending"
         | "running"
         | "paused"

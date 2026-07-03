@@ -16,12 +16,12 @@ export interface SessionRequest {
     maxTimeS?: number | null;
     /** Seconds to keep the session open for follow-up messages after each answer. Null ends the session as soon as the agent answers. */
     idleTimeoutS?: number | null;
+    /** When the organization is at its concurrent-session limit, accept this session into a queue (status 'queued') instead of rejecting it with 429. Queued sessions start automatically, oldest first, as running sessions finish. Set to false to get an immediate 429 when no slot is available. */
+    queue?: boolean;
     /** Optional id to group and list related sessions together. */
     groupId?: string | null;
     /** Id of the parent session, when this is a child run. */
     parentSessionId?: string | null;
-    /** Target version of the agent artifact to use. */
-    agentArtifact?: string | null;
     /** Per-run overrides applied to the resolved request, keyed by a dotted path. List members are selected with an explicit [field=value] clause, e.g. {"agent.environments[kind=web].start_url": "https://bing.com"}. Each value must match the type of the field its path targets. */
     overrides?: Record<string, unknown>;
 }

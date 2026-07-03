@@ -3,8 +3,10 @@
 import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
+import { AnswerOutcome } from "./AnswerOutcome.js";
 import { Metrics } from "./Metrics.js";
 import { SessionChangesAnswer } from "./SessionChangesAnswer.js";
+import { SessionErrorCode } from "./SessionErrorCode.js";
 import { SessionEvent } from "./SessionEvent.js";
 import { TrajectoryStatus } from "./TrajectoryStatus.js";
 
@@ -14,8 +16,10 @@ export const SessionChanges: core.serialization.ObjectSchema<serializers.Session
         startedAt: core.serialization.property("started_at", core.serialization.date().optionalNullable()),
         finishedAt: core.serialization.property("finished_at", core.serialization.date().optionalNullable()),
         error: core.serialization.string().optionalNullable(),
+        errorCode: core.serialization.property("error_code", SessionErrorCode.optionalNullable()),
         newEvents: core.serialization.property("new_events", core.serialization.list(SessionEvent).optional()),
         answer: SessionChangesAnswer.optionalNullable(),
+        outcome: AnswerOutcome.optionalNullable(),
         metrics: Metrics.optional(),
     });
 
@@ -25,8 +29,10 @@ export declare namespace SessionChanges {
         started_at?: (string | null | undefined) | null;
         finished_at?: (string | null | undefined) | null;
         error?: (string | null | undefined) | null;
+        error_code?: (SessionErrorCode.Raw | null | undefined) | null;
         new_events?: SessionEvent.Raw[] | null;
         answer?: (SessionChangesAnswer.Raw | null | undefined) | null;
+        outcome?: (AnswerOutcome.Raw | null | undefined) | null;
         metrics?: Metrics.Raw | null;
     }
 }
