@@ -10,6 +10,10 @@ export interface SessionStatus {
     status: HaiAgents.TrajectoryStatus;
     /** Error message if the session failed; null otherwise. */
     error?: string | null;
+    /** Machine-readable failure category if the session failed or timed out; null otherwise. */
+    errorCode?: HaiAgents.SessionErrorCode | null;
+    /** Agent's self-assessed task outcome, set with the final answer; null until then. */
+    outcome?: HaiAgents.AnswerOutcome | null;
     /** Number of steps the agent has taken. */
     steps?: number;
     /** Per-model token usage. Empty until the agent calls a model. */

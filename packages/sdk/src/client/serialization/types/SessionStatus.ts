@@ -3,13 +3,17 @@
 import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
+import { AnswerOutcome } from "./AnswerOutcome.js";
 import { ModelUsage } from "./ModelUsage.js";
+import { SessionErrorCode } from "./SessionErrorCode.js";
 import { TrajectoryStatus } from "./TrajectoryStatus.js";
 
 export const SessionStatus: core.serialization.ObjectSchema<serializers.SessionStatus.Raw, HaiAgents.SessionStatus> =
     core.serialization.object({
         status: TrajectoryStatus,
         error: core.serialization.string().optionalNullable(),
+        errorCode: core.serialization.property("error_code", SessionErrorCode.optionalNullable()),
+        outcome: AnswerOutcome.optionalNullable(),
         steps: core.serialization.number().optional(),
         usagePerModel: core.serialization.property("usage_per_model", core.serialization.list(ModelUsage).optional()),
         subagentSessionIds: core.serialization.property(
@@ -22,6 +26,8 @@ export declare namespace SessionStatus {
     export interface Raw {
         status: TrajectoryStatus.Raw;
         error?: (string | null | undefined) | null;
+        error_code?: (SessionErrorCode.Raw | null | undefined) | null;
+        outcome?: (AnswerOutcome.Raw | null | undefined) | null;
         steps?: number | null;
         usage_per_model?: ModelUsage.Raw[] | null;
         subagent_session_ids?: string[] | null;

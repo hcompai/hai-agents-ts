@@ -43,6 +43,12 @@ export type SessionRunResult<TAnswer = SessionChanges["answer"]> = {
    * `finalChanges.answer`).
    */
   answer?: TAnswer;
+  /** Agent's self-assessed task outcome (`success`/`partial`/`infeasible`/`blocked`), when reported. */
+  outcome?: SessionChanges["outcome"];
+  /** Human-readable error message when the session failed or timed out. */
+  error?: SessionChanges["error"];
+  /** Machine-readable failure category when the session failed or timed out. */
+  errorCode?: SessionChanges["errorCode"];
 };
 
 /**
@@ -281,13 +287,16 @@ async function postToolResults(client: HaiAgentsClient, id: string, results: Too
 }
 
 // The terminal answer lives in /changes; fetch it once if streaming didn't surface it.
+// On failure statuses the error fields land after the last streamed poll, so always refetch.
 async function finalChanges(
   client: HaiAgentsClient,
   id: string,
   lastChanges: SessionChanges | undefined,
   limit: number | null | undefined,
+  status: TrajectoryStatus,
 ): Promise<SessionChanges | undefined> {
-  if (lastChanges && lastChanges.answer != null) {
+  const settledCleanly = status === "completed" || status === "idle";
+  if (settledCleanly && lastChanges && lastChanges.answer != null) {
     return lastChanges;
   }
   const fetched = await client.sessions.getSessionChanges({
@@ -367,7 +376,8 @@ export async function waitForSession<TAnswer = SessionChanges["answer"]>(
       }
     }
 
-    const { status } = await client.sessions.getSessionStatus({ id });
+    const statusResponse = await client.sessions.getSessionStatus({ id });
+    const status = statusResponse.status;
     if (isSettledSessionStatus(status)) {
       if (includeEvents) {
         for (;;) {
@@ -388,9 +398,21 @@ export async function waitForSession<TAnswer = SessionChanges["answer"]>(
           nextFromIndex += drained.length;
         }
       }
-      const changes = await finalChanges(client, id, lastChanges, limit);
+      const changes = await finalChanges(client, id, lastChanges, limit, status);
       const answer = parseAnswer(changes?.answer, status, answerSchema);
-      return { id, status, events, nextFromIndex, finalChanges: changes, answer };
+      // /status is authoritative for the failure fields: /changes 204s when a
+      // session dies before emitting any visible event.
+      return {
+        id,
+        status,
+        events,
+        nextFromIndex,
+        finalChanges: changes,
+        answer,
+        outcome: statusResponse.outcome ?? changes?.outcome,
+        error: statusResponse.error ?? changes?.error,
+        errorCode: statusResponse.errorCode ?? changes?.errorCode,
+      };
     }
 
     if (toolsByName.size > 0) {

@@ -13,12 +13,12 @@ export const SessionRequest: core.serialization.ObjectSchema<serializers.Session
         maxSteps: core.serialization.property("max_steps", core.serialization.number().optionalNullable()),
         maxTimeS: core.serialization.property("max_time_s", core.serialization.number().optionalNullable()),
         idleTimeoutS: core.serialization.property("idle_timeout_s", core.serialization.number().optionalNullable()),
+        queue: core.serialization.boolean().optional(),
         groupId: core.serialization.property("group_id", core.serialization.string().optionalNullable()),
         parentSessionId: core.serialization.property(
             "parent_session_id",
             core.serialization.string().optionalNullable(),
         ),
-        agentArtifact: core.serialization.property("agent_artifact", core.serialization.string().optionalNullable()),
         overrides: core.serialization.record(core.serialization.string(), core.serialization.unknown()).optional(),
     });
 
@@ -29,9 +29,9 @@ export declare namespace SessionRequest {
         max_steps?: (number | null | undefined) | null;
         max_time_s?: (number | null | undefined) | null;
         idle_timeout_s?: (number | null | undefined) | null;
+        queue?: boolean | null;
         group_id?: (string | null | undefined) | null;
         parent_session_id?: (string | null | undefined) | null;
-        agent_artifact?: (string | null | undefined) | null;
         overrides?: Record<string, unknown> | null;
     }
 }

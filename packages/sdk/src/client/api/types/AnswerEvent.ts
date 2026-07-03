@@ -8,4 +8,6 @@ import type * as HaiAgents from "../index.js";
 export interface AnswerEvent {
     /** Final answer, plain text or structured JSON; any embedded image is inlined as base64, not a URL. */
     answer: HaiAgents.AnswerEventAnswer;
+    /** Agent's self-assessment of the task outcome; null when the agent did not report one. */
+    outcome?: HaiAgents.AnswerOutcome | null;
 }
