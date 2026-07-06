@@ -12,6 +12,8 @@ export interface ListSessionsRequest {
     agent?: string[] | null;
     groupId?: string | null;
     parentSessionId?: string | null;
+    /** Only sessions created by this schedule. */
+    scheduleId?: string | null;
     /** Case-insensitive match on the session's first message or answer. */
     search?: string | null;
     createdBefore?: Date | null;

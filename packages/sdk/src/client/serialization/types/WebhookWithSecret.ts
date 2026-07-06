@@ -3,6 +3,7 @@
 import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
+import { WebhookWithSecretLastDeliveryStatus } from "./WebhookWithSecretLastDeliveryStatus.js";
 
 export const WebhookWithSecret: core.serialization.ObjectSchema<
     serializers.WebhookWithSecret.Raw,
@@ -13,6 +14,17 @@ export const WebhookWithSecret: core.serialization.ObjectSchema<
     enabledEvents: core.serialization.property("enabled_events", core.serialization.list(core.serialization.string())),
     description: core.serialization.string().nullable(),
     disabled: core.serialization.boolean(),
+    lastDeliveryStatus: core.serialization.property(
+        "last_delivery_status",
+        WebhookWithSecretLastDeliveryStatus.optionalNullable(),
+    ),
+    lastDeliveryError: core.serialization.property(
+        "last_delivery_error",
+        core.serialization.string().optionalNullable(),
+    ),
+    lastDeliveryAt: core.serialization.property("last_delivery_at", core.serialization.date().optionalNullable()),
+    lastSuccessAt: core.serialization.property("last_success_at", core.serialization.date().optionalNullable()),
+    consecutiveFailures: core.serialization.property("consecutive_failures", core.serialization.number().optional()),
     createdAt: core.serialization.property("created_at", core.serialization.date()),
     updatedAt: core.serialization.property("updated_at", core.serialization.date()),
     secret: core.serialization.string(),
@@ -25,6 +37,11 @@ export declare namespace WebhookWithSecret {
         enabled_events: string[];
         description?: string | null;
         disabled: boolean;
+        last_delivery_status?: (WebhookWithSecretLastDeliveryStatus.Raw | null | undefined) | null;
+        last_delivery_error?: (string | null | undefined) | null;
+        last_delivery_at?: (string | null | undefined) | null;
+        last_success_at?: (string | null | undefined) | null;
+        consecutive_failures?: number | null;
         created_at: string;
         updated_at: string;
         secret: string;

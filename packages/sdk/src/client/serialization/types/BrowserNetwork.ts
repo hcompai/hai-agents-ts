@@ -3,14 +3,17 @@
 import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
+import { ManagedProxySelection } from "./ManagedProxySelection.js";
 
 export const BrowserNetwork: core.serialization.ObjectSchema<serializers.BrowserNetwork.Raw, HaiAgents.BrowserNetwork> =
     core.serialization.object({
         proxyUrl: core.serialization.property("proxy_url", core.serialization.string().optionalNullable()),
+        managedProxy: core.serialization.property("managed_proxy", ManagedProxySelection.optionalNullable()),
     });
 
 export declare namespace BrowserNetwork {
     export interface Raw {
         proxy_url?: (string | null | undefined) | null;
+        managed_proxy?: (ManagedProxySelection.Raw | null | undefined) | null;
     }
 }
