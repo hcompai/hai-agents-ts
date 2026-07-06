@@ -15,4 +15,6 @@ export interface SessionSummary {
     createdAt: Date;
     startedAt?: Date | null;
     finishedAt?: Date | null;
+    /** When the session's PII text and screenshots were irreversibly anonymized. Null if not anonymized. */
+    anonymizedAt?: Date | null;
 }

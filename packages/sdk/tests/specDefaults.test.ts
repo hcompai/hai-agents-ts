@@ -35,6 +35,7 @@ const MINIMAL_PARSED: Record<string, object> = {
     AnswerEvent: { answer: "done" },
     FlowEvent: { flow: "step", origin: "loop" },
     MessageEvent: { callerId: "agent" },
+    CronTiming: { expression: "0 9 * * *", timezone: "Europe/Paris" },
 };
 
 function specConstDefaults(): [string, string, string][] {

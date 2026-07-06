@@ -3,6 +3,7 @@
 import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
+import { WebhookRecordLastDeliveryStatus } from "./WebhookRecordLastDeliveryStatus.js";
 
 export const WebhookRecord: core.serialization.ObjectSchema<serializers.WebhookRecord.Raw, HaiAgents.WebhookRecord> =
     core.serialization.object({
@@ -14,6 +15,20 @@ export const WebhookRecord: core.serialization.ObjectSchema<serializers.WebhookR
         ),
         description: core.serialization.string().nullable(),
         disabled: core.serialization.boolean(),
+        lastDeliveryStatus: core.serialization.property(
+            "last_delivery_status",
+            WebhookRecordLastDeliveryStatus.optionalNullable(),
+        ),
+        lastDeliveryError: core.serialization.property(
+            "last_delivery_error",
+            core.serialization.string().optionalNullable(),
+        ),
+        lastDeliveryAt: core.serialization.property("last_delivery_at", core.serialization.date().optionalNullable()),
+        lastSuccessAt: core.serialization.property("last_success_at", core.serialization.date().optionalNullable()),
+        consecutiveFailures: core.serialization.property(
+            "consecutive_failures",
+            core.serialization.number().optional(),
+        ),
         createdAt: core.serialization.property("created_at", core.serialization.date()),
         updatedAt: core.serialization.property("updated_at", core.serialization.date()),
     });
@@ -25,6 +40,11 @@ export declare namespace WebhookRecord {
         enabled_events: string[];
         description?: string | null;
         disabled: boolean;
+        last_delivery_status?: (WebhookRecordLastDeliveryStatus.Raw | null | undefined) | null;
+        last_delivery_error?: (string | null | undefined) | null;
+        last_delivery_at?: (string | null | undefined) | null;
+        last_success_at?: (string | null | undefined) | null;
+        consecutive_failures?: number | null;
         created_at: string;
         updated_at: string;
     }

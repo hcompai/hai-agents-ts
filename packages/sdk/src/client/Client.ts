@@ -4,6 +4,7 @@ import { AgentsClient } from "./api/resources/agents/client/Client.js";
 import { BrowserProfilesClient } from "./api/resources/browserProfiles/client/Client.js";
 import { EnvironmentsClient } from "./api/resources/environments/client/Client.js";
 import { QuotaClient } from "./api/resources/quota/client/Client.js";
+import { SchedulesClient } from "./api/resources/schedules/client/Client.js";
 import { SessionsClient } from "./api/resources/sessions/client/Client.js";
 import { SkillsClient } from "./api/resources/skills/client/Client.js";
 import { VaultsClient } from "./api/resources/vaults/client/Client.js";
@@ -25,6 +26,7 @@ export class HaiAgentsClient {
     protected _environments: EnvironmentsClient | undefined;
     protected _agents: AgentsClient | undefined;
     protected _webhooks: WebhooksClient | undefined;
+    protected _schedules: SchedulesClient | undefined;
     protected _browserProfiles: BrowserProfilesClient | undefined;
     protected _vaults: VaultsClient | undefined;
     protected _quota: QuotaClient | undefined;
@@ -51,6 +53,10 @@ export class HaiAgentsClient {
 
     public get webhooks(): WebhooksClient {
         return (this._webhooks ??= new WebhooksClient(this._options));
+    }
+
+    public get schedules(): SchedulesClient {
+        return (this._schedules ??= new SchedulesClient(this._options));
     }
 
     public get browserProfiles(): BrowserProfilesClient {
