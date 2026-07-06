@@ -46,16 +46,18 @@ Launch the built-in `h/web-surfer-pro` agent, which ships with its own browser, 
 ```ts
 import { HaiAgentsClient } from "hai-agents";
 
-const client = new HaiAgentsClient(); // reads HAI_API_KEY from the environment
+const client = new HaiAgentsClient();
 
 const result = await client.runSession({
   agent: "h/web-surfer-pro",
   messages: "What are the top 3 stories on Hacker News right now?",
 });
 
-console.log(result.status); // "completed"
+console.log(result.status);
 console.log(result.answer);
 ```
+
+`new HaiAgentsClient()` reads `HAI_API_KEY` from the environment.
 
 `result` is a `SessionRunResult`: `id`, `status`, `answer`, the accumulated `events`, and `finalChanges`.
 
@@ -81,22 +83,24 @@ console.log(result.status, result.answer);
 A handle bound to the session `id` exposes the full lifecycle. Read the agent's progress at three levels of detail:
 
 ```ts
-await session.status();                  // cheap snapshot: state, step count, token usage
-await session.changes({ fromIndex: 0 }); // new events and the final answer, long-polled
-await session.get();                     // the full Session resource
+await session.status();
+await session.changes({ fromIndex: 0 });
+await session.get();
 ```
+
+`status()` is a cheap snapshot with the state, step count, and token usage. `changes({ fromIndex: 0 })` long-polls for new events and the final answer. `get()` returns the full Session resource.
 
 While the session is not in a terminal state, you can intervene:
 
 ```ts
 await session.sendMessage({ type: "user_message", message: "Only consider the last 24 hours" });
-await session.pause();       // halt with state preserved
-await session.resume();      // continue where it left off
-await session.forceAnswer(); // stop exploring and answer from what it has
-await session.cancel();      // stop for good; ends in "interrupted"
+await session.pause();
+await session.resume();
+await session.forceAnswer();
+await session.cancel();
 ```
 
-`sendMessage` redirects the agent on its next step. Sending a message to an `idle` session also wakes it.
+`sendMessage` redirects the agent on its next step and wakes an `idle` session. `pause` halts with state preserved until `resume`. `forceAnswer` makes the agent stop exploring and answer from what it has. `cancel` ends the session as `interrupted`.
 
 ## Multi-turn sessions
 
@@ -134,7 +138,7 @@ const result = await client.runSession({
 });
 
 for (const job of result.answer?.jobs ?? []) {
-  console.log(job.title, "@", job.company); // typed via z.infer
+  console.log(job.title, "@", job.company);
 }
 ```
 
@@ -202,13 +206,17 @@ console.log(link.shareUrl);
 
 ## Regions and configuration
 
-The client targets the EU region by default. Point it at the US region or a custom URL, and pass the API key in code when you do not want to use the environment variable:
+The client targets the EU region by default; pass `environment` to use the US region instead:
 
 ```ts
 import { HaiAgentsClient, HaiAgentsEnvironment } from "hai-agents";
 
 const client = new HaiAgentsClient({ environment: HaiAgentsEnvironment.Us });
-// or
+```
+
+The client also accepts a custom `baseUrl`, and an `apiKey` when you do not want to use the environment variable:
+
+```ts
 const client = new HaiAgentsClient({ baseUrl: "https://agp.hcompany.ai", apiKey: "hk-..." });
 ```
 
