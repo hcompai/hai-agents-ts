@@ -306,6 +306,286 @@ export class BrowserProfilesClient {
     }
 
     /**
+     * Fetch the caller's default profile for a browser flavor (404 when unset).
+     *
+     * @param {HaiAgents.GetDefaultBrowserProfileRequest} request
+     * @param {BrowserProfilesClient.RequestOptions} requestOptions - Request-specific configuration.
+     *
+     * @throws {@link HaiAgents.UnprocessableEntityError}
+     *
+     * @example
+     *     await client.browserProfiles.getDefaultBrowserProfile({
+     *         browserName: "browser_name"
+     *     })
+     */
+    public getDefaultBrowserProfile(
+        request: HaiAgents.GetDefaultBrowserProfileRequest,
+        requestOptions?: BrowserProfilesClient.RequestOptions,
+    ): core.HttpResponsePromise<HaiAgents.BrowserProfileRead> {
+        return core.HttpResponsePromise.fromPromise(this.__getDefaultBrowserProfile(request, requestOptions));
+    }
+
+    private async __getDefaultBrowserProfile(
+        request: HaiAgents.GetDefaultBrowserProfileRequest,
+        requestOptions?: BrowserProfilesClient.RequestOptions,
+    ): Promise<core.WithRawResponse<HaiAgents.BrowserProfileRead>> {
+        const { browserName } = request;
+        const _queryParams: Record<string, unknown> = {
+            browser_name: browserName,
+        };
+        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
+        const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
+            _authRequest.headers,
+            this._options?.headers,
+            requestOptions?.headers,
+        );
+        const _response = await core.fetcher({
+            url: core.url.join(
+                (await core.Supplier.get(this._options.baseUrl)) ??
+                    (await core.Supplier.get(this._options.environment)) ??
+                    environments.HaiAgentsEnvironment.Eu,
+                "api/v2/browser-profiles/default",
+            ),
+            method: "GET",
+            headers: _headers,
+            queryString: core.url
+                .queryBuilder()
+                .addMany(_queryParams)
+                .mergeAdditional(requestOptions?.queryParams)
+                .build(),
+            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
+            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
+            abortSignal: requestOptions?.abortSignal,
+            fetchFn: this._options?.fetch,
+            logging: this._options.logging,
+        });
+        if (_response.ok) {
+            return {
+                data: serializers.BrowserProfileRead.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
+                rawResponse: _response.rawResponse,
+            };
+        }
+
+        if (_response.error.reason === "status-code") {
+            switch (_response.error.statusCode) {
+                case 422:
+                    throw new HaiAgents.UnprocessableEntityError(
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                default:
+                    throw new errors.HaiAgentsError({
+                        statusCode: _response.error.statusCode,
+                        body: _response.error.body,
+                        rawResponse: _response.rawResponse,
+                    });
+            }
+        }
+
+        return handleNonStatusCodeError(
+            _response.error,
+            _response.rawResponse,
+            "GET",
+            "/api/v2/browser-profiles/default",
+        );
+    }
+
+    /**
+     * Mark a profile as the caller's default for its browser flavor.
+     *
+     * Sessions created with ``use_default_browser_profile: true`` attach this
+     * profile. Replaces the caller's previous default for the same browser_name.
+     *
+     * @param {HaiAgents.SetDefaultBrowserProfileRequest} request
+     * @param {BrowserProfilesClient.RequestOptions} requestOptions - Request-specific configuration.
+     *
+     * @throws {@link HaiAgents.UnprocessableEntityError}
+     *
+     * @example
+     *     await client.browserProfiles.setDefaultBrowserProfile({
+     *         profileId: "profile_id"
+     *     })
+     */
+    public setDefaultBrowserProfile(
+        request: HaiAgents.SetDefaultBrowserProfileRequest,
+        requestOptions?: BrowserProfilesClient.RequestOptions,
+    ): core.HttpResponsePromise<HaiAgents.BrowserProfileRead> {
+        return core.HttpResponsePromise.fromPromise(this.__setDefaultBrowserProfile(request, requestOptions));
+    }
+
+    private async __setDefaultBrowserProfile(
+        request: HaiAgents.SetDefaultBrowserProfileRequest,
+        requestOptions?: BrowserProfilesClient.RequestOptions,
+    ): Promise<core.WithRawResponse<HaiAgents.BrowserProfileRead>> {
+        const { profileId } = request;
+        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
+        const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
+            _authRequest.headers,
+            this._options?.headers,
+            requestOptions?.headers,
+        );
+        const _response = await core.fetcher({
+            url: core.url.join(
+                (await core.Supplier.get(this._options.baseUrl)) ??
+                    (await core.Supplier.get(this._options.environment)) ??
+                    environments.HaiAgentsEnvironment.Eu,
+                `api/v2/browser-profiles/${core.url.encodePathParam(profileId)}/default`,
+            ),
+            method: "PUT",
+            headers: _headers,
+            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
+            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
+            abortSignal: requestOptions?.abortSignal,
+            fetchFn: this._options?.fetch,
+            logging: this._options.logging,
+        });
+        if (_response.ok) {
+            return {
+                data: serializers.BrowserProfileRead.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
+                rawResponse: _response.rawResponse,
+            };
+        }
+
+        if (_response.error.reason === "status-code") {
+            switch (_response.error.statusCode) {
+                case 422:
+                    throw new HaiAgents.UnprocessableEntityError(
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                default:
+                    throw new errors.HaiAgentsError({
+                        statusCode: _response.error.statusCode,
+                        body: _response.error.body,
+                        rawResponse: _response.rawResponse,
+                    });
+            }
+        }
+
+        return handleNonStatusCodeError(
+            _response.error,
+            _response.rawResponse,
+            "PUT",
+            "/api/v2/browser-profiles/{profile_id}/default",
+        );
+    }
+
+    /**
+     * Clear the default flag on a profile.
+     *
+     * @param {HaiAgents.UnsetDefaultBrowserProfileRequest} request
+     * @param {BrowserProfilesClient.RequestOptions} requestOptions - Request-specific configuration.
+     *
+     * @throws {@link HaiAgents.UnprocessableEntityError}
+     *
+     * @example
+     *     await client.browserProfiles.unsetDefaultBrowserProfile({
+     *         profileId: "profile_id"
+     *     })
+     */
+    public unsetDefaultBrowserProfile(
+        request: HaiAgents.UnsetDefaultBrowserProfileRequest,
+        requestOptions?: BrowserProfilesClient.RequestOptions,
+    ): core.HttpResponsePromise<HaiAgents.BrowserProfileRead> {
+        return core.HttpResponsePromise.fromPromise(this.__unsetDefaultBrowserProfile(request, requestOptions));
+    }
+
+    private async __unsetDefaultBrowserProfile(
+        request: HaiAgents.UnsetDefaultBrowserProfileRequest,
+        requestOptions?: BrowserProfilesClient.RequestOptions,
+    ): Promise<core.WithRawResponse<HaiAgents.BrowserProfileRead>> {
+        const { profileId } = request;
+        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
+        const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
+            _authRequest.headers,
+            this._options?.headers,
+            requestOptions?.headers,
+        );
+        const _response = await core.fetcher({
+            url: core.url.join(
+                (await core.Supplier.get(this._options.baseUrl)) ??
+                    (await core.Supplier.get(this._options.environment)) ??
+                    environments.HaiAgentsEnvironment.Eu,
+                `api/v2/browser-profiles/${core.url.encodePathParam(profileId)}/default`,
+            ),
+            method: "DELETE",
+            headers: _headers,
+            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
+            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
+            abortSignal: requestOptions?.abortSignal,
+            fetchFn: this._options?.fetch,
+            logging: this._options.logging,
+        });
+        if (_response.ok) {
+            return {
+                data: serializers.BrowserProfileRead.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
+                rawResponse: _response.rawResponse,
+            };
+        }
+
+        if (_response.error.reason === "status-code") {
+            switch (_response.error.statusCode) {
+                case 422:
+                    throw new HaiAgents.UnprocessableEntityError(
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                default:
+                    throw new errors.HaiAgentsError({
+                        statusCode: _response.error.statusCode,
+                        body: _response.error.body,
+                        rawResponse: _response.rawResponse,
+                    });
+            }
+        }
+
+        return handleNonStatusCodeError(
+            _response.error,
+            _response.rawResponse,
+            "DELETE",
+            "/api/v2/browser-profiles/{profile_id}/default",
+        );
+    }
+
+    /**
      * Fetch a browser profile by id.
      *
      * @param {HaiAgents.GetBrowserProfileRequest} request

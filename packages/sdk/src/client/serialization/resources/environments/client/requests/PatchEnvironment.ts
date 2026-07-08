@@ -4,27 +4,42 @@ import type * as HaiAgents from "../../../../../api/index.js";
 import * as core from "../../../../../core/index.js";
 import type * as serializers from "../../../../index.js";
 import { BrowserNetwork } from "../../../../types/BrowserNetwork.js";
+import { PatchEnvironmentHost } from "../../types/PatchEnvironmentHost.js";
 import { PatchEnvironmentMode } from "../../types/PatchEnvironmentMode.js";
 
 export const PatchEnvironment: core.serialization.Schema<
     serializers.PatchEnvironment.Raw,
     Omit<HaiAgents.PatchEnvironment, "id">
 > = core.serialization.object({
+    host: PatchEnvironmentHost.optionalNullable(),
     startUrl: core.serialization.property("start_url", core.serialization.string().optionalNullable()),
     headless: core.serialization.boolean().optionalNullable(),
+    sessionId: core.serialization.property("session_id", core.serialization.string().optionalNullable()),
     mode: PatchEnvironmentMode.optionalNullable(),
     vaultId: core.serialization.property("vault_id", core.serialization.string().optionalNullable()),
     browserProfileId: core.serialization.property("browser_profile_id", core.serialization.string().optionalNullable()),
+    useDefaultBrowserProfile: core.serialization.property(
+        "use_default_browser_profile",
+        core.serialization.boolean().optionalNullable(),
+    ),
+    persistBrowserProfile: core.serialization.property(
+        "persist_browser_profile",
+        core.serialization.boolean().optionalNullable(),
+    ),
     network: BrowserNetwork.optionalNullable(),
 });
 
 export declare namespace PatchEnvironment {
     export interface Raw {
+        host?: (PatchEnvironmentHost.Raw | null | undefined) | null;
         start_url?: (string | null | undefined) | null;
         headless?: (boolean | null | undefined) | null;
+        session_id?: (string | null | undefined) | null;
         mode?: (PatchEnvironmentMode.Raw | null | undefined) | null;
         vault_id?: (string | null | undefined) | null;
         browser_profile_id?: (string | null | undefined) | null;
+        use_default_browser_profile?: (boolean | null | undefined) | null;
+        persist_browser_profile?: (boolean | null | undefined) | null;
         network?: (BrowserNetwork.Raw | null | undefined) | null;
     }
 }

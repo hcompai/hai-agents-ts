@@ -7,11 +7,12 @@ import type * as HaiAgents from "../../../../index.js";
  *     {
  *         id: "id",
  *         body: {
+ *             kind: "web",
  *             id: "id"
  *         }
  *     }
  */
 export interface UpdateEnvironmentRequest {
     id: string;
-    body: HaiAgents.Browser;
+    body: HaiAgents.UpdateEnvironmentRequestBody;
 }
