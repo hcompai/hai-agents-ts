@@ -22,10 +22,15 @@ const FIELD_DROPPED_ENTIRELY = new Set([
     "PolicyEvent.kind",
     "BrowserVisualMode.type",
     "BrowserTextMode.type",
+    // Environment is a kind-discriminated union; the variant serializers drop the tag and the
+    // Environment union serializer writes it from the parsed value instead.
+    "Browser.kind",
+    "Desktop.kind",
 ]);
 
 const MINIMAL_PARSED: Record<string, object> = {
     Browser: { id: "browser" },
+    Desktop: { id: "desktop", host: "user_device" },
     OnePasswordConfig: { opVaultId: "vault_1" },
     ToolResultEvent: { toolReq: { toolName: "click" }, result: "ok" },
     UserMessageEvent: { message: "hi" },
@@ -74,8 +79,14 @@ describe("spec const+default discriminators", () => {
         expect(raw[propName], `${key} is back in the serialized output; move it out of FIELD_DROPPED_ENTIRELY`).toBeUndefined();
     });
 
-    it("injects kind through the inline-agent environments path", () => {
-        const raw = serialization.AgentEnvironmentsItem.jsonOrThrow({ id: "browser" });
-        expect((raw as any).kind).toBe("web");
+    it("keeps kind on the wire through the inline-agent environments path", () => {
+        const web = serialization.AgentEnvironmentsItem.jsonOrThrow({ kind: "web", id: "browser" });
+        expect((web as any).kind).toBe("web");
+        const desktop = serialization.AgentEnvironmentsItem.jsonOrThrow({
+            kind: "desktop",
+            id: "desktop",
+            host: "user_device",
+        });
+        expect((desktop as any).kind).toBe("desktop");
     });
 });

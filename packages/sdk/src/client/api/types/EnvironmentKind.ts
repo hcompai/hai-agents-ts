@@ -3,5 +3,6 @@
 /** Environment family. */
 export const EnvironmentKind = {
     Web: "web",
+    Desktop: "desktop",
 } as const;
 export type EnvironmentKind = (typeof EnvironmentKind)[keyof typeof EnvironmentKind];

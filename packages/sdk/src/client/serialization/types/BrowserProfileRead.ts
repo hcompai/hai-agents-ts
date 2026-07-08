@@ -21,6 +21,7 @@ export const BrowserProfileRead: core.serialization.ObjectSchema<
     usageCount: core.serialization.property("usage_count", core.serialization.number().optional()),
     lastUsedAt: core.serialization.property("last_used_at", core.serialization.date().optionalNullable()),
     labels: core.serialization.record(core.serialization.string(), core.serialization.unknown()).optionalNullable(),
+    isDefault: core.serialization.property("is_default", core.serialization.boolean().optional()),
     createdAt: core.serialization.property("created_at", core.serialization.date()),
     updatedAt: core.serialization.property("updated_at", core.serialization.date()),
 });
@@ -40,6 +41,7 @@ export declare namespace BrowserProfileRead {
         usage_count?: number | null;
         last_used_at?: (string | null | undefined) | null;
         labels?: (Record<string, unknown> | null | undefined) | null;
+        is_default?: boolean | null;
         created_at: string;
         updated_at: string;
     }

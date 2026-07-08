@@ -2,4 +2,14 @@
 
 import type * as HaiAgents from "../index.js";
 
-export type Environment = HaiAgents.Browser;
+export type Environment = HaiAgents.Environment.Desktop | HaiAgents.Environment.Web;
+
+export namespace Environment {
+    export interface Desktop extends HaiAgents.Desktop {
+        kind: "desktop";
+    }
+
+    export interface Web extends HaiAgents.Browser {
+        kind: "web";
+    }
+}

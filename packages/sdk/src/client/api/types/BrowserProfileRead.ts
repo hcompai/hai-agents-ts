@@ -17,6 +17,7 @@ export interface BrowserProfileRead {
     usageCount?: number;
     lastUsedAt?: Date | null;
     labels?: Record<string, unknown> | null;
+    isDefault?: boolean;
     createdAt: Date;
     updatedAt: Date;
 }

@@ -8,17 +8,24 @@ import type * as HaiAgents from "../index.js";
 export interface Browser {
     /** Catalog identifier for this environment. */
     id: string;
-    kind?: HaiAgents.BrowserKind;
+    /** Where the browser runs: 'cloud' on H Company infrastructure, or 'user_device' on your own machine. */
+    host?: HaiAgents.BrowserHost;
     /** Initial URL to open. */
     startUrl?: string;
     /** Run the browser without a visible window. */
     headless?: boolean;
+    /** Connect to an existing browser session by id instead of starting a new one. */
+    sessionId?: string | null;
     /** How the agent perceives and drives the browser. */
     mode?: HaiAgents.BrowserMode;
-    /** Id of a vault config to bind to this browser, letting the agent sign in to sites with secrets resolved from the vault. The vault must belong to the caller's organization. Omit to run without secret access. */
+    /** Id of a vault config to bind to this browser, letting the agent sign in to sites with secrets resolved from the vault. The vault must belong to the caller's organization. Only supported on cloud-hosted browsers. Omit to run without secret access. */
     vaultId?: string | null;
-    /** Id of a browser profile to load into this browser, restoring saved cookies and storage state from a prior session. The profile must belong to the caller's organization. Omit to run with a fresh profile. */
+    /** Id of a browser profile to load into this browser, restoring saved cookies and storage state from a prior session. The profile must belong to the caller's organization. Only supported on cloud-hosted browsers. Omit to run with a fresh profile. */
     browserProfileId?: string | null;
+    /** When true, load the caller's default browser profile for this browser flavor (marked via the browser-profiles API) instead of naming one explicitly. Mutually exclusive with browser_profile_id. When no default exists, an empty profile is auto-created and marked default; default-profile sessions save their final state back on stop when no other session is already persisting the profile. Only supported on cloud-hosted browsers. */
+    useDefaultBrowserProfile?: boolean;
+    /** When true, the browser profile is updated with this session's final browser state (cookies, storage) when the session ends. Requires browser_profile_id or use_default_browser_profile. Only one active session at a time may persist a given profile; concurrent read-only use is always allowed. */
+    persistBrowserProfile?: boolean;
     /** Optional network configuration for the remote browser session. Applied only when a new runner session is provisioned (not when session_id is set). */
     network?: HaiAgents.BrowserNetwork | null;
 }
