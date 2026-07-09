@@ -171,6 +171,29 @@ console.log(result.answer);
 
 Tool functions may be sync or async. A tool that throws is reported to the agent as a tool error rather than crashing the run.
 
+### Prebuilt: one-time passwords (2FA)
+
+The SDK ships ready-made tools. `otpTool` lets the agent ask for a one-time password, verification code, or confirmation link when a login or signup step needs one. Without a handler it prompts on stdin; `imapOtpHandler` reads the code straight from a mailbox over IMAP (requires the optional dependencies `imapflow` and `mailparser`; for Gmail, use an app password).
+
+```ts
+import { HaiAgentsClient, imapOtpHandler, otpTool } from "hai-agents";
+
+const handler = imapOtpHandler({
+  host: "imap.gmail.com",
+  username: "agent-inbox@gmail.com",
+  password: process.env.GMAIL_APP_PASSWORD!,
+});
+
+const client = new HaiAgentsClient();
+const result = await client.runSession({
+  agent: "h/web-surfer-pro",
+  messages: "Log in to example.com and check for new notifications",
+  tools: [otpTool({ handler })],
+});
+```
+
+Like every custom tool, the handler runs entirely in your process: the IMAP credentials never leave your machine, and the agent only receives the single extracted code or link -- never mailbox contents.
+
 ## Browser profiles and vaults
 
 Start a session on a browser that already knows the user. A [browser profile](https://hub.hcompany.ai/computer-use-agents/browser-profiles) restores saved cookies and storage from an earlier session, and a [vault](https://hub.hcompany.ai/computer-use-agents/vaults) lets the agent sign in to sites with secrets that never enter its context. Bind both through per-run overrides:
