@@ -275,19 +275,25 @@ export function imapOtpHandler(options: ImapOtpHandlerOptions): OtpHandler {
           }
           const uids = (await client.search(query, { uid: true })) || [];
           for (const uid of [...uids].sort((a, b) => b - a)) {
-            const message = await client.fetchOne(String(uid), { source: true, internalDate: true }, { uid: true });
-            if (!message || !message.source) {
+            let text: string;
+            try {
+              const message = await client.fetchOne(String(uid), { source: true, internalDate: true }, { uid: true });
+              if (!message || !message.source) {
+                continue;
+              }
+              if (message.internalDate && Date.now() - message.internalDate.getTime() > maxAgeMs) {
+                continue;
+              }
+              const parsed = await simpleParser(message.source);
+              text = [
+                parsed.subject ?? "",
+                parsed.text ?? "",
+                typeof parsed.html === "string" ? htmlToText(parsed.html) : "",
+              ].join("\n");
+            } catch {
+              // One malformed or oversized message must not abort the poll; skip it.
               continue;
             }
-            if (message.internalDate && Date.now() - message.internalDate.getTime() > maxAgeMs) {
-              continue;
-            }
-            const parsed = await simpleParser(message.source);
-            const text = [
-              parsed.subject ?? "",
-              parsed.text ?? "",
-              typeof parsed.html === "string" ? htmlToText(parsed.html) : "",
-            ].join("\n");
             const value = extractOtp(text, request.kind, codePattern);
             if (value) {
               if (markSeen) {
