@@ -16,6 +16,7 @@ export const SessionSummary: core.serialization.ObjectSchema<serializers.Session
         createdAt: core.serialization.property("created_at", core.serialization.date()),
         startedAt: core.serialization.property("started_at", core.serialization.date().optionalNullable()),
         finishedAt: core.serialization.property("finished_at", core.serialization.date().optionalNullable()),
+        lastActivityAt: core.serialization.property("last_activity_at", core.serialization.date().optionalNullable()),
         anonymizedAt: core.serialization.property("anonymized_at", core.serialization.date().optionalNullable()),
     });
 
@@ -29,6 +30,7 @@ export declare namespace SessionSummary {
         created_at: string;
         started_at?: (string | null | undefined) | null;
         finished_at?: (string | null | undefined) | null;
+        last_activity_at?: (string | null | undefined) | null;
         anonymized_at?: (string | null | undefined) | null;
     }
 }
