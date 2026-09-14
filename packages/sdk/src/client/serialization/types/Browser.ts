@@ -15,6 +15,7 @@ export const Browser: core.serialization.ObjectSchema<serializers.Browser.Raw, H
         headless: core.serialization.boolean().optional(),
         sessionId: core.serialization.property("session_id", core.serialization.string().optionalNullable()),
         mode: BrowserMode.optional(),
+        lazy: core.serialization.boolean().optional(),
         vaultId: core.serialization.property("vault_id", core.serialization.string().optionalNullable()),
         browserProfileId: core.serialization.property(
             "browser_profile_id",
@@ -39,6 +40,7 @@ export declare namespace Browser {
         headless?: boolean | null;
         session_id?: (string | null | undefined) | null;
         mode?: BrowserMode.Raw | null;
+        lazy?: boolean | null;
         vault_id?: (string | null | undefined) | null;
         browser_profile_id?: (string | null | undefined) | null;
         use_default_browser_profile?: boolean | null;

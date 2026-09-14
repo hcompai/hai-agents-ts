@@ -14,6 +14,11 @@ export const ToolResultEvent: core.serialization.ObjectSchema<
     kind: ToolResultEventKind.optional(),
     toolReq: core.serialization.property("tool_req", ToolRequest),
     result: JsonValue.optional(),
+    truncated: core.serialization.boolean().optional(),
+    outputArtifactPath: core.serialization.property(
+        "output_artifact_path",
+        core.serialization.string().optionalNullable(),
+    ),
 }), { kind: "tool_result" });
 
 export declare namespace ToolResultEvent {
@@ -21,5 +26,7 @@ export declare namespace ToolResultEvent {
         kind?: ToolResultEventKind.Raw | null;
         tool_req: ToolRequest.Raw;
         result?: (JsonValue.Raw | undefined) | null;
+        truncated?: boolean | null;
+        output_artifact_path?: (string | null | undefined) | null;
     }
 }

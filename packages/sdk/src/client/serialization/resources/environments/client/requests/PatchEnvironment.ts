@@ -16,6 +16,7 @@ export const PatchEnvironment: core.serialization.Schema<
     headless: core.serialization.boolean().optionalNullable(),
     sessionId: core.serialization.property("session_id", core.serialization.string().optionalNullable()),
     mode: PatchEnvironmentMode.optionalNullable(),
+    lazy: core.serialization.boolean().optionalNullable(),
     vaultId: core.serialization.property("vault_id", core.serialization.string().optionalNullable()),
     browserProfileId: core.serialization.property("browser_profile_id", core.serialization.string().optionalNullable()),
     useDefaultBrowserProfile: core.serialization.property(
@@ -36,6 +37,7 @@ export declare namespace PatchEnvironment {
         headless?: (boolean | null | undefined) | null;
         session_id?: (string | null | undefined) | null;
         mode?: (PatchEnvironmentMode.Raw | null | undefined) | null;
+        lazy?: (boolean | null | undefined) | null;
         vault_id?: (string | null | undefined) | null;
         browser_profile_id?: (string | null | undefined) | null;
         use_default_browser_profile?: (boolean | null | undefined) | null;

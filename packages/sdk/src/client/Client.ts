@@ -5,6 +5,7 @@ import { BrowserProfilesClient } from "./api/resources/browserProfiles/client/Cl
 import { EnvironmentsClient } from "./api/resources/environments/client/Client.js";
 import { QuotaClient } from "./api/resources/quota/client/Client.js";
 import { SchedulesClient } from "./api/resources/schedules/client/Client.js";
+import { SessionFilesClient } from "./api/resources/sessionFiles/client/Client.js";
 import { SessionsClient } from "./api/resources/sessions/client/Client.js";
 import { SkillsClient } from "./api/resources/skills/client/Client.js";
 import { VaultsClient } from "./api/resources/vaults/client/Client.js";
@@ -29,6 +30,7 @@ export class HaiAgentsClient {
     protected _schedules: SchedulesClient | undefined;
     protected _browserProfiles: BrowserProfilesClient | undefined;
     protected _vaults: VaultsClient | undefined;
+    protected _sessionFiles: SessionFilesClient | undefined;
     protected _quota: QuotaClient | undefined;
 
     constructor(options: HaiAgentsClient.Options = {}) {
@@ -65,6 +67,10 @@ export class HaiAgentsClient {
 
     public get vaults(): VaultsClient {
         return (this._vaults ??= new VaultsClient(this._options));
+    }
+
+    public get sessionFiles(): SessionFilesClient {
+        return (this._sessionFiles ??= new SessionFilesClient(this._options));
     }
 
     public get quota(): QuotaClient {

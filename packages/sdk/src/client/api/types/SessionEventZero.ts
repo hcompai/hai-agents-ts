@@ -9,6 +9,7 @@ export type SessionEventZero =
     | HaiAgents.SessionEventZero.AgentEvent
     | HaiAgents.SessionEventZero.AgentRunStatusChangeEvent
     | HaiAgents.SessionEventZero.AgentStartedEvent
+    | HaiAgents.SessionEventZero.FileTransferEvent
     | HaiAgents.SessionEventZero.LiveViewUrlEvent
     | HaiAgents.SessionEventZero.MetricsUpdateEvent
     | HaiAgents.SessionEventZero.RequestStartDispatchedEvent
@@ -37,6 +38,10 @@ export namespace SessionEventZero {
 
     export interface AgentStartedEvent extends HaiAgents.AgentStartedEvent {
         type: "AgentStartedEvent";
+    }
+
+    export interface FileTransferEvent extends HaiAgents.FileTransferEvent {
+        type: "FileTransferEvent";
     }
 
     export interface LiveViewUrlEvent extends HaiAgents.LiveViewUrlEvent {
