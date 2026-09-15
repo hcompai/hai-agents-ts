@@ -2,9 +2,25 @@
  * Webhook receiving: verify the signature and parse the event payload.
  */
 
-import { createHmac, timingSafeEqual } from "node:crypto";
-
 import { HaiAgentsError } from "./errors/index.js";
+
+type NodeCrypto = typeof import("node:crypto");
+
+/**
+ * Signing is server-side work, so the HMAC comes from Node's crypto module. It is loaded
+ * through `process.getBuiltinModule` rather than an import so that bundling the SDK for a
+ * browser pulls in no Node built-in; calling this in a browser is the error.
+ */
+function nodeCrypto(): NodeCrypto {
+    const load = (globalThis as { process?: { getBuiltinModule?: (id: string) => unknown } }).process
+        ?.getBuiltinModule;
+    if (load === undefined) {
+        throw new WebhookVerificationError("verifyWebhook needs Node.js 20.16 or newer");
+    }
+    return load("node:crypto") as NodeCrypto;
+}
+
+const utf8 = new TextEncoder();
 
 export const SIGNATURE_HEADER = "X-H-Webhook-Signature";
 export const TIMESTAMP_HEADER = "X-H-Webhook-Timestamp";
@@ -58,7 +74,7 @@ export function verifyWebhook(
     options: VerifyWebhookOptions = {},
 ): WebhookEvent {
     const toleranceS = options.toleranceS ?? DEFAULT_TOLERANCE_S;
-    const raw = typeof body === "string" ? Buffer.from(body, "utf8") : Buffer.from(body);
+    const raw = typeof body === "string" ? utf8.encode(body) : body;
     const secrets = typeof secret === "string" ? [secret] : secret;
     if (secrets.length === 0) {
         throw new WebhookVerificationError("no secret provided");
@@ -70,13 +86,12 @@ export function verifyWebhook(
     if (Math.abs(Date.now() / 1000 - sentAt) > toleranceS) {
         throw new WebhookVerificationError(`delivery older than ${toleranceS}s; possible replay`);
     }
-    const received = Buffer.from(signature ?? "", "utf8");
+    const received = utf8.encode(signature ?? "");
+    const { createHmac, timingSafeEqual } = nodeCrypto();
     let matched = false;
     for (const candidate of secrets) {
-        const digest = createHmac("sha256", candidate)
-            .update(Buffer.concat([Buffer.from(`${timestamp}.`, "utf8"), raw]))
-            .digest("hex");
-        const expected = Buffer.from(`sha256=${digest}`, "utf8");
+        const digest = createHmac("sha256", candidate).update(utf8.encode(`${timestamp}.`)).update(raw).digest("hex");
+        const expected = utf8.encode(`sha256=${digest}`);
         if (expected.length === received.length && timingSafeEqual(expected, received)) {
             matched = true;
         }
@@ -86,7 +101,7 @@ export function verifyWebhook(
     }
     let parsed: unknown;
     try {
-        parsed = JSON.parse(raw.toString("utf8"));
+        parsed = JSON.parse(new TextDecoder().decode(raw));
     } catch (e) {
         throw new WebhookVerificationError(`unparsable payload: ${e}`);
     }

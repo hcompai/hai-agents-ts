@@ -253,7 +253,7 @@ import { HaiAgentsError, HaiAgentsTimeoutError, AnswerValidationError } from "ha
 
 ## Webhooks
 
-Verify the signature on an incoming webhook before trusting it:
+Verify the signature on an incoming webhook before trusting it (server side, Node.js 20.16 or newer):
 
 ```ts
 import { verifyWebhook, WebhookVerificationError } from "hai-agents";
