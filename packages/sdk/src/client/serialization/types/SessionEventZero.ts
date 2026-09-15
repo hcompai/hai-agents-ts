@@ -9,6 +9,7 @@ import { AgentErrorEvent } from "./AgentErrorEvent.js";
 import { AgentEvent } from "./AgentEvent.js";
 import { AgentRunStatusChangeEvent } from "./AgentRunStatusChangeEvent.js";
 import { AgentStartedEvent } from "./AgentStartedEvent.js";
+import { FileTransferEvent } from "./FileTransferEvent.js";
 import { LiveViewUrlEvent } from "./LiveViewUrlEvent.js";
 import { MetricsUpdateEvent } from "./MetricsUpdateEvent.js";
 import { RequestStartDispatchedEvent } from "./RequestStartDispatchedEvent.js";
@@ -23,6 +24,7 @@ export const SessionEventZero: core.serialization.Schema<serializers.SessionEven
             AgentEvent: AgentEvent,
             AgentRunStatusChangeEvent: AgentRunStatusChangeEvent,
             AgentStartedEvent: AgentStartedEvent,
+            FileTransferEvent: FileTransferEvent,
             LiveViewUrlEvent: LiveViewUrlEvent,
             MetricsUpdateEvent: MetricsUpdateEvent,
             RequestStartDispatchedEvent: RequestStartDispatchedEvent,
@@ -41,6 +43,7 @@ export declare namespace SessionEventZero {
         | SessionEventZero.AgentEvent
         | SessionEventZero.AgentRunStatusChangeEvent
         | SessionEventZero.AgentStartedEvent
+        | SessionEventZero.FileTransferEvent
         | SessionEventZero.LiveViewUrlEvent
         | SessionEventZero.MetricsUpdateEvent
         | SessionEventZero.RequestStartDispatchedEvent
@@ -68,6 +71,10 @@ export declare namespace SessionEventZero {
 
     export interface AgentStartedEvent extends AgentStartedEvent.Raw {
         type: "AgentStartedEvent";
+    }
+
+    export interface FileTransferEvent extends FileTransferEvent.Raw {
+        type: "FileTransferEvent";
     }
 
     export interface LiveViewUrlEvent extends LiveViewUrlEvent.Raw {

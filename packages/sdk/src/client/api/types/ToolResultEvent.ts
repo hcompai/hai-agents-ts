@@ -10,4 +10,8 @@ export interface ToolResultEvent {
     toolReq: HaiAgents.ToolRequest;
     /** Tool output as opaque JSON; any embedded image is inlined as base64, not a URL. */
     result?: HaiAgents.JsonValue;
+    /** Inline tool text was omitted; does not imply it was saved. */
+    truncated?: boolean;
+    /** Path to retained tool text in the originating sandbox, not a downloadable URL. */
+    outputArtifactPath?: string | null;
 }

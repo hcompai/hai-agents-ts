@@ -57,9 +57,9 @@ export function normalizeClientOptions<T extends BaseClientOptions = BaseClientO
 ): NormalizedClientOptions<T> {
     const headers = mergeHeaders(
         {
-            "User-Agent": "hai-agents/1.0.7",
+            "User-Agent": "hai-agents/1.0.8",
             "X-HCompany-Client-Name": "hai-agents",
-            "X-HCompany-Client-Version": "1.0.7",
+            "X-HCompany-Client-Version": "1.0.8",
             "X-HCompany-Client-Type": "sdk",
             "X-HCompany-Language": "JavaScript",
             "X-HCompany-Runtime": core.RUNTIME.type,

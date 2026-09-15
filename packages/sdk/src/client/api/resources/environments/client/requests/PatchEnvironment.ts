@@ -15,6 +15,7 @@ export interface PatchEnvironment {
     headless?: boolean | null;
     sessionId?: string | null;
     mode?: HaiAgents.PatchEnvironmentMode | null;
+    lazy?: boolean | null;
     vaultId?: string | null;
     browserProfileId?: string | null;
     useDefaultBrowserProfile?: boolean | null;

@@ -9,6 +9,8 @@ export * from "./environments/types/index.js";
 export * from "./schedules/client/requests/index.js";
 export * as schedules from "./schedules/index.js";
 export * from "./schedules/types/index.js";
+export * from "./sessionFiles/client/requests/index.js";
+export * as sessionFiles from "./sessionFiles/index.js";
 export * as sessions from "./sessions/index.js";
 export * from "./sessions/types/index.js";
 export * from "./skills/client/requests/index.js";
