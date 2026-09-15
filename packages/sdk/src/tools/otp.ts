@@ -61,11 +61,14 @@ export type OtpToolOptions = {
   description?: string;
 };
 
-/** Interactive fallback: prompt for the value on stdin (Node.js only). */
+/** Interactive fallback: prompt for the value on stdin (Node.js 20.16 or newer). */
 async function defaultOtpHandler(request: OtpRequest): Promise<string> {
-  const load = typeof process === "undefined" ? undefined : process.getBuiltinModule;
-  if (load === undefined || !process.stdin) {
+  if (typeof process === "undefined" || !process.stdin) {
     throw new Error("No interactive stdin available; pass a handler to otpTool().");
+  }
+  const load = process.getBuiltinModule;
+  if (load === undefined) {
+    throw new Error("The interactive OTP prompt needs Node.js 20.16 or newer; pass a handler to otpTool().");
   }
   const { createInterface } = load("node:readline/promises") as typeof import("node:readline/promises");
   const rl = createInterface({ input: process.stdin, output: process.stdout });
