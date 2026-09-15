@@ -22,6 +22,7 @@
   },
   "author": "H Company <contact@hcompany.ai>",
   "type": "module",
+  "sideEffects": false,
   "license": "MIT",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -54,6 +55,7 @@
   },
   "devDependencies": {
     "@types/node": "^26.4.0",
+    "esbuild": "^0.27.7",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",
     "vitest": "^4.1.11",

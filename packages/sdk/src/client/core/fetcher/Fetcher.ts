@@ -296,6 +296,7 @@ export async function fetcherImpl<R = unknown>(args: Fetcher.Args): Promise<APIR
                     args.responseType === "streaming" || args.responseType === "sse",
                 ),
             args.maxRetries,
+            args.method,
         );
 
         if (response.status >= 200 && response.status < 400) {
@@ -309,6 +310,13 @@ export async function fetcherImpl<R = unknown>(args: Fetcher.Args): Promise<APIR
                 logger.debug("HTTP request succeeded", metadata);
             }
             const body = await getResponseBody(response, args.responseType);
+            if (isNonJsonBody(body)) {
+                return {
+                    ok: false,
+                    error: { reason: "non-json", statusCode: response.status, rawBody: body.error.rawBody },
+                    rawResponse: toRawResponse(response),
+                };
+            }
             return {
                 ok: true,
                 body: body as R,
@@ -353,7 +361,7 @@ export async function fetcherImpl<R = unknown>(args: Fetcher.Args): Promise<APIR
                 },
                 rawResponse: abortRawResponse,
             };
-        } else if (error instanceof Error && error.name === "AbortError") {
+        } else if (error instanceof Error && (error.name === "AbortError" || error.name === "TimeoutError")) {
             if (logger.isError()) {
                 const metadata = {
                     method: args.method,
@@ -411,3 +419,9 @@ export async function fetcherImpl<R = unknown>(args: Fetcher.Args): Promise<APIR
 }
 
 export const fetcher: FetchFunction = fetcherImpl;
+
+/** getResponseBody hands back this marker, not a throw, when a 2xx body does not parse as JSON. */
+function isNonJsonBody(body: unknown): body is { ok: false; error: { reason: "non-json"; rawBody: string } } {
+    const candidate = body as { ok?: unknown; error?: { reason?: unknown } } | null;
+    return candidate?.ok === false && candidate.error?.reason === "non-json";
+}

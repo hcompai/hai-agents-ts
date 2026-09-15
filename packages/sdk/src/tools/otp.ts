@@ -63,10 +63,11 @@ export type OtpToolOptions = {
 
 /** Interactive fallback: prompt for the value on stdin (Node.js only). */
 async function defaultOtpHandler(request: OtpRequest): Promise<string> {
-  if (typeof process === "undefined" || !process.stdin) {
+  const load = typeof process === "undefined" ? undefined : process.getBuiltinModule;
+  if (load === undefined || !process.stdin) {
     throw new Error("No interactive stdin available; pass a handler to otpTool().");
   }
-  const { createInterface } = await import("node:readline/promises");
+  const { createInterface } = load("node:readline/promises") as typeof import("node:readline/promises");
   const rl = createInterface({ input: process.stdin, output: process.stdout });
   try {
     const label = request.kind === "link" ? "link" : "code";
