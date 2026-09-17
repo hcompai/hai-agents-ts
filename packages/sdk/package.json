@@ -1,7 +1,7 @@
 {
   "name": "hai-agents",
   "version": "1.0.9",
-  "description": "TypeScript SDK for H Company's Computer-Use Agents: autonomous agents powered by Holo.",
+  "description": "TypeScript SDK for H Company's Agents API: autonomous agents powered by Holo.",
   "keywords": [
     "agent",
     "agents",
@@ -11,7 +11,7 @@
     "sdk",
     "h-company"
   ],
-  "homepage": "https://hub.hcompany.ai/computer-use-agents",
+  "homepage": "https://hub.hcompany.ai/agents-api/introduction",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hcompai/hai-agents-ts.git",
