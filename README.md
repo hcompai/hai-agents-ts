@@ -264,7 +264,7 @@ console.log(event.type, event.data);
 
 ## Documentation
 
-Guides, core concepts, and the full API reference live at **[hub.hcompany.ai/agents-api/introduction](https://hub.hcompany.ai/agents-api/introduction)**.
+Guides, core concepts, and the full API reference live at **[hub.hcompany.ai/agents-api](https://hub.hcompany.ai/agents-api/introduction)**.
 
 ## License
 
