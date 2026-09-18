@@ -4,7 +4,8 @@ import type * as HaiAgents from "../../../index.js";
 
 export type UpdateEnvironmentRequestBody =
     | HaiAgents.UpdateEnvironmentRequestBody.Web
-    | HaiAgents.UpdateEnvironmentRequestBody.Desktop;
+    | HaiAgents.UpdateEnvironmentRequestBody.Desktop
+    | HaiAgents.UpdateEnvironmentRequestBody.Android;
 
 export namespace UpdateEnvironmentRequestBody {
     export interface Web extends HaiAgents.Browser {
@@ -13,5 +14,9 @@ export namespace UpdateEnvironmentRequestBody {
 
     export interface Desktop extends HaiAgents.Desktop {
         kind: "desktop";
+    }
+
+    export interface Android extends HaiAgents.Android {
+        kind: "android";
     }
 }

@@ -8,7 +8,10 @@ import type * as HaiAgents from "../index.js";
 export interface Desktop {
     /** Catalog identifier for this environment. */
     id: string;
+    /** Where the desktop runs: 'cloud' on H Company infrastructure, or 'user_device' on your own machine. */
     host: HaiAgents.DesktopHost;
     /** Connect to an existing desktop session by id instead of starting a new one. */
     sessionId?: string | null;
+    /** Provision on the agent's first use instead of at startup. Skips the initial observation. */
+    lazy?: boolean;
 }

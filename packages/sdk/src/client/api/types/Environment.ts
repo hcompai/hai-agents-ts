@@ -2,9 +2,13 @@
 
 import type * as HaiAgents from "../index.js";
 
-export type Environment = HaiAgents.Environment.Desktop | HaiAgents.Environment.Web;
+export type Environment = HaiAgents.Environment.Android | HaiAgents.Environment.Desktop | HaiAgents.Environment.Web;
 
 export namespace Environment {
+    export interface Android extends HaiAgents.Android {
+        kind: "android";
+    }
+
     export interface Desktop extends HaiAgents.Desktop {
         kind: "desktop";
     }

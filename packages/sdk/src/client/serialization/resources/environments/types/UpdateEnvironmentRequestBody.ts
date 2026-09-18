@@ -3,6 +3,7 @@
 import type * as HaiAgents from "../../../../api/index.js";
 import * as core from "../../../../core/index.js";
 import type * as serializers from "../../../index.js";
+import { Android } from "../../../types/Android.js";
 import { Browser } from "../../../types/Browser.js";
 import { Desktop } from "../../../types/Desktop.js";
 
@@ -13,6 +14,7 @@ export const UpdateEnvironmentRequestBody: core.serialization.Schema<
     .union("kind", {
         web: Browser,
         desktop: Desktop,
+        android: Android,
     })
     .transform<HaiAgents.UpdateEnvironmentRequestBody>({
         transform: (value) => value,
@@ -20,7 +22,10 @@ export const UpdateEnvironmentRequestBody: core.serialization.Schema<
     });
 
 export declare namespace UpdateEnvironmentRequestBody {
-    export type Raw = UpdateEnvironmentRequestBody.Web | UpdateEnvironmentRequestBody.Desktop;
+    export type Raw =
+        | UpdateEnvironmentRequestBody.Web
+        | UpdateEnvironmentRequestBody.Desktop
+        | UpdateEnvironmentRequestBody.Android;
 
     export interface Web extends Browser.Raw {
         kind: "web";
@@ -28,5 +33,9 @@ export declare namespace UpdateEnvironmentRequestBody {
 
     export interface Desktop extends Desktop.Raw {
         kind: "desktop";
+    }
+
+    export interface Android extends Android.Raw {
+        kind: "android";
     }
 }

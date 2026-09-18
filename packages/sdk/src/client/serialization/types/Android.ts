@@ -3,21 +3,20 @@
 import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
-import { DesktopHost } from "./DesktopHost.js";
 
-export const Desktop: core.serialization.ObjectSchema<serializers.Desktop.Raw, HaiAgents.Desktop> =
+export const Android: core.serialization.ObjectSchema<serializers.Android.Raw, HaiAgents.Android> =
     core.serialization.object({
         id: core.serialization.string(),
-        host: DesktopHost,
         sessionId: core.serialization.property("session_id", core.serialization.string().optionalNullable()),
+        image: core.serialization.string().optionalNullable(),
         lazy: core.serialization.boolean().optional(),
     });
 
-export declare namespace Desktop {
+export declare namespace Android {
     export interface Raw {
         id: string;
-        host: DesktopHost.Raw;
         session_id?: (string | null | undefined) | null;
+        image?: (string | null | undefined) | null;
         lazy?: boolean | null;
     }
 }

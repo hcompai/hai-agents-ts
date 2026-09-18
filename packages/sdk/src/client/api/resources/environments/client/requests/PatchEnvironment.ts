@@ -21,4 +21,5 @@ export interface PatchEnvironment {
     useDefaultBrowserProfile?: boolean | null;
     persistBrowserProfile?: boolean | null;
     network?: HaiAgents.BrowserNetwork | null;
+    image?: string | null;
 }

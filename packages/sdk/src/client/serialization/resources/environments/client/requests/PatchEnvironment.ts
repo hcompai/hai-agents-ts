@@ -28,6 +28,7 @@ export const PatchEnvironment: core.serialization.Schema<
         core.serialization.boolean().optionalNullable(),
     ),
     network: BrowserNetwork.optionalNullable(),
+    image: core.serialization.string().optionalNullable(),
 });
 
 export declare namespace PatchEnvironment {
@@ -43,5 +44,6 @@ export declare namespace PatchEnvironment {
         use_default_browser_profile?: (boolean | null | undefined) | null;
         persist_browser_profile?: (boolean | null | undefined) | null;
         network?: (BrowserNetwork.Raw | null | undefined) | null;
+        image?: (string | null | undefined) | null;
     }
 }
