@@ -4,5 +4,6 @@
 export const EnvironmentKind = {
     Web: "web",
     Desktop: "desktop",
+    Android: "android",
 } as const;
 export type EnvironmentKind = (typeof EnvironmentKind)[keyof typeof EnvironmentKind];

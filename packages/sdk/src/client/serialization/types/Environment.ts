@@ -3,12 +3,14 @@
 import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
+import { Android } from "./Android.js";
 import { Browser } from "./Browser.js";
 import { Desktop } from "./Desktop.js";
 
 export const Environment: core.serialization.Schema<serializers.Environment.Raw, HaiAgents.Environment> =
     core.serialization
         .union("kind", {
+            android: Android,
             desktop: Desktop,
             web: Browser,
         })
@@ -18,7 +20,11 @@ export const Environment: core.serialization.Schema<serializers.Environment.Raw,
         });
 
 export declare namespace Environment {
-    export type Raw = Environment.Desktop | Environment.Web;
+    export type Raw = Environment.Android | Environment.Desktop | Environment.Web;
+
+    export interface Android extends Android.Raw {
+        kind: "android";
+    }
 
     export interface Desktop extends Desktop.Raw {
         kind: "desktop";

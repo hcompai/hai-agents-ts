@@ -26,11 +26,13 @@ const FIELD_DROPPED_ENTIRELY = new Set([
     // Environment union serializer writes it from the parsed value instead.
     "Browser.kind",
     "Desktop.kind",
+    "Android.kind",
 ]);
 
 const MINIMAL_PARSED: Record<string, object> = {
     Browser: { id: "browser" },
     Desktop: { id: "desktop", host: "user_device" },
+    Android: { id: "phone" },
     OnePasswordConfig: { opVaultId: "vault_1" },
     ToolResultEvent: { toolReq: { toolName: "click" }, result: "ok" },
     UserMessageEvent: { message: "hi" },
@@ -88,5 +90,7 @@ describe("spec const+default discriminators", () => {
             host: "user_device",
         });
         expect((desktop as any).kind).toBe("desktop");
+        const android = serialization.AgentEnvironmentsItem.jsonOrThrow({ kind: "android", id: "phone" });
+        expect((android as any).kind).toBe("android");
     });
 });
