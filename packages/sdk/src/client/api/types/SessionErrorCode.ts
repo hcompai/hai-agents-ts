@@ -6,6 +6,7 @@ export const SessionErrorCode = {
     NoAnswer: "no_answer",
     AnswerValidation: "answer_validation",
     Timeout: "timeout",
+    InsufficientCredit: "insufficient_credit",
     Internal: "internal",
 } as const;
 export type SessionErrorCode = (typeof SessionErrorCode)[keyof typeof SessionErrorCode];

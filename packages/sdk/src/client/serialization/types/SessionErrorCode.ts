@@ -5,8 +5,21 @@ import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
 
 export const SessionErrorCode: core.serialization.Schema<serializers.SessionErrorCode.Raw, HaiAgents.SessionErrorCode> =
-    core.serialization.enum_(["environment_error", "no_answer", "answer_validation", "timeout", "internal"]);
+    core.serialization.enum_([
+        "environment_error",
+        "no_answer",
+        "answer_validation",
+        "timeout",
+        "insufficient_credit",
+        "internal",
+    ]);
 
 export declare namespace SessionErrorCode {
-    export type Raw = "environment_error" | "no_answer" | "answer_validation" | "timeout" | "internal";
+    export type Raw =
+        | "environment_error"
+        | "no_answer"
+        | "answer_validation"
+        | "timeout"
+        | "insufficient_credit"
+        | "internal";
 }
