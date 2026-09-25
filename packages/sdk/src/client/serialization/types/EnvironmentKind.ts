@@ -5,8 +5,8 @@ import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
 
 export const EnvironmentKind: core.serialization.Schema<serializers.EnvironmentKind.Raw, HaiAgents.EnvironmentKind> =
-    core.serialization.enum_(["web", "desktop", "android"]);
+    core.serialization.enum_(["web", "desktop", "android", "workstation"]);
 
 export declare namespace EnvironmentKind {
-    export type Raw = "web" | "desktop" | "android";
+    export type Raw = "web" | "desktop" | "android" | "workstation";
 }

@@ -9,11 +9,13 @@ import { AgentErrorEvent } from "./AgentErrorEvent.js";
 import { AgentEvent } from "./AgentEvent.js";
 import { AgentRunStatusChangeEvent } from "./AgentRunStatusChangeEvent.js";
 import { AgentStartedEvent } from "./AgentStartedEvent.js";
+import { AttachmentEvent } from "./AttachmentEvent.js";
 import { FileTransferEvent } from "./FileTransferEvent.js";
 import { LiveViewUrlEvent } from "./LiveViewUrlEvent.js";
 import { MetricsUpdateEvent } from "./MetricsUpdateEvent.js";
 import { RequestStartDispatchedEvent } from "./RequestStartDispatchedEvent.js";
 import { RequestStartEvent } from "./RequestStartEvent.js";
+import { RunnerSessionEvent } from "./RunnerSessionEvent.js";
 
 export const SessionEventZero: core.serialization.Schema<serializers.SessionEventZero.Raw, HaiAgents.SessionEventZero> =
     core.serialization
@@ -24,11 +26,13 @@ export const SessionEventZero: core.serialization.Schema<serializers.SessionEven
             AgentEvent: AgentEvent,
             AgentRunStatusChangeEvent: AgentRunStatusChangeEvent,
             AgentStartedEvent: AgentStartedEvent,
+            AttachmentEvent: AttachmentEvent,
             FileTransferEvent: FileTransferEvent,
             LiveViewUrlEvent: LiveViewUrlEvent,
             MetricsUpdateEvent: MetricsUpdateEvent,
             RequestStartDispatchedEvent: RequestStartDispatchedEvent,
             RequestStartEvent: RequestStartEvent,
+            RunnerSessionEvent: RunnerSessionEvent,
         })
         .transform<HaiAgents.SessionEventZero>({
             transform: (value) => value,
@@ -43,11 +47,13 @@ export declare namespace SessionEventZero {
         | SessionEventZero.AgentEvent
         | SessionEventZero.AgentRunStatusChangeEvent
         | SessionEventZero.AgentStartedEvent
+        | SessionEventZero.AttachmentEvent
         | SessionEventZero.FileTransferEvent
         | SessionEventZero.LiveViewUrlEvent
         | SessionEventZero.MetricsUpdateEvent
         | SessionEventZero.RequestStartDispatchedEvent
-        | SessionEventZero.RequestStartEvent;
+        | SessionEventZero.RequestStartEvent
+        | SessionEventZero.RunnerSessionEvent;
 
     export interface ActiveStateChangeEvent extends ActiveStateChangeEvent.Raw {
         type: "ActiveStateChangeEvent";
@@ -73,6 +79,10 @@ export declare namespace SessionEventZero {
         type: "AgentStartedEvent";
     }
 
+    export interface AttachmentEvent extends AttachmentEvent.Raw {
+        type: "AttachmentEvent";
+    }
+
     export interface FileTransferEvent extends FileTransferEvent.Raw {
         type: "FileTransferEvent";
     }
@@ -91,5 +101,9 @@ export declare namespace SessionEventZero {
 
     export interface RequestStartEvent extends RequestStartEvent.Raw {
         type: "RequestStartEvent";
+    }
+
+    export interface RunnerSessionEvent extends RunnerSessionEvent.Raw {
+        type: "RunnerSessionEvent";
     }
 }
