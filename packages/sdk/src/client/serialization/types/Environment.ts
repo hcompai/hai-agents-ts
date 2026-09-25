@@ -6,6 +6,7 @@ import type * as serializers from "../index.js";
 import { Android } from "./Android.js";
 import { Browser } from "./Browser.js";
 import { Desktop } from "./Desktop.js";
+import { Workstation } from "./Workstation.js";
 
 export const Environment: core.serialization.Schema<serializers.Environment.Raw, HaiAgents.Environment> =
     core.serialization
@@ -13,6 +14,7 @@ export const Environment: core.serialization.Schema<serializers.Environment.Raw,
             android: Android,
             desktop: Desktop,
             web: Browser,
+            workstation: Workstation,
         })
         .transform<HaiAgents.Environment>({
             transform: (value) => value,
@@ -20,7 +22,7 @@ export const Environment: core.serialization.Schema<serializers.Environment.Raw,
         });
 
 export declare namespace Environment {
-    export type Raw = Environment.Android | Environment.Desktop | Environment.Web;
+    export type Raw = Environment.Android | Environment.Desktop | Environment.Web | Environment.Workstation;
 
     export interface Android extends Android.Raw {
         kind: "android";
@@ -32,5 +34,9 @@ export declare namespace Environment {
 
     export interface Web extends Browser.Raw {
         kind: "web";
+    }
+
+    export interface Workstation extends Workstation.Raw {
+        kind: "workstation";
     }
 }

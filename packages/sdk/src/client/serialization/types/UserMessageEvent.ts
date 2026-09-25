@@ -3,6 +3,7 @@
 import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
+import { FileContent } from "./FileContent.js";
 import { UserMessageEventType } from "./UserMessageEventType.js";
 
 export const UserMessageEvent: core.serialization.ObjectSchema<
@@ -12,6 +13,7 @@ export const UserMessageEvent: core.serialization.ObjectSchema<
     type: UserMessageEventType.optional(),
     message: core.serialization.string(),
     images: core.serialization.list(core.serialization.string()).optional(),
+    files: core.serialization.list(FileContent).optional(),
     callerId: core.serialization.property("caller_id", core.serialization.string().optional()),
 }), { type: "user_message" });
 
@@ -20,6 +22,7 @@ export declare namespace UserMessageEvent {
         type?: UserMessageEventType.Raw | null;
         message: string;
         images?: string[] | null;
+        files?: FileContent.Raw[] | null;
         caller_id?: string | null;
     }
 }
