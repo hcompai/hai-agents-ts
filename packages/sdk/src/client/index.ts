@@ -13,6 +13,8 @@ export {
   TERMINAL_SESSION_STATUSES,
   assertRequestUnderLimit,
   attachToolDefinitions,
+  fileFromBlob,
+  fileFromPath,
   isSettledSessionStatus,
   isTerminalSessionStatus,
   runSession,

@@ -9,11 +9,13 @@ export type SessionEventZero =
     | HaiAgents.SessionEventZero.AgentEvent
     | HaiAgents.SessionEventZero.AgentRunStatusChangeEvent
     | HaiAgents.SessionEventZero.AgentStartedEvent
+    | HaiAgents.SessionEventZero.AttachmentEvent
     | HaiAgents.SessionEventZero.FileTransferEvent
     | HaiAgents.SessionEventZero.LiveViewUrlEvent
     | HaiAgents.SessionEventZero.MetricsUpdateEvent
     | HaiAgents.SessionEventZero.RequestStartDispatchedEvent
-    | HaiAgents.SessionEventZero.RequestStartEvent;
+    | HaiAgents.SessionEventZero.RequestStartEvent
+    | HaiAgents.SessionEventZero.RunnerSessionEvent;
 
 export namespace SessionEventZero {
     export interface ActiveStateChangeEvent extends HaiAgents.ActiveStateChangeEvent {
@@ -40,6 +42,10 @@ export namespace SessionEventZero {
         type: "AgentStartedEvent";
     }
 
+    export interface AttachmentEvent extends HaiAgents.AttachmentEvent {
+        type: "AttachmentEvent";
+    }
+
     export interface FileTransferEvent extends HaiAgents.FileTransferEvent {
         type: "FileTransferEvent";
     }
@@ -58,5 +64,9 @@ export namespace SessionEventZero {
 
     export interface RequestStartEvent extends HaiAgents.RequestStartEvent {
         type: "RequestStartEvent";
+    }
+
+    export interface RunnerSessionEvent extends HaiAgents.RunnerSessionEvent {
+        type: "RunnerSessionEvent";
     }
 }
