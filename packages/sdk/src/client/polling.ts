@@ -2,6 +2,7 @@ import type { HaiAgentsClient } from "./Client.js";
 import type {
   ActiveStateChangeData,
   CreateSessionRequest,
+  FileContent,
   GetSessionChangesRequest,
   SendSessionMessagesRequest,
   Session,
@@ -28,8 +29,8 @@ export const SETTLED_SESSION_STATUSES = [
   "idle",
 ] as const satisfies readonly TrajectoryStatus[];
 
-/** Server rejects request bodies above this size; enforced client-side for a clear early error. */
-export const MAX_REQUEST_BYTES = 5 * 1024 * 1024;
+/** The API gateway rejects request bodies above this size; enforced client-side for a clear early error. */
+export const MAX_REQUEST_BYTES = 10_000_000;
 
 export type SessionRunResult<TAnswer = SessionChanges["answer"]> = {
   id: string;
@@ -187,11 +188,41 @@ export const isSettledSessionStatus = (status: TrajectoryStatus): boolean =>
 export function assertRequestUnderLimit(payload: unknown, maxBytes: number = MAX_REQUEST_BYTES): void {
   const bytes = new TextEncoder().encode(JSON.stringify(payload ?? {})).length;
   if (bytes > maxBytes) {
-    const mb = (n: number) => (n / 1024 / 1024).toFixed(2);
+    const mb = (n: number) => (n / 1e6).toFixed(2);
     throw new Error(
-      `Request payload is ${mb(bytes)}MB, over the ${mb(maxBytes)}MB limit. Downscale images before sending.`,
+      `Request payload is ${mb(bytes)}MB, over the ${mb(maxBytes)}MB limit. Downscale images or attach smaller files.`,
     );
   }
+}
+
+/** A file to attach to a user message, from a `Blob` or a browser `File`. */
+export async function fileFromBlob(blob: Blob, name?: string): Promise<FileContent> {
+  const fileName = name ?? (blob as { name?: string }).name;
+  if (!fileName) {
+    throw new Error("fileFromBlob needs a name for a Blob that is not a File");
+  }
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  }
+  return { type: "base64", source: btoa(binary), name: fileName, mediaType: blob.type || undefined };
+}
+
+/**
+ * A file to attach to a user message, read from disk; the platform guesses `mediaType` from the name when omitted.
+ * Node's fs comes through `process.getBuiltinModule` so that a browser bundle pulls in no Node built-in.
+ */
+export async function fileFromPath(path: string, mediaType?: string): Promise<FileContent> {
+  const load = (globalThis as { process?: { getBuiltinModule?: (id: string) => unknown } }).process
+    ?.getBuiltinModule;
+  if (load === undefined) {
+    throw new Error("fileFromPath needs Node.js 20.16 or newer; use fileFromBlob in a browser");
+  }
+  const { readFile } = load("node:fs/promises") as typeof import("node:fs/promises");
+  const { basename } = load("node:path") as typeof import("node:path");
+  const bytes = await readFile(path);
+  return { type: "base64", source: bytes.toString("base64"), name: basename(path), mediaType };
 }
 
 /** Carry the tool definitions via the `agent.tools` override; the server applies it to referenced and inline agents alike. */
@@ -565,6 +596,7 @@ export class SessionHandle<TAnswer = SessionChanges["answer"]> {
   }
 
   sendMessage(message: SendSessionMessagesRequest["body"]): Promise<void> {
+    assertRequestUnderLimit(message);
     return this.client.sessions.sendSessionMessages({ id: this.id, body: message });
   }
 

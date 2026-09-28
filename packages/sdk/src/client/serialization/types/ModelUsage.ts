@@ -8,6 +8,7 @@ export const ModelUsage: core.serialization.ObjectSchema<serializers.ModelUsage.
     core.serialization.object({
         name: core.serialization.string(),
         inputTokens: core.serialization.property("input_tokens", core.serialization.number()),
+        cachedTokens: core.serialization.property("cached_tokens", core.serialization.number().optional()),
         outputTokens: core.serialization.property("output_tokens", core.serialization.number()),
         reasoningTokens: core.serialization.property("reasoning_tokens", core.serialization.number()),
     });
@@ -16,6 +17,7 @@ export declare namespace ModelUsage {
     export interface Raw {
         name: string;
         input_tokens: number;
+        cached_tokens?: number | null;
         output_tokens: number;
         reasoning_tokens: number;
     }

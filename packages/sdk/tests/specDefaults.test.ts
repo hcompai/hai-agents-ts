@@ -27,6 +27,7 @@ const FIELD_DROPPED_ENTIRELY = new Set([
     "Browser.kind",
     "Desktop.kind",
     "Android.kind",
+    "Workstation.kind",
 ]);
 
 const MINIMAL_PARSED: Record<string, object> = {
@@ -43,6 +44,7 @@ const MINIMAL_PARSED: Record<string, object> = {
     FlowEvent: { flow: "step", origin: "loop" },
     MessageEvent: { callerId: "agent" },
     CronTiming: { expression: "0 9 * * *", timezone: "Europe/Paris" },
+    Workstation: { id: "workstation" },
 };
 
 function specConstDefaults(): [string, string, string][] {
@@ -74,12 +76,15 @@ describe("spec const+default discriminators", () => {
         },
     );
 
-    it.each([...FIELD_DROPPED_ENTIRELY])("%s stays dropped until a regeneration restores it", (key) => {
-        const [schemaName, propName] = key.split(".");
-        const schema = (serialization as Record<string, any>)[schemaName];
-        const raw = schema.jsonOrThrow(MINIMAL_PARSED[schemaName] ?? {});
-        expect(raw[propName], `${key} is back in the serialized output; move it out of FIELD_DROPPED_ENTIRELY`).toBeUndefined();
-    });
+    it.each(specConstDefaults().filter(([s, p]) => FIELD_DROPPED_ENTIRELY.has(`${s}.${p}`)))(
+        "%s.%s stays dropped until a regeneration restores it",
+        (schemaName, propName) => {
+            const key = `${schemaName}.${propName}`;
+            const schema = (serialization as Record<string, any>)[schemaName];
+            const raw = schema.jsonOrThrow(MINIMAL_PARSED[schemaName] ?? {});
+            expect(raw[propName], `${key} is back in the serialized output; move it out of FIELD_DROPPED_ENTIRELY`).toBeUndefined();
+        },
+    );
 
     it("keeps kind on the wire through the inline-agent environments path", () => {
         const web = serialization.AgentEnvironmentsItem.jsonOrThrow({ kind: "web", id: "browser" });

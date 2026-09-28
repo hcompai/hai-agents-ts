@@ -9,6 +9,7 @@ export const ModelCost: core.serialization.ObjectSchema<serializers.ModelCost.Ra
         .object({
             name: core.serialization.string(),
             inputTokens: core.serialization.property("input_tokens", core.serialization.number()),
+            cachedTokens: core.serialization.property("cached_tokens", core.serialization.number().optional()),
             outputTokens: core.serialization.property("output_tokens", core.serialization.number()),
             reasoningTokens: core.serialization.property("reasoning_tokens", core.serialization.number()),
             inputCost: core.serialization.property("input_cost", core.serialization.number().optionalNullable()),
@@ -25,6 +26,7 @@ export declare namespace ModelCost {
     export interface Raw {
         name: string;
         input_tokens: number;
+        cached_tokens?: number | null;
         output_tokens: number;
         reasoning_tokens: number;
         input_cost?: (number | null | undefined) | null;

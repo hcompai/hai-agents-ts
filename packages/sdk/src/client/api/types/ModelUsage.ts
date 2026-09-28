@@ -8,6 +8,8 @@ export interface ModelUsage {
     name: string;
     /** Input tokens consumed. */
     inputTokens: number;
+    /** Input tokens served from the prompt cache, billed at a discount. */
+    cachedTokens?: number;
     /** Output tokens produced. */
     outputTokens: number;
     /** Reasoning tokens produced. */
