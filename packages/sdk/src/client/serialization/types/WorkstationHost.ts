@@ -5,8 +5,8 @@ import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
 
 export const WorkstationHost: core.serialization.Schema<serializers.WorkstationHost.Raw, HaiAgents.WorkstationHost> =
-    core.serialization.enum_(["cloud"]);
+    core.serialization.enum_(["user_device", "cloud"]);
 
 export declare namespace WorkstationHost {
-    export type Raw = "cloud";
+    export type Raw = "user_device" | "cloud";
 }

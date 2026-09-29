@@ -11,7 +11,7 @@ export interface UserMessageEvent {
     message: string;
     /** Optional images attached to the message, as base64 data URIs. */
     images?: string[];
-    /** Optional files attached to the message: up to 10, 7 MB in total. They are saved under /workspace/files on a workstation or code sandbox, and ~/Downloads on a cloud browser. */
+    /** Optional files attached to the message: up to 10, 7 MB in total. They are saved under files/ in the workspace of a workstation or code sandbox, and ~/Downloads on a cloud browser. */
     files?: HaiAgents.FileContent[];
     callerId?: string;
 }

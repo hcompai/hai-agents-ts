@@ -6,14 +6,16 @@ import type * as serializers from "../index.js";
 import { WorkstationHost } from "./WorkstationHost.js";
 
 export const Workstation: core.serialization.ObjectSchema<serializers.Workstation.Raw, HaiAgents.Workstation> =
-    core.serialization.withJsonDefaults(core.serialization.object({
+    core.serialization.object({
         id: core.serialization.string(),
         host: WorkstationHost.optional(),
-    }), { host: "cloud" });
+        sessionId: core.serialization.property("session_id", core.serialization.string().optionalNullable()),
+    });
 
 export declare namespace Workstation {
     export interface Raw {
         id: string;
         host?: WorkstationHost.Raw | null;
+        session_id?: (string | null | undefined) | null;
     }
 }

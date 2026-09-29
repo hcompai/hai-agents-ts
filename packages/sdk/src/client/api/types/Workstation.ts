@@ -8,6 +8,8 @@ import type * as HaiAgents from "../index.js";
 export interface Workstation {
     /** Catalog identifier for this environment. */
     id: string;
-    /** Where the workstation runs: on H Company infrastructure. */
+    /** Where the workstation runs: 'cloud' on H Company infrastructure, or 'user_device' on your own machine. */
     host?: HaiAgents.WorkstationHost;
+    /** Connect to an existing workstation session by id instead of starting a new one. */
+    sessionId?: string | null;
 }
