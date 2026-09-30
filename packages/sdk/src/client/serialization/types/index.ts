@@ -10,6 +10,7 @@ export * from "./AgentErrorData.js";
 export * from "./AgentErrorEvent.js";
 export * from "./AgentEvent.js";
 export * from "./AgentEventData.js";
+export * from "./AgentReasoningEffort.js";
 export * from "./AgentRunStatusChangeData.js";
 export * from "./AgentRunStatusChangeDataStatus.js";
 export * from "./AgentRunStatusChangeEvent.js";

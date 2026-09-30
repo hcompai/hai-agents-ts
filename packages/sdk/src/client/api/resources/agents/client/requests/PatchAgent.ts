@@ -13,6 +13,7 @@ export interface PatchAgent {
     description?: string | null;
     environments?: HaiAgents.PatchAgentEnvironmentsItem[] | null;
     model?: string | null;
+    reasoningEffort?: HaiAgents.PatchAgentReasoningEffort | null;
     instructions?: string | null;
     subagents?: HaiAgents.PatchAgentSubagentsItem[] | null;
     skills?: HaiAgents.PatchAgentSkillsItem[] | null;
