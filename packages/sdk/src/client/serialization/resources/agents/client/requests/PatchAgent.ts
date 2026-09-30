@@ -5,6 +5,7 @@ import * as core from "../../../../../core/index.js";
 import type * as serializers from "../../../../index.js";
 import { ToolDefinition } from "../../../../types/ToolDefinition.js";
 import { PatchAgentEnvironmentsItem } from "../../types/PatchAgentEnvironmentsItem.js";
+import { PatchAgentReasoningEffort } from "../../types/PatchAgentReasoningEffort.js";
 import { PatchAgentSkillsItem } from "../../types/PatchAgentSkillsItem.js";
 import { PatchAgentSubagentsItem } from "../../types/PatchAgentSubagentsItem.js";
 
@@ -15,6 +16,7 @@ export const PatchAgent: core.serialization.Schema<
     description: core.serialization.string().optionalNullable(),
     environments: core.serialization.list(PatchAgentEnvironmentsItem).optionalNullable(),
     model: core.serialization.string().optionalNullable(),
+    reasoningEffort: core.serialization.property("reasoning_effort", PatchAgentReasoningEffort.optionalNullable()),
     instructions: core.serialization.string().optionalNullable(),
     subagents: core.serialization.list(PatchAgentSubagentsItem).optionalNullable(),
     skills: core.serialization.list(PatchAgentSkillsItem).optionalNullable(),
@@ -30,6 +32,7 @@ export declare namespace PatchAgent {
         description?: (string | null | undefined) | null;
         environments?: (PatchAgentEnvironmentsItem.Raw[] | null | undefined) | null;
         model?: (string | null | undefined) | null;
+        reasoning_effort?: (PatchAgentReasoningEffort.Raw | null | undefined) | null;
         instructions?: (string | null | undefined) | null;
         subagents?: (PatchAgentSubagentsItem.Raw[] | null | undefined) | null;
         skills?: (PatchAgentSkillsItem.Raw[] | null | undefined) | null;

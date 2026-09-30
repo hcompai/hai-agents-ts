@@ -14,6 +14,8 @@ export interface Agent {
     environments: HaiAgents.AgentEnvironmentsItem[];
     /** Model that serves the agent. Defaults to the platform model if omitted. */
     model?: string | null;
+    /** How much the model thinks before each step: more is slower and more careful. Null uses the model's default. Models without effort levels only honor 'disabled'. */
+    reasoningEffort?: HaiAgents.AgentReasoningEffort | null;
     /** Instructions appended to the agent's system prompt to steer behavior. */
     instructions?: string | null;
     /** Agents this one can delegate to. Each entry is a registered agent's name or an inline definition. */

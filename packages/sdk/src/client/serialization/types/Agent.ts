@@ -4,6 +4,7 @@ import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import * as serializers from "../index.js";
 import { AgentEnvironmentsItem } from "./AgentEnvironmentsItem.js";
+import { AgentReasoningEffort } from "./AgentReasoningEffort.js";
 import { AgentSkillsItem } from "./AgentSkillsItem.js";
 import { ToolDefinition } from "./ToolDefinition.js";
 
@@ -13,6 +14,7 @@ export const Agent: core.serialization.ObjectSchema<serializers.Agent.Raw, HaiAg
         description: core.serialization.string(),
         environments: core.serialization.list(AgentEnvironmentsItem),
         model: core.serialization.string().optionalNullable(),
+        reasoningEffort: core.serialization.property("reasoning_effort", AgentReasoningEffort.optionalNullable()),
         instructions: core.serialization.string().optionalNullable(),
         subagents: core.serialization
             .list(core.serialization.lazy(() => serializers.AgentSubagentsItem))
@@ -32,6 +34,7 @@ export declare namespace Agent {
         description: string;
         environments: AgentEnvironmentsItem.Raw[];
         model?: (string | null | undefined) | null;
+        reasoning_effort?: (AgentReasoningEffort.Raw | null | undefined) | null;
         instructions?: (string | null | undefined) | null;
         subagents?: (serializers.AgentSubagentsItem.Raw[] | null | undefined) | null;
         skills?: (AgentSkillsItem.Raw[] | null | undefined) | null;
