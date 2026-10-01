@@ -127,6 +127,18 @@ describe("waitForSession tool dispatch", () => {
     expect(result.status).toBe("completed");
   });
 
+  it("stops on awaiting_tool_results when no tools were given", async () => {
+    const { client, posts } = fakeClient([
+      { status: "awaiting_tool_results", changes: { newEvents: [awaitingEvent([{ id: "c1", tool_name: "add" }])] } },
+      { status: "completed" },
+    ]);
+
+    const result = await waitForSession(client, { id: "s1", waitForSeconds: 0 });
+
+    expect(result.status).toBe("awaiting_tool_results");
+    expect(posts).toEqual([]);
+  });
+
   it("throws on a non-409 post failure", async () => {
     const { client } = fakeClient(
       [
