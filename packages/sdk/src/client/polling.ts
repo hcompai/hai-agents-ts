@@ -353,6 +353,7 @@ async function recoverPendingToolCalls(client: HaiAgentsClient, id: string): Pro
 
 /**
  * Poll a session until it settles: a terminal status, or idle awaiting the next message.
+ * Without `tools`, a session awaiting tool results also ends the wait, since nothing here will answer it.
  *
  * Status is read from `/status` (authoritative); `/changes` only feeds events
  * and the final answer, since it 204s whenever no new events exist past `fromIndex` --
@@ -409,7 +410,7 @@ export async function waitForSession<TAnswer = SessionChanges["answer"]>(
 
     const statusResponse = await client.sessions.getSessionStatus({ id });
     const status = statusResponse.status;
-    if (isSettledSessionStatus(status)) {
+    if (isSettledSessionStatus(status) || ((status as string) === "awaiting_tool_results" && toolsByName.size === 0)) {
       if (includeEvents) {
         for (;;) {
           if (deadline !== undefined && Date.now() >= deadline) {
