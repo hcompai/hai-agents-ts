@@ -46,10 +46,11 @@ export class AgentsClient {
         request: HaiAgents.ListAgentsRequest = {},
         requestOptions?: AgentsClient.RequestOptions,
     ): Promise<core.WithRawResponse<HaiAgents.PageAgent>> {
-        const { agentName, search, page, size, sort } = request;
+        const { agentName, search, reserved, page, size, sort } = request;
         const _queryParams: Record<string, unknown> = {
             agent_name: agentName,
             search,
+            reserved,
             page,
             size,
             sort: sort !== undefined ? toJson(sort) : undefined,

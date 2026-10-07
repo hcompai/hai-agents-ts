@@ -11,6 +11,8 @@ export interface ListAgentsRequest {
     agentName?: string | null;
     /** Case-insensitive match on agent name or description. */
     search?: string | null;
+    /** ``true``: reserved ``h/`` agents only. ``false``: org agents only. */
+    reserved?: boolean | null;
     /** Page number (1-based) */
     page?: number;
     /** Number of items per page */
