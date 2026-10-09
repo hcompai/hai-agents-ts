@@ -10,6 +10,7 @@ export const Workstation: core.serialization.ObjectSchema<serializers.Workstatio
         id: core.serialization.string(),
         host: WorkstationHost.optional(),
         sessionId: core.serialization.property("session_id", core.serialization.string().optionalNullable()),
+        lazy: core.serialization.boolean().optional(),
     });
 
 export declare namespace Workstation {
@@ -17,5 +18,6 @@ export declare namespace Workstation {
         id: string;
         host?: WorkstationHost.Raw | null;
         session_id?: (string | null | undefined) | null;
+        lazy?: boolean | null;
     }
 }
