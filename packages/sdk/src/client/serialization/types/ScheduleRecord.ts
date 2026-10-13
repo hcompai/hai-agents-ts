@@ -15,6 +15,8 @@ export const ScheduleRecord: core.serialization.ObjectSchema<serializers.Schedul
         sessionRequest: core.serialization.property("session_request", SessionRequest),
         paused: core.serialization.boolean(),
         pauseNote: core.serialization.property("pause_note", core.serialization.string().nullable()),
+        repeats: core.serialization.number().nullable(),
+        sessionsCreated: core.serialization.property("sessions_created", core.serialization.number()),
         nextRunTimes: core.serialization.property("next_run_times", core.serialization.list(core.serialization.date())),
         lastRunAt: core.serialization.property("last_run_at", core.serialization.date().nullable()),
         createdAt: core.serialization.property("created_at", core.serialization.date()),
@@ -30,6 +32,8 @@ export declare namespace ScheduleRecord {
         session_request: SessionRequest.Raw;
         paused: boolean;
         pause_note?: string | null;
+        repeats?: number | null;
+        sessions_created: number;
         next_run_times: string[];
         last_run_at?: string | null;
         created_at: string;

@@ -12,6 +12,7 @@ export const CreateSchedule: core.serialization.Schema<serializers.CreateSchedul
         description: core.serialization.string().optionalNullable(),
         timing: CronTiming,
         sessionRequest: core.serialization.property("session_request", SessionRequest),
+        repeats: core.serialization.number().optionalNullable(),
     });
 
 export declare namespace CreateSchedule {
@@ -20,5 +21,6 @@ export declare namespace CreateSchedule {
         description?: (string | null | undefined) | null;
         timing: CronTiming.Raw;
         session_request: SessionRequest.Raw;
+        repeats?: (number | null | undefined) | null;
     }
 }

@@ -14,6 +14,7 @@ export const UpdateSchedule: core.serialization.Schema<
     description: core.serialization.string().optionalNullable(),
     timing: CronTiming.optionalNullable(),
     sessionRequest: core.serialization.property("session_request", SessionRequest.optionalNullable()),
+    repeats: core.serialization.number().optionalNullable(),
 });
 
 export declare namespace UpdateSchedule {
@@ -22,5 +23,6 @@ export declare namespace UpdateSchedule {
         description?: (string | null | undefined) | null;
         timing?: (CronTiming.Raw | null | undefined) | null;
         session_request?: (SessionRequest.Raw | null | undefined) | null;
+        repeats?: (number | null | undefined) | null;
     }
 }
