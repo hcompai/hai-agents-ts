@@ -21,4 +21,6 @@ export interface CreateSchedule {
     timing: HaiAgents.CronTiming;
     /** Template used to create each scheduled session; re-resolved on every fire. */
     sessionRequest: HaiAgents.SessionRequest;
+    /** How many sessions to create before the schedule becomes inactive. Omit to run until paused or deleted. */
+    repeats?: number | null;
 }

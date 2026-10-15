@@ -14,4 +14,5 @@ export interface UpdateSchedule {
     description?: string | null;
     timing?: HaiAgents.CronTiming | null;
     sessionRequest?: HaiAgents.SessionRequest | null;
+    repeats?: number | null;
 }
