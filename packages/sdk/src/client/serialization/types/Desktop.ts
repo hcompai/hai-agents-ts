@@ -11,6 +11,11 @@ export const Desktop: core.serialization.ObjectSchema<serializers.Desktop.Raw, H
         host: DesktopHost,
         sessionId: core.serialization.property("session_id", core.serialization.string().optionalNullable()),
         lazy: core.serialization.boolean().optional(),
+        settleS: core.serialization.property("settle_s", core.serialization.number().optional()),
+        screenshotMaxWidth: core.serialization.property(
+            "screenshot_max_width",
+            core.serialization.number().optionalNullable(),
+        ),
     });
 
 export declare namespace Desktop {
@@ -19,5 +24,7 @@ export declare namespace Desktop {
         host: DesktopHost.Raw;
         session_id?: (string | null | undefined) | null;
         lazy?: boolean | null;
+        settle_s?: number | null;
+        screenshot_max_width?: (number | null | undefined) | null;
     }
 }

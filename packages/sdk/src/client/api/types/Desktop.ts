@@ -14,4 +14,8 @@ export interface Desktop {
     sessionId?: string | null;
     /** Provision on the agent's first use instead of at startup. Skips the initial observation. */
     lazy?: boolean;
+    /** Seconds to wait after each input action. */
+    settleS?: number;
+    /** Maximum screenshot width in pixels. Null uses the host default; images are never upscaled. */
+    screenshotMaxWidth?: number | null;
 }

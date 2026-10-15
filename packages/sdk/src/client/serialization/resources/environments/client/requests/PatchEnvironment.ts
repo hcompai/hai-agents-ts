@@ -17,6 +17,7 @@ export const PatchEnvironment: core.serialization.Schema<
     sessionId: core.serialization.property("session_id", core.serialization.string().optionalNullable()),
     mode: PatchEnvironmentMode.optionalNullable(),
     lazy: core.serialization.boolean().optionalNullable(),
+    settleS: core.serialization.property("settle_s", core.serialization.number().optionalNullable()),
     vaultId: core.serialization.property("vault_id", core.serialization.string().optionalNullable()),
     browserProfileId: core.serialization.property("browser_profile_id", core.serialization.string().optionalNullable()),
     useDefaultBrowserProfile: core.serialization.property(
@@ -28,6 +29,10 @@ export const PatchEnvironment: core.serialization.Schema<
         core.serialization.boolean().optionalNullable(),
     ),
     network: BrowserNetwork.optionalNullable(),
+    screenshotMaxWidth: core.serialization.property(
+        "screenshot_max_width",
+        core.serialization.number().optionalNullable(),
+    ),
     image: core.serialization.string().optionalNullable(),
 });
 
@@ -39,11 +44,13 @@ export declare namespace PatchEnvironment {
         session_id?: (string | null | undefined) | null;
         mode?: (PatchEnvironmentMode.Raw | null | undefined) | null;
         lazy?: (boolean | null | undefined) | null;
+        settle_s?: (number | null | undefined) | null;
         vault_id?: (string | null | undefined) | null;
         browser_profile_id?: (string | null | undefined) | null;
         use_default_browser_profile?: (boolean | null | undefined) | null;
         persist_browser_profile?: (boolean | null | undefined) | null;
         network?: (BrowserNetwork.Raw | null | undefined) | null;
+        screenshot_max_width?: (number | null | undefined) | null;
         image?: (string | null | undefined) | null;
     }
 }

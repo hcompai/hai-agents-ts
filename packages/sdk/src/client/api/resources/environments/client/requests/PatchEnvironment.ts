@@ -16,10 +16,12 @@ export interface PatchEnvironment {
     sessionId?: string | null;
     mode?: HaiAgents.PatchEnvironmentMode | null;
     lazy?: boolean | null;
+    settleS?: number | null;
     vaultId?: string | null;
     browserProfileId?: string | null;
     useDefaultBrowserProfile?: boolean | null;
     persistBrowserProfile?: boolean | null;
     network?: HaiAgents.BrowserNetwork | null;
+    screenshotMaxWidth?: number | null;
     image?: string | null;
 }

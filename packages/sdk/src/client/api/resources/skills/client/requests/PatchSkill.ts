@@ -12,4 +12,7 @@ export interface PatchSkill {
     body?: string | null;
     source?: string | null;
     urlPattern?: string | null;
+    compatibility?: string | null;
+    files?: Record<string, string | null> | null;
+    executableFiles?: string[] | null;
 }
