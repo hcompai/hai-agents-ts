@@ -12,6 +12,6 @@ export interface Workstation {
     host?: HaiAgents.WorkstationHost;
     /** Connect to an existing workstation session by id instead of starting a new one. */
     sessionId?: string | null;
-    /** Provision on the agent's first use instead of at startup. Cloud workstations only. */
+    /** Start on the agent's first use instead of at startup. Skips the initial observation. A cloud workstation is provisioned on first use; a user_device one is not probed until then. */
     lazy?: boolean;
 }

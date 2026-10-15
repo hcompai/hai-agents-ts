@@ -20,6 +20,8 @@ export interface Browser {
     mode?: HaiAgents.BrowserMode;
     /** Provision on the agent's first use instead of at startup. Skips the initial observation. */
     lazy?: boolean;
+    /** Seconds to wait after each page action. */
+    settleS?: number;
     /** Id of a vault config to bind to this browser, letting the agent sign in to sites with secrets resolved from the vault. The vault must belong to the caller's organization. Only supported on cloud-hosted browsers. Omit to run without secret access. */
     vaultId?: string | null;
     /** Id of a browser profile to load into this browser, restoring saved cookies and storage state from a prior session. The profile must belong to the caller's organization. Only supported on cloud-hosted browsers. Omit to run with a fresh profile. */

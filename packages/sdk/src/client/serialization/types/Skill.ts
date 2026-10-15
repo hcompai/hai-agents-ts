@@ -11,6 +11,12 @@ export const Skill: core.serialization.ObjectSchema<serializers.Skill.Raw, HaiAg
         body: core.serialization.string(),
         source: core.serialization.string().optionalNullable(),
         urlPattern: core.serialization.property("url_pattern", core.serialization.string().optionalNullable()),
+        compatibility: core.serialization.string().optionalNullable(),
+        files: core.serialization.record(core.serialization.string(), core.serialization.string()).optional(),
+        executableFiles: core.serialization.property(
+            "executable_files",
+            core.serialization.list(core.serialization.string()).optional(),
+        ),
     },
 );
 
@@ -21,5 +27,8 @@ export declare namespace Skill {
         body: string;
         source?: (string | null | undefined) | null;
         url_pattern?: (string | null | undefined) | null;
+        compatibility?: (string | null | undefined) | null;
+        files?: Record<string, string> | null;
+        executable_files?: string[] | null;
     }
 }
