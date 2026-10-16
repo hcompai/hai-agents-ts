@@ -8,20 +8,20 @@ export const UpdateWebhook: core.serialization.Schema<
     serializers.UpdateWebhook.Raw,
     Omit<HaiAgents.UpdateWebhook, "webhookId">
 > = core.serialization.object({
-    url: core.serialization.string().optionalNullable(),
+    url: core.serialization.string().optional(),
     enabledEvents: core.serialization.property(
         "enabled_events",
-        core.serialization.list(core.serialization.string()).optionalNullable(),
+        core.serialization.list(core.serialization.string()).optional(),
     ),
     description: core.serialization.string().optionalNullable(),
-    disabled: core.serialization.boolean().optionalNullable(),
+    disabled: core.serialization.boolean().optional(),
 });
 
 export declare namespace UpdateWebhook {
     export interface Raw {
-        url?: (string | null | undefined) | null;
-        enabled_events?: (string[] | null | undefined) | null;
+        url?: string | null;
+        enabled_events?: string[] | null;
         description?: (string | null | undefined) | null;
-        disabled?: (boolean | null | undefined) | null;
+        disabled?: boolean | null;
     }
 }

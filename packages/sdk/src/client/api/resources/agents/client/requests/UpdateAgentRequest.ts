@@ -15,5 +15,9 @@ import type * as HaiAgents from "../../../../index.js";
  */
 export interface UpdateAgentRequest {
     agentName: string;
+    /** Optional note stored on the revision this write creates, such as why the change was made. */
+    message?: string | null;
+    /** The ``ETag`` of the revision this write is based on, e.g. ``"3"``. If the resource has moved past it the write is refused with 412. Omit it, or send ``*``, to write unconditionally. */
+    ifMatch?: string | null;
     body: HaiAgents.Agent;
 }

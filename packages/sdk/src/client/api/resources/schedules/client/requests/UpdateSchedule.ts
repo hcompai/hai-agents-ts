@@ -10,9 +10,9 @@ import type * as HaiAgents from "../../../../index.js";
  */
 export interface UpdateSchedule {
     scheduleId: string;
-    name?: string | null;
+    name?: string;
     description?: string | null;
-    timing?: HaiAgents.CronTiming | null;
-    sessionRequest?: HaiAgents.SessionRequest | null;
+    timing?: HaiAgents.CronTiming;
+    sessionRequest?: HaiAgents.SessionRequest;
     repeats?: number | null;
 }

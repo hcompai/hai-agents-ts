@@ -2,7 +2,7 @@
 
 import type { BaseClientOptions, BaseRequestOptions } from "../../../../BaseClient.js";
 import { type NormalizedClientOptionsWithAuth, normalizeClientOptionsWithAuth } from "../../../../BaseClient.js";
-import { mergeHeaders } from "../../../../core/headers.js";
+import { mergeHeaders, mergeOnlyDefinedHeaders } from "../../../../core/headers.js";
 import * as core from "../../../../core/index.js";
 import { toJson } from "../../../../core/json.js";
 import * as environments from "../../../../environments.js";
@@ -120,31 +120,37 @@ export class AgentsClient {
     }
 
     /**
-     * Create an agent..
+     * Create an agent at revision 1.
      *
-     * @param {HaiAgents.Agent} request
+     * @param {HaiAgents.CreateAgentRequest} request
      * @param {AgentsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
      * @throws {@link HaiAgents.UnprocessableEntityError}
      *
      * @example
      *     await client.agents.createAgent({
-     *         name: "name",
-     *         description: "description",
-     *         environments: ["environments"]
+     *         body: {
+     *             name: "name",
+     *             description: "description",
+     *             environments: ["environments"]
+     *         }
      *     })
      */
     public createAgent(
-        request: HaiAgents.Agent,
+        request: HaiAgents.CreateAgentRequest,
         requestOptions?: AgentsClient.RequestOptions,
     ): core.HttpResponsePromise<HaiAgents.Agent> {
         return core.HttpResponsePromise.fromPromise(this.__createAgent(request, requestOptions));
     }
 
     private async __createAgent(
-        request: HaiAgents.Agent,
+        request: HaiAgents.CreateAgentRequest,
         requestOptions?: AgentsClient.RequestOptions,
     ): Promise<core.WithRawResponse<HaiAgents.Agent>> {
+        const { message, body: _body } = request;
+        const _queryParams: Record<string, unknown> = {
+            message,
+        };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
             _authRequest.headers,
@@ -161,9 +167,13 @@ export class AgentsClient {
             method: "POST",
             headers: _headers,
             contentType: "application/json",
-            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            queryString: core.url
+                .queryBuilder()
+                .addMany(_queryParams)
+                .mergeAdditional(requestOptions?.queryParams)
+                .build(),
             requestType: "json",
-            body: serializers.Agent.jsonOrThrow(request, {
+            body: serializers.Agent.jsonOrThrow(_body, {
                 unrecognizedObjectKeys: "passthrough",
                 allowUnrecognizedUnionMembers: true,
                 allowUnrecognizedEnumValues: true,
@@ -214,7 +224,112 @@ export class AgentsClient {
     }
 
     /**
-     * Fetch by identifier; 404 if not visible. ``resolve=true`` materialises spec leaves.
+     * List an agent's revisions without their specs, newest first. Read one with ``?revision=N``.
+     *
+     * Unauthenticated callers can list reserved ``h/`` agents only.
+     *
+     * @param {HaiAgents.ListAgentRevisionsRequest} request
+     * @param {AgentsClient.RequestOptions} requestOptions - Request-specific configuration.
+     *
+     * @throws {@link HaiAgents.UnprocessableEntityError}
+     *
+     * @example
+     *     await client.agents.listAgentRevisions({
+     *         agentName: "agent_name"
+     *     })
+     */
+    public listAgentRevisions(
+        request: HaiAgents.ListAgentRevisionsRequest,
+        requestOptions?: AgentsClient.RequestOptions,
+    ): core.HttpResponsePromise<HaiAgents.PageAgentRevisionRecord> {
+        return core.HttpResponsePromise.fromPromise(this.__listAgentRevisions(request, requestOptions));
+    }
+
+    private async __listAgentRevisions(
+        request: HaiAgents.ListAgentRevisionsRequest,
+        requestOptions?: AgentsClient.RequestOptions,
+    ): Promise<core.WithRawResponse<HaiAgents.PageAgentRevisionRecord>> {
+        const { agentName, page, size, sort } = request;
+        const _queryParams: Record<string, unknown> = {
+            page,
+            size,
+            sort: sort !== undefined ? toJson(sort) : undefined,
+        };
+        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
+        const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
+            _authRequest.headers,
+            this._options?.headers,
+            requestOptions?.headers,
+        );
+        const _response = await core.fetcher({
+            url: core.url.join(
+                (await core.Supplier.get(this._options.baseUrl)) ??
+                    (await core.Supplier.get(this._options.environment)) ??
+                    environments.HaiAgentsEnvironment.Eu,
+                `api/v2/agents/${core.url.encodePathParam(agentName)}/revisions`,
+            ),
+            method: "GET",
+            headers: _headers,
+            queryString: core.url
+                .queryBuilder()
+                .addMany(_queryParams)
+                .mergeAdditional(requestOptions?.queryParams)
+                .build(),
+            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
+            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
+            abortSignal: requestOptions?.abortSignal,
+            fetchFn: this._options?.fetch,
+            logging: this._options.logging,
+        });
+        if (_response.ok) {
+            return {
+                data: serializers.PageAgentRevisionRecord.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
+                rawResponse: _response.rawResponse,
+            };
+        }
+
+        if (_response.error.reason === "status-code") {
+            switch (_response.error.statusCode) {
+                case 422:
+                    throw new HaiAgents.UnprocessableEntityError(
+                        serializers.HttpValidationError.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                default:
+                    throw new errors.HaiAgentsError({
+                        statusCode: _response.error.statusCode,
+                        body: _response.error.body,
+                        rawResponse: _response.rawResponse,
+                    });
+            }
+        }
+
+        return handleNonStatusCodeError(
+            _response.error,
+            _response.rawResponse,
+            "GET",
+            "/api/v2/agents/{agent_name}/revisions",
+        );
+    }
+
+    /**
+     * Fetch by name at its latest revision, or at ``revision``; 404 if not visible or no such revision.
+     *
+     * The stored spec carries its revision as ``ETag``. A resolved spec does not, since it also
+     * reflects the current environments, skills, and subagents it names. ``resolve=true``
+     * materialises spec leaves.
      *
      * @param {HaiAgents.GetAgentRequest} request
      * @param {AgentsClient.RequestOptions} requestOptions - Request-specific configuration.
@@ -237,8 +352,9 @@ export class AgentsClient {
         request: HaiAgents.GetAgentRequest,
         requestOptions?: AgentsClient.RequestOptions,
     ): Promise<core.WithRawResponse<HaiAgents.Agent>> {
-        const { agentName, resolve } = request;
+        const { agentName, revision, resolve } = request;
         const _queryParams: Record<string, unknown> = {
+            revision,
             resolve,
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
@@ -306,11 +422,14 @@ export class AgentsClient {
     }
 
     /**
-     * Replace ``spec``. ``spec.name`` must match the URL identifier; renames are not supported.
+     * Replace ``spec`` as a new revision. ``spec.name`` must match the URL identifier; renames are not supported.
+     *
+     * Sending the spec that is already current changes nothing and returns the current revision.
      *
      * @param {HaiAgents.UpdateAgentRequest} request
      * @param {AgentsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link HaiAgents.PreconditionFailedError}
      * @throws {@link HaiAgents.UnprocessableEntityError}
      *
      * @example
@@ -334,11 +453,15 @@ export class AgentsClient {
         request: HaiAgents.UpdateAgentRequest,
         requestOptions?: AgentsClient.RequestOptions,
     ): Promise<core.WithRawResponse<HaiAgents.Agent>> {
-        const { agentName, body: _body } = request;
+        const { agentName, message, ifMatch, body: _body } = request;
+        const _queryParams: Record<string, unknown> = {
+            message,
+        };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
             _authRequest.headers,
             this._options?.headers,
+            mergeOnlyDefinedHeaders({ "If-Match": ifMatch ?? undefined }),
             requestOptions?.headers,
         );
         const _response = await core.fetcher({
@@ -351,7 +474,11 @@ export class AgentsClient {
             method: "PUT",
             headers: _headers,
             contentType: "application/json",
-            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            queryString: core.url
+                .queryBuilder()
+                .addMany(_queryParams)
+                .mergeAdditional(requestOptions?.queryParams)
+                .build(),
             requestType: "json",
             body: serializers.Agent.jsonOrThrow(_body, {
                 unrecognizedObjectKeys: "passthrough",
@@ -380,6 +507,8 @@ export class AgentsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 412:
+                    throw new HaiAgents.PreconditionFailedError(_response.error.body, _response.rawResponse);
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
                         serializers.HttpValidationError.parseOrThrow(_response.error.body, {
@@ -404,11 +533,12 @@ export class AgentsClient {
     }
 
     /**
-     * Delete by identifier. Reserved rows: H employee only.
+     * Delete by identifier, with its revisions. Reserved rows: H employee only.
      *
      * @param {HaiAgents.DeleteAgentRequest} request
      * @param {AgentsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link HaiAgents.PreconditionFailedError}
      * @throws {@link HaiAgents.UnprocessableEntityError}
      *
      * @example
@@ -427,11 +557,12 @@ export class AgentsClient {
         request: HaiAgents.DeleteAgentRequest,
         requestOptions?: AgentsClient.RequestOptions,
     ): Promise<core.WithRawResponse<void>> {
-        const { agentName } = request;
+        const { agentName, ifMatch } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
             _authRequest.headers,
             this._options?.headers,
+            mergeOnlyDefinedHeaders({ "If-Match": ifMatch ?? undefined }),
             requestOptions?.headers,
         );
         const _response = await core.fetcher({
@@ -456,6 +587,8 @@ export class AgentsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 412:
+                    throw new HaiAgents.PreconditionFailedError(_response.error.body, _response.rawResponse);
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
                         serializers.HttpValidationError.parseOrThrow(_response.error.body, {
@@ -485,11 +618,12 @@ export class AgentsClient {
     }
 
     /**
-     * Partially update an agent spec; only provided fields change.
+     * Partially update an agent spec as a new revision; only provided fields change.
      *
      * @param {HaiAgents.PatchAgent} request
      * @param {AgentsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link HaiAgents.PreconditionFailedError}
      * @throws {@link HaiAgents.UnprocessableEntityError}
      *
      * @example
@@ -508,11 +642,15 @@ export class AgentsClient {
         request: HaiAgents.PatchAgent,
         requestOptions?: AgentsClient.RequestOptions,
     ): Promise<core.WithRawResponse<HaiAgents.Agent>> {
-        const { agentName, ..._body } = request;
+        const { agentName, message, ifMatch, ..._body } = request;
+        const _queryParams: Record<string, unknown> = {
+            message,
+        };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
             _authRequest.headers,
             this._options?.headers,
+            mergeOnlyDefinedHeaders({ "If-Match": ifMatch ?? undefined }),
             requestOptions?.headers,
         );
         const _response = await core.fetcher({
@@ -525,7 +663,11 @@ export class AgentsClient {
             method: "PATCH",
             headers: _headers,
             contentType: "application/json",
-            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            queryString: core.url
+                .queryBuilder()
+                .addMany(_queryParams)
+                .mergeAdditional(requestOptions?.queryParams)
+                .build(),
             requestType: "json",
             body: serializers.PatchAgent.jsonOrThrow(_body, {
                 unrecognizedObjectKeys: "passthrough",
@@ -554,6 +696,8 @@ export class AgentsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 412:
+                    throw new HaiAgents.PreconditionFailedError(_response.error.body, _response.rawResponse);
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
                         serializers.HttpValidationError.parseOrThrow(_response.error.body, {

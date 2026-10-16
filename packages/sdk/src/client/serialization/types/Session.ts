@@ -11,6 +11,7 @@ export const Session: core.serialization.ObjectSchema<serializers.Session.Raw, H
         id: core.serialization.string(),
         request: SessionRequest,
         status: SessionStatus,
+        agentRevision: core.serialization.property("agent_revision", core.serialization.number().optionalNullable()),
         agentViewUrl: core.serialization.property("agent_view_url", core.serialization.string().optionalNullable()),
         latestAnswer: core.serialization.property("latest_answer", core.serialization.unknown().optional()),
         createdAt: core.serialization.property("created_at", core.serialization.date()),
@@ -23,6 +24,7 @@ export declare namespace Session {
         id: string;
         request: SessionRequest.Raw;
         status: SessionStatus.Raw;
+        agent_revision?: (number | null | undefined) | null;
         agent_view_url?: (string | null | undefined) | null;
         latest_answer?: unknown | null;
         created_at: string;

@@ -1,3 +1,4 @@
+export * from "./ListAgentRevisionsRequestSortItem.js";
 export * from "./ListAgentsRequestSortItem.js";
 export * from "./PatchAgentEnvironmentsItem.js";
 export * from "./PatchAgentReasoningEffort.js";

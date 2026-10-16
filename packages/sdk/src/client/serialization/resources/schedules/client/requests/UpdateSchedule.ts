@@ -10,19 +10,19 @@ export const UpdateSchedule: core.serialization.Schema<
     serializers.UpdateSchedule.Raw,
     Omit<HaiAgents.UpdateSchedule, "scheduleId">
 > = core.serialization.object({
-    name: core.serialization.string().optionalNullable(),
+    name: core.serialization.string().optional(),
     description: core.serialization.string().optionalNullable(),
-    timing: CronTiming.optionalNullable(),
-    sessionRequest: core.serialization.property("session_request", SessionRequest.optionalNullable()),
+    timing: CronTiming.optional(),
+    sessionRequest: core.serialization.property("session_request", SessionRequest.optional()),
     repeats: core.serialization.number().optionalNullable(),
 });
 
 export declare namespace UpdateSchedule {
     export interface Raw {
-        name?: (string | null | undefined) | null;
+        name?: string | null;
         description?: (string | null | undefined) | null;
-        timing?: (CronTiming.Raw | null | undefined) | null;
-        session_request?: (SessionRequest.Raw | null | undefined) | null;
+        timing?: CronTiming.Raw | null;
+        session_request?: SessionRequest.Raw | null;
         repeats?: (number | null | undefined) | null;
     }
 }

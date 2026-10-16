@@ -8,6 +8,8 @@
  */
 export interface GetAgentRequest {
     agentName: string;
+    /** Read this revision instead of the latest. References to an agent elsewhere, such as a session's ``agent``, pin a revision as ``name:N`` instead. */
+    revision?: number | null;
     /** Materialise string environment/skill/subagent leaves into full specs. */
     resolve?: boolean;
 }
