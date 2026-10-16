@@ -8,4 +8,6 @@
  */
 export interface DeleteAgentRequest {
     agentName: string;
+    /** The ``ETag`` of the revision this write is based on, e.g. ``"3"``. If the resource has moved past it the write is refused with 412. Omit it, or send ``*``, to write unconditionally. */
+    ifMatch?: string | null;
 }

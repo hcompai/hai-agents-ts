@@ -8,28 +8,26 @@ export const PatchSkill: core.serialization.Schema<
     serializers.PatchSkill.Raw,
     Omit<HaiAgents.PatchSkill, "name">
 > = core.serialization.object({
-    description: core.serialization.string().optionalNullable(),
-    body: core.serialization.string().optionalNullable(),
+    description: core.serialization.string().optional(),
+    body: core.serialization.string().optional(),
     source: core.serialization.string().optionalNullable(),
     urlPattern: core.serialization.property("url_pattern", core.serialization.string().optionalNullable()),
     compatibility: core.serialization.string().optionalNullable(),
-    files: core.serialization
-        .record(core.serialization.string(), core.serialization.string().nullable())
-        .optionalNullable(),
+    files: core.serialization.record(core.serialization.string(), core.serialization.string()).optional(),
     executableFiles: core.serialization.property(
         "executable_files",
-        core.serialization.list(core.serialization.string()).optionalNullable(),
+        core.serialization.list(core.serialization.string()).optional(),
     ),
 });
 
 export declare namespace PatchSkill {
     export interface Raw {
-        description?: (string | null | undefined) | null;
-        body?: (string | null | undefined) | null;
+        description?: string | null;
+        body?: string | null;
         source?: (string | null | undefined) | null;
         url_pattern?: (string | null | undefined) | null;
         compatibility?: (string | null | undefined) | null;
-        files?: (Record<string, string | null> | null | undefined) | null;
-        executable_files?: (string[] | null | undefined) | null;
+        files?: Record<string, string> | null;
+        executable_files?: string[] | null;
     }
 }

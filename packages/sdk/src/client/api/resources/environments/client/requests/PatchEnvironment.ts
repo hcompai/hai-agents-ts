@@ -10,17 +10,17 @@ import type * as HaiAgents from "../../../../index.js";
  */
 export interface PatchEnvironment {
     id: string;
-    host?: HaiAgents.PatchEnvironmentHost | null;
-    startUrl?: string | null;
-    headless?: boolean | null;
+    host?: HaiAgents.PatchEnvironmentHost;
+    startUrl?: string;
+    headless?: boolean;
     sessionId?: string | null;
-    mode?: HaiAgents.PatchEnvironmentMode | null;
-    lazy?: boolean | null;
-    settleS?: number | null;
+    mode?: HaiAgents.PatchEnvironmentMode;
+    lazy?: boolean;
+    settleS?: number;
     vaultId?: string | null;
     browserProfileId?: string | null;
-    useDefaultBrowserProfile?: boolean | null;
-    persistBrowserProfile?: boolean | null;
+    useDefaultBrowserProfile?: boolean;
+    persistBrowserProfile?: boolean;
     network?: HaiAgents.BrowserNetwork | null;
     screenshotMaxWidth?: number | null;
     image?: string | null;

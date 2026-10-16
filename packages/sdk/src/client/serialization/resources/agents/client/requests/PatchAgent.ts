@@ -11,10 +11,10 @@ import { PatchAgentSubagentsItem } from "../../types/PatchAgentSubagentsItem.js"
 
 export const PatchAgent: core.serialization.Schema<
     serializers.PatchAgent.Raw,
-    Omit<HaiAgents.PatchAgent, "agentName">
+    Omit<HaiAgents.PatchAgent, "agentName" | "message" | "ifMatch">
 > = core.serialization.object({
-    description: core.serialization.string().optionalNullable(),
-    environments: core.serialization.list(PatchAgentEnvironmentsItem).optionalNullable(),
+    description: core.serialization.string().optional(),
+    environments: core.serialization.list(PatchAgentEnvironmentsItem).optional(),
     model: core.serialization.string().optionalNullable(),
     reasoningEffort: core.serialization.property("reasoning_effort", PatchAgentReasoningEffort.optionalNullable()),
     instructions: core.serialization.string().optionalNullable(),
@@ -29,8 +29,8 @@ export const PatchAgent: core.serialization.Schema<
 
 export declare namespace PatchAgent {
     export interface Raw {
-        description?: (string | null | undefined) | null;
-        environments?: (PatchAgentEnvironmentsItem.Raw[] | null | undefined) | null;
+        description?: string | null;
+        environments?: PatchAgentEnvironmentsItem.Raw[] | null;
         model?: (string | null | undefined) | null;
         reasoning_effort?: (PatchAgentReasoningEffort.Raw | null | undefined) | null;
         instructions?: (string | null | undefined) | null;

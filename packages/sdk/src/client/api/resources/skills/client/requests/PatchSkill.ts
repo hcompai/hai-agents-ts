@@ -8,11 +8,11 @@
  */
 export interface PatchSkill {
     name: string;
-    description?: string | null;
-    body?: string | null;
+    description?: string;
+    body?: string;
     source?: string | null;
     urlPattern?: string | null;
     compatibility?: string | null;
-    files?: Record<string, string | null> | null;
-    executableFiles?: string[] | null;
+    files?: Record<string, string>;
+    executableFiles?: string[];
 }

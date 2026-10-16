@@ -8,6 +8,8 @@ import type * as HaiAgents from "../index.js";
 export interface SessionSummary {
     id: string;
     agent?: string | null;
+    /** Revision of the catalog agent the session runs; null for inline specs and older sessions. */
+    agentRevision?: number | null;
     status: HaiAgents.TrajectoryStatus;
     /** URL of the session's Agent View page on the H Platform (live view and replay). */
     agentViewUrl?: string | null;
