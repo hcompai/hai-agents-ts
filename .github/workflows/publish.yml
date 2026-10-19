@@ -14,7 +14,19 @@ permissions:
   contents: read
 
 jobs:
+  api-compat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Prod serves every operation the SDK calls
+        run: node scripts/release.mjs check
+
   publish:
+    needs: api-compat
     runs-on: ubuntu-latest
     environment: release
     permissions:
