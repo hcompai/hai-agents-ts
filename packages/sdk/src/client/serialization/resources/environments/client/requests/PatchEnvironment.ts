@@ -11,22 +11,22 @@ export const PatchEnvironment: core.serialization.Schema<
     serializers.PatchEnvironment.Raw,
     Omit<HaiAgents.PatchEnvironment, "id">
 > = core.serialization.object({
-    host: PatchEnvironmentHost.optionalNullable(),
-    startUrl: core.serialization.property("start_url", core.serialization.string().optionalNullable()),
-    headless: core.serialization.boolean().optionalNullable(),
+    host: PatchEnvironmentHost.optional(),
+    startUrl: core.serialization.property("start_url", core.serialization.string().optional()),
+    headless: core.serialization.boolean().optional(),
     sessionId: core.serialization.property("session_id", core.serialization.string().optionalNullable()),
-    mode: PatchEnvironmentMode.optionalNullable(),
-    lazy: core.serialization.boolean().optionalNullable(),
-    settleS: core.serialization.property("settle_s", core.serialization.number().optionalNullable()),
+    mode: PatchEnvironmentMode.optional(),
+    lazy: core.serialization.boolean().optional(),
+    settleS: core.serialization.property("settle_s", core.serialization.number().optional()),
     vaultId: core.serialization.property("vault_id", core.serialization.string().optionalNullable()),
     browserProfileId: core.serialization.property("browser_profile_id", core.serialization.string().optionalNullable()),
     useDefaultBrowserProfile: core.serialization.property(
         "use_default_browser_profile",
-        core.serialization.boolean().optionalNullable(),
+        core.serialization.boolean().optional(),
     ),
     persistBrowserProfile: core.serialization.property(
         "persist_browser_profile",
-        core.serialization.boolean().optionalNullable(),
+        core.serialization.boolean().optional(),
     ),
     network: BrowserNetwork.optionalNullable(),
     screenshotMaxWidth: core.serialization.property(
@@ -38,17 +38,17 @@ export const PatchEnvironment: core.serialization.Schema<
 
 export declare namespace PatchEnvironment {
     export interface Raw {
-        host?: (PatchEnvironmentHost.Raw | null | undefined) | null;
-        start_url?: (string | null | undefined) | null;
-        headless?: (boolean | null | undefined) | null;
+        host?: PatchEnvironmentHost.Raw | null;
+        start_url?: string | null;
+        headless?: boolean | null;
         session_id?: (string | null | undefined) | null;
-        mode?: (PatchEnvironmentMode.Raw | null | undefined) | null;
-        lazy?: (boolean | null | undefined) | null;
-        settle_s?: (number | null | undefined) | null;
+        mode?: PatchEnvironmentMode.Raw | null;
+        lazy?: boolean | null;
+        settle_s?: number | null;
         vault_id?: (string | null | undefined) | null;
         browser_profile_id?: (string | null | undefined) | null;
-        use_default_browser_profile?: (boolean | null | undefined) | null;
-        persist_browser_profile?: (boolean | null | undefined) | null;
+        use_default_browser_profile?: boolean | null;
+        persist_browser_profile?: boolean | null;
         network?: (BrowserNetwork.Raw | null | undefined) | null;
         screenshot_max_width?: (number | null | undefined) | null;
         image?: (string | null | undefined) | null;

@@ -10,6 +10,7 @@ export const SessionSummary: core.serialization.ObjectSchema<serializers.Session
     core.serialization.object({
         id: core.serialization.string(),
         agent: core.serialization.string().optionalNullable(),
+        agentRevision: core.serialization.property("agent_revision", core.serialization.number().optionalNullable()),
         status: TrajectoryStatus,
         agentViewUrl: core.serialization.property("agent_view_url", core.serialization.string().optionalNullable()),
         firstMessage: core.serialization.property("first_message", UserMessageEvent.optionalNullable()),
@@ -24,6 +25,7 @@ export declare namespace SessionSummary {
     export interface Raw {
         id: string;
         agent?: (string | null | undefined) | null;
+        agent_revision?: (number | null | undefined) | null;
         status: TrajectoryStatus.Raw;
         agent_view_url?: (string | null | undefined) | null;
         first_message?: (UserMessageEvent.Raw | null | undefined) | null;

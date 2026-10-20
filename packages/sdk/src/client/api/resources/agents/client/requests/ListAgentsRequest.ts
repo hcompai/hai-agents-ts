@@ -13,6 +13,8 @@ export interface ListAgentsRequest {
     search?: string | null;
     /** ``true``: reserved ``h/`` agents only. ``false``: org agents only. */
     reserved?: boolean | null;
+    /** ``revision``: each item is an ``AgentWithRevision``, the spec plus the agent's current ``revision`` number. Omitted, items are plain ``Agent`` specs. */
+    include?: HaiAgents.ListAgentsRequestInclude | null;
     /** Page number (1-based) */
     page?: number;
     /** Number of items per page */
