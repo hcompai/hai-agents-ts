@@ -7,8 +7,11 @@ import type * as HaiAgents from "../index.js";
  */
 export interface Session {
     id: string;
+    /** The request the session runs. Secrets read back as ``***``, with keys and list lengths kept: MCP server ``headers``, ``env`` and ``args``, code sandbox ``env``, and browser ``proxy_url``. */
     request: HaiAgents.SessionRequest;
     status: HaiAgents.SessionStatus;
+    /** Revision of the catalog agent the session runs; ``request.agent`` is that revision, resolved, with ``request.overrides`` applied. Null for inline agent specs and sessions created before agent revisions. */
+    agentRevision?: number | null;
     /** URL of the session's Agent View page on the H Platform (live view and replay). */
     agentViewUrl?: string | null;
     /** The agent's most recent final answer: free-form text, or structured data when the agent runs with a custom answer format. Null until the agent first answers. Mirrors the answer streamed from the changes endpoint, surfaced here for non-interactive runs. */

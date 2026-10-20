@@ -8,8 +8,8 @@
  */
 export interface UpdateWebhook {
     webhookId: string;
-    url?: string | null;
-    enabledEvents?: string[] | null;
+    url?: string;
+    enabledEvents?: string[];
     description?: string | null;
-    disabled?: boolean | null;
+    disabled?: boolean;
 }
