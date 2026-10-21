@@ -45,7 +45,7 @@ jobs:
           version="$(node scripts/release.mjs current)"
           if ! git rev-parse -q --verify "refs/tags/v${version}" >/dev/null; then
             action=release
-          elif git diff --quiet "v${version}" HEAD -- packages/sdk/src packages/sdk/package.json packages/sdk/README.md; then
+          elif [ "$(node scripts/release.mjs changed "v${version}")" = false ]; then
             action=none
           else
             action=stage
