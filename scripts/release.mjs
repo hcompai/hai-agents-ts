@@ -1,5 +1,7 @@
 // Release helpers: `current` prints the SDK version, `bump` raises its patch in every file
-// that stamps it, `check` fails when the API spec needs an operation prod does not serve.
+// that stamps it, `changed <ref>` tells whether the published package changed since <ref>,
+// `check` fails when the API spec needs an operation prod does not serve.
+import { execFileSync, spawnSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -13,11 +15,13 @@ export const STAMPS = {
     new RegExp(String.raw`("X-HCompany-Client-Version": ")(${V})(")`, "g"),
   ],
 };
+const MANIFEST = "packages/sdk/package.json";
+const SHIPPED_PATHS = ["packages/sdk/src", "packages/sdk/README.md"];
 const PROD_SPECS = ["https://agp.hcompany.ai/share/openapi.json", "https://agp.eu.hcompany.ai/share/openapi.json"];
 const METHODS = ["get", "post", "put", "patch", "delete"];
 
 export function currentVersion(root = ROOT) {
-  return JSON.parse(readFileSync(join(root, "packages/sdk/package.json"), "utf8")).version;
+  return JSON.parse(readFileSync(join(root, MANIFEST), "utf8")).version;
 }
 
 export function bump(root = ROOT) {
@@ -37,6 +41,19 @@ export function bump(root = ROOT) {
   });
   for (const [file, text] of rewritten) writeFileSync(join(root, file), text);
   return next;
+}
+
+function publishedManifest(text) {
+  const { devDependencies, ...published } = JSON.parse(text);
+  return JSON.stringify(published);
+}
+
+export function shippedChanged(ref, root = ROOT) {
+  const diff = spawnSync("git", ["diff", "--quiet", ref, "HEAD", "--", ...SHIPPED_PATHS], { cwd: root });
+  if (diff.status > 1 || diff.error) throw new Error(`git diff ${ref} failed: ${diff.stderr}`);
+  if (diff.status === 1) return true;
+  const before = execFileSync("git", ["show", `${ref}:${MANIFEST}`], { cwd: root, encoding: "utf8" });
+  return publishedManifest(before) !== publishedManifest(readFileSync(join(root, MANIFEST), "utf8"));
 }
 
 function operations(spec) {
@@ -67,6 +84,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const command = process.argv[2];
   if (command === "current") console.log(currentVersion());
   else if (command === "bump") console.log(bump());
+  else if (command === "changed") console.log(shippedChanged(process.argv[3]));
   else if (command === "check") await check();
-  else throw new Error("usage: node scripts/release.mjs current|bump|check");
+  else throw new Error("usage: node scripts/release.mjs current|bump|changed <ref>|check");
 }
