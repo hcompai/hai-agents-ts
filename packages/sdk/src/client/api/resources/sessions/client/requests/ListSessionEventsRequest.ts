@@ -12,6 +12,6 @@ export interface ListSessionEventsRequest {
     id: string;
     page?: number;
     size?: number;
-    sort?: HaiAgents.ListSessionEventsRequestSortItem[] | null;
+    sort?: HaiAgents.ListSessionEventsRequestSortItem | HaiAgents.ListSessionEventsRequestSortItem[];
     type?: string | null;
 }

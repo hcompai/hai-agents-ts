@@ -18,5 +18,5 @@ export interface ListEnvironmentsRequest {
     /** Number of items per page */
     size?: number;
     /** Sort by field */
-    sort?: HaiAgents.ListEnvironmentsRequestSortItem[] | null;
+    sort?: HaiAgents.ListEnvironmentsRequestSortItem | HaiAgents.ListEnvironmentsRequestSortItem[];
 }

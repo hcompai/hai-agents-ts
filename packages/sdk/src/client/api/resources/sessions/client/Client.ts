@@ -4,7 +4,6 @@ import type { BaseClientOptions, BaseRequestOptions } from "../../../../BaseClie
 import { type NormalizedClientOptionsWithAuth, normalizeClientOptionsWithAuth } from "../../../../BaseClient.js";
 import { mergeHeaders, mergeOnlyDefinedHeaders } from "../../../../core/headers.js";
 import * as core from "../../../../core/index.js";
-import { toJson } from "../../../../core/json.js";
 import * as environments from "../../../../environments.js";
 import { handleNonStatusCodeError } from "../../../../errors/handleNonStatusCodeError.js";
 import * as errors from "../../../../errors/index.js";
@@ -72,8 +71,24 @@ export class SessionsClient {
                           omitUndefined: true,
                       })
                     : undefined,
-            status: status !== undefined ? toJson(status) : undefined,
-            agent: agent !== undefined ? toJson(agent) : undefined,
+            status: Array.isArray(status)
+                ? status.map((item) =>
+                      serializers.TrajectoryStatus.jsonOrThrow(item, {
+                          unrecognizedObjectKeys: "passthrough",
+                          allowUnrecognizedUnionMembers: true,
+                          allowUnrecognizedEnumValues: true,
+                          omitUndefined: true,
+                      }),
+                  )
+                : status != null
+                  ? serializers.TrajectoryStatus.jsonOrThrow(status, {
+                        unrecognizedObjectKeys: "passthrough",
+                        allowUnrecognizedUnionMembers: true,
+                        allowUnrecognizedEnumValues: true,
+                        omitUndefined: true,
+                    })
+                  : undefined,
+            agent,
             group_id: groupId,
             parent_session_id: parentSessionId,
             schedule_id: scheduleId,
@@ -84,7 +99,23 @@ export class SessionsClient {
             finished_after: finishedAfter !== undefined ? finishedAfter?.toISOString() : undefined,
             page,
             size,
-            sort: sort !== undefined ? toJson(sort) : undefined,
+            sort: Array.isArray(sort)
+                ? sort.map((item) =>
+                      serializers.ListSessionsRequestSortItem.jsonOrThrow(item, {
+                          unrecognizedObjectKeys: "passthrough",
+                          allowUnrecognizedUnionMembers: true,
+                          allowUnrecognizedEnumValues: true,
+                          omitUndefined: true,
+                      }),
+                  )
+                : sort != null
+                  ? serializers.ListSessionsRequestSortItem.jsonOrThrow(sort, {
+                        unrecognizedObjectKeys: "passthrough",
+                        allowUnrecognizedUnionMembers: true,
+                        allowUnrecognizedEnumValues: true,
+                        omitUndefined: true,
+                    })
+                  : undefined,
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
@@ -1115,7 +1146,23 @@ export class SessionsClient {
         const _queryParams: Record<string, unknown> = {
             page,
             size,
-            sort: sort !== undefined ? toJson(sort) : undefined,
+            sort: Array.isArray(sort)
+                ? sort.map((item) =>
+                      serializers.ListSessionEventsRequestSortItem.jsonOrThrow(item, {
+                          unrecognizedObjectKeys: "passthrough",
+                          allowUnrecognizedUnionMembers: true,
+                          allowUnrecognizedEnumValues: true,
+                          omitUndefined: true,
+                      }),
+                  )
+                : sort != null
+                  ? serializers.ListSessionEventsRequestSortItem.jsonOrThrow(sort, {
+                        unrecognizedObjectKeys: "passthrough",
+                        allowUnrecognizedUnionMembers: true,
+                        allowUnrecognizedEnumValues: true,
+                        omitUndefined: true,
+                    })
+                  : undefined,
             type: type_,
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
