@@ -37,8 +37,10 @@ class TrackedSessionsClient extends SessionsClient {
 function rejectUserDevice(agent: HaiAgents.SessionRequestAgent): void {
   if (typeof agent === "string") return;
   for (const env of agent.environments ?? []) {
-    if (typeof env !== "string" && "host" in env && env.host === "user_device") {
-      throw new LocalRuntimeError(`environment ${env.id ?? env.kind} has host "user_device", which needs a local bridge`);
+    if (typeof env !== "string" && "host" in env && env.host === "user_device" && !("sessionId" in env && env.sessionId)) {
+      throw new LocalRuntimeError(
+        `environment ${env.id ?? env.kind} has host "user_device": open a CommandBridge and set its sessionId on the environment`,
+      );
     }
   }
   for (const sub of agent.subagents ?? []) rejectUserDevice(sub);
