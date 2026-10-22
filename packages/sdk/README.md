@@ -59,6 +59,31 @@ console.log(result.answer);
 
 `result` is a `SessionRunResult`: `id`, `status`, `answer`, the accumulated `events`, and `finalChanges`.
 
+## Local agents
+
+`await HaiAgentsClient.local()` from `hai-agents/local` runs the agent on this machine through a local agent runtime. It attaches to the runtime already serving the same inference, or starts one; when `hai-agent-runtime` is not installed, it downloads the pinned release and verifies its checksum. `close()` stops a runtime this client started, unless other clients still have active sessions there. Node only.
+
+```ts
+import { HaiAgentsClient } from "hai-agents/local";
+
+const client = await HaiAgentsClient.local(); // or .local({ binaryPath: "/path/to/hai-agent-runtime" })
+try {
+  const result = await client.runSession({
+    agent: {
+      name: "local-example",
+      description: "Answers questions about a web page",
+      environments: [{ kind: "web", id: "web", startUrl: "https://example.com" }],
+    },
+    messages: "What is the main heading on this page?",
+  });
+  console.log(result.status, result.answer);
+} finally {
+  await client.close();
+}
+```
+
+Inference stays hosted (`HAI_API_KEY`) unless you pass `inference: { baseUrl, model }` for an OpenAI-compatible endpoint, which never receives your API key.
+
 ## How a session works
 
 A session is one run of an agent against a task. It moves through a small set of states: `pending`, `running`, and then a settled state such as `completed`, `idle`, `failed`, `timed_out`, or `interrupted`.
