@@ -86,6 +86,39 @@ try {
 
 Inference stays hosted (`HAI_API_KEY`) unless you pass `inference: { baseUrl, model }` for an OpenAI-compatible endpoint, which never receives your API key.
 
+### Drive a browser on this machine
+
+An environment with `host: "user_device"` runs on your side: a `CommandBridge` executes the agent's browser commands (screenshots, clicks, typing) in a Playwright browser context you own and returns the results, so pages, cookies and `localhost` stay on your machine. It works with the hosted client and with `HaiAgentsClient.local()` alike. Install `playwright-core` (or `playwright`) and open a page first:
+
+```ts
+import { chromium } from "playwright-core";
+import { CommandBridge, HaiAgentsClient } from "hai-agents";
+import { playwrightWebDriver } from "hai-agents/playwright";
+
+const browser = await chromium.launch({ headless: false });
+const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+await context.newPage();
+
+const client = new HaiAgentsClient();
+const bridge = await CommandBridge.open(client, playwrightWebDriver(context));
+try {
+  const result = await client.runSession({
+    agent: {
+      name: "my-browser",
+      description: "Works in the user's own browser",
+      environments: [{ kind: "web", id: "web", host: "user_device", sessionId: bridge.sessionId }],
+    },
+    messages: "Open example.com and report its main heading",
+  });
+  console.log(result.answer);
+} finally {
+  await bridge.close();
+  await browser.close();
+}
+```
+
+One bridge serves one session. `bridge.done` rejects if the bridge fails. Desktop and workstation environments on `user_device` need the Python SDK.
+
 ## How a session works
 
 A session is one run of an agent against a task. It moves through a small set of states: `pending`, `running`, and then a settled state such as `completed`, `idle`, `failed`, `timed_out`, or `interrupted`.
