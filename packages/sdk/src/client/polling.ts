@@ -227,6 +227,9 @@ export async function fileFromPath(path: string, mediaType?: string): Promise<Fi
 
 /** Set the agent's tools: on an inline agent directly, since the server validates it before applying overrides. */
 export function attachToolDefinitions(params: CreateSessionParams, tools: readonly Tool[]): CreateSessionParams {
+  if (params.overrides?.["agent.tools"] != null) {
+    throw new Error("tools conflicts with overrides['agent.tools']; pass only one.");
+  }
   const agent = params.agent;
   if (agent && typeof agent === "object") {
     const definitions = tools.map((t) => ({ name: t.name, description: t.description, inputSchema: t.inputSchema }));

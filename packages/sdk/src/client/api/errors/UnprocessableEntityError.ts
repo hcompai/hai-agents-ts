@@ -5,7 +5,7 @@ import * as errors from "../../errors/index.js";
 import type * as HaiAgents from "../index.js";
 
 export class UnprocessableEntityError extends errors.HaiAgentsError {
-    constructor(body: HaiAgents.HttpValidationError, rawResponse?: core.RawResponse) {
+    constructor(body: HaiAgents.ErrorResponse, rawResponse?: core.RawResponse) {
         super({
             message: "UnprocessableEntityError",
             statusCode: 422,
