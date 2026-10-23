@@ -20,4 +20,6 @@ export interface SessionStatus {
     usagePerModel?: HaiAgents.ModelUsage[];
     /** Session ids of any subagents this session spawned. */
     subagentSessionIds?: string[];
+    /** Custom tool calls the agent is blocked on; echo each ``id`` back in the ToolResultEvent. Empty unless the agent is awaiting tool results (a pause keeps them). */
+    pendingToolCalls?: HaiAgents.ToolRequest[];
 }

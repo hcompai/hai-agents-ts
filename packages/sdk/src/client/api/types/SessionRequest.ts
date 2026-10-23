@@ -12,10 +12,12 @@ export interface SessionRequest {
     messages?: HaiAgents.SessionRequestMessages | null;
     /** Maximum reasoning steps the agent may take. Unbounded if null. */
     maxSteps?: number | null;
-    /** Maximum wall-clock seconds the agent may run. Unbounded if null. */
+    /** Maximum wall-clock seconds the agent may work toward each answer; at the limit it answers with what it has. Time idle between answers does not count. Unbounded if null. */
     maxTimeS?: number | null;
     /** Seconds to keep the session open for follow-up messages after each answer. Null ends the session as soon as the agent answers. */
     idleTimeoutS?: number | null;
+    /** IANA timezone the agent uses for dates and times, e.g. 'Europe/Paris'. UTC if null. */
+    timezone?: string | null;
     /** Minutes after the session finishes before it is automatically deleted. When omitted, Portal's retention preference applies. An explicit value adds an earlier expiry; null adds no expiry beyond Portal's policy. */
     deleteAfterMin?: number | null;
     /** Minutes after the session finishes before its screenshots are deleted. When omitted or null, screenshots follow the session's retention policy. An explicit value can delete screenshots earlier. */

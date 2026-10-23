@@ -12,7 +12,9 @@ export interface SessionChanges {
     error?: string | null;
     errorCode?: HaiAgents.SessionErrorCode | null;
     newEvents?: HaiAgents.SessionEvent[];
+    firstIndex?: number | null;
     answer?: HaiAgents.SessionChangesAnswer | null;
     outcome?: HaiAgents.AnswerOutcome | null;
     metrics?: HaiAgents.Metrics;
+    pendingToolCalls?: HaiAgents.ToolRequest[];
 }

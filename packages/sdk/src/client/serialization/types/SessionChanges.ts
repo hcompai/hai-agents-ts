@@ -8,6 +8,7 @@ import { Metrics } from "./Metrics.js";
 import { SessionChangesAnswer } from "./SessionChangesAnswer.js";
 import { SessionErrorCode } from "./SessionErrorCode.js";
 import { SessionEvent } from "./SessionEvent.js";
+import { ToolRequest } from "./ToolRequest.js";
 import { TrajectoryStatus } from "./TrajectoryStatus.js";
 
 export const SessionChanges: core.serialization.ObjectSchema<serializers.SessionChanges.Raw, HaiAgents.SessionChanges> =
@@ -18,9 +19,14 @@ export const SessionChanges: core.serialization.ObjectSchema<serializers.Session
         error: core.serialization.string().optionalNullable(),
         errorCode: core.serialization.property("error_code", SessionErrorCode.optionalNullable()),
         newEvents: core.serialization.property("new_events", core.serialization.list(SessionEvent).optional()),
+        firstIndex: core.serialization.property("first_index", core.serialization.number().optionalNullable()),
         answer: SessionChangesAnswer.optionalNullable(),
         outcome: AnswerOutcome.optionalNullable(),
         metrics: Metrics.optional(),
+        pendingToolCalls: core.serialization.property(
+            "pending_tool_calls",
+            core.serialization.list(ToolRequest).optional(),
+        ),
     });
 
 export declare namespace SessionChanges {
@@ -31,8 +37,10 @@ export declare namespace SessionChanges {
         error?: (string | null | undefined) | null;
         error_code?: (SessionErrorCode.Raw | null | undefined) | null;
         new_events?: SessionEvent.Raw[] | null;
+        first_index?: (number | null | undefined) | null;
         answer?: (SessionChangesAnswer.Raw | null | undefined) | null;
         outcome?: (AnswerOutcome.Raw | null | undefined) | null;
         metrics?: Metrics.Raw | null;
+        pending_tool_calls?: ToolRequest.Raw[] | null;
     }
 }

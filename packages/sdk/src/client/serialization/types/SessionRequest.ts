@@ -13,6 +13,7 @@ export const SessionRequest: core.serialization.ObjectSchema<serializers.Session
         maxSteps: core.serialization.property("max_steps", core.serialization.number().optionalNullable()),
         maxTimeS: core.serialization.property("max_time_s", core.serialization.number().optionalNullable()),
         idleTimeoutS: core.serialization.property("idle_timeout_s", core.serialization.number().optionalNullable()),
+        timezone: core.serialization.string().optionalNullable(),
         deleteAfterMin: core.serialization.property("delete_after_min", core.serialization.number().optionalNullable()),
         deleteScreenshotAfterMin: core.serialization.property(
             "delete_screenshot_after_min",
@@ -34,6 +35,7 @@ export declare namespace SessionRequest {
         max_steps?: (number | null | undefined) | null;
         max_time_s?: (number | null | undefined) | null;
         idle_timeout_s?: (number | null | undefined) | null;
+        timezone?: (string | null | undefined) | null;
         delete_after_min?: (number | null | undefined) | null;
         delete_screenshot_after_min?: (number | null | undefined) | null;
         queue?: boolean | null;

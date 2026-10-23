@@ -24,4 +24,5 @@ export interface PatchEnvironment {
     network?: HaiAgents.BrowserNetwork | null;
     screenshotMaxWidth?: number | null;
     image?: string | null;
+    storage?: HaiAgents.WorkstationStorage | null;
 }

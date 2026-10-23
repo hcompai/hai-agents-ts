@@ -15,5 +15,5 @@ export interface ListAgentRevisionsRequest {
     /** Number of items per page */
     size?: number;
     /** Sort by field */
-    sort?: HaiAgents.ListAgentRevisionsRequestSortItem[] | null;
+    sort?: HaiAgents.ListAgentRevisionsRequestSortItem | HaiAgents.ListAgentRevisionsRequestSortItem[];
 }

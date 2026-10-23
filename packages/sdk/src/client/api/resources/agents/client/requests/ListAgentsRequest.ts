@@ -20,5 +20,5 @@ export interface ListAgentsRequest {
     /** Number of items per page */
     size?: number;
     /** Sort by field */
-    sort?: HaiAgents.ListAgentsRequestSortItem[] | null;
+    sort?: HaiAgents.ListAgentsRequestSortItem | HaiAgents.ListAgentsRequestSortItem[];
 }

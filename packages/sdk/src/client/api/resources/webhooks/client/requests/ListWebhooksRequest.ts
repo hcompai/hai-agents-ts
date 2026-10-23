@@ -12,5 +12,5 @@ export interface ListWebhooksRequest {
     /** Number of items per page */
     size?: number;
     /** Sort by field */
-    sort?: HaiAgents.ListWebhooksRequestSortItem[] | null;
+    sort?: HaiAgents.ListWebhooksRequestSortItem | HaiAgents.ListWebhooksRequestSortItem[];
 }

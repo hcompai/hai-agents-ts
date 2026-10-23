@@ -8,8 +8,8 @@ import type * as HaiAgents from "../../../../index.js";
  */
 export interface ListSessionsRequest {
     owner?: HaiAgents.ListSessionsRequestOwner;
-    status?: HaiAgents.TrajectoryStatus[] | null;
-    agent?: string[] | null;
+    status?: HaiAgents.TrajectoryStatus | HaiAgents.TrajectoryStatus[];
+    agent?: string | string[];
     groupId?: string | null;
     parentSessionId?: string | null;
     /** Only sessions created by this schedule. */
@@ -25,5 +25,5 @@ export interface ListSessionsRequest {
     /** Number of items per page */
     size?: number;
     /** Sort by field */
-    sort?: HaiAgents.ListSessionsRequestSortItem[] | null;
+    sort?: HaiAgents.ListSessionsRequestSortItem | HaiAgents.ListSessionsRequestSortItem[];
 }

@@ -4,7 +4,6 @@ import type { BaseClientOptions, BaseRequestOptions } from "../../../../BaseClie
 import { type NormalizedClientOptionsWithAuth, normalizeClientOptionsWithAuth } from "../../../../BaseClient.js";
 import { mergeHeaders } from "../../../../core/headers.js";
 import * as core from "../../../../core/index.js";
-import { toJson } from "../../../../core/json.js";
 import * as environments from "../../../../environments.js";
 import { handleNonStatusCodeError } from "../../../../errors/handleNonStatusCodeError.js";
 import * as errors from "../../../../errors/index.js";
@@ -25,11 +24,12 @@ export class SkillsClient {
     }
 
     /**
-     * List reserved + caller's org skills. Unauthenticated callers see reserved ``h/`` skills only.
+     * List visible skills. Pages exceeding 8 MiB of encoded helper files return 413; retry with ``size=1``.
      *
      * @param {HaiAgents.ListSkillsRequest} request
      * @param {SkillsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link HaiAgents.ContentTooLargeError}
      * @throws {@link HaiAgents.UnprocessableEntityError}
      *
      * @example
@@ -52,7 +52,23 @@ export class SkillsClient {
             search,
             page,
             size,
-            sort: sort !== undefined ? toJson(sort) : undefined,
+            sort: Array.isArray(sort)
+                ? sort.map((item) =>
+                      serializers.ListSkillsRequestSortItem.jsonOrThrow(item, {
+                          unrecognizedObjectKeys: "passthrough",
+                          allowUnrecognizedUnionMembers: true,
+                          allowUnrecognizedEnumValues: true,
+                          omitUndefined: true,
+                      }),
+                  )
+                : sort != null
+                  ? serializers.ListSkillsRequestSortItem.jsonOrThrow(sort, {
+                        unrecognizedObjectKeys: "passthrough",
+                        allowUnrecognizedUnionMembers: true,
+                        allowUnrecognizedEnumValues: true,
+                        omitUndefined: true,
+                    })
+                  : undefined,
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
@@ -95,6 +111,8 @@ export class SkillsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 413:
+                    throw new HaiAgents.ContentTooLargeError(_response.error.body, _response.rawResponse);
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
                         serializers.HttpValidationError.parseOrThrow(_response.error.body, {
