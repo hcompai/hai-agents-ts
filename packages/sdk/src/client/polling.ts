@@ -238,29 +238,45 @@ function callKey(call: PendingToolCall): string {
 }
 
 /**
- * Pending custom tool calls per the latest `ActiveStateChangeEvent`.
+ * One loop's view of the pending custom tool calls, per the latest `ActiveStateChangeEvent`.
  *
- * The agent re-publishes the surviving list whenever a call settles, so the latest
- * event is the source of truth; `previous` carries it across polls whose batches
- * contain no state change.
+ * The agent re-publishes the surviving list whenever a call settles and reports another
+ * state once the last one resolves, so a stretch of `awaiting_tool_results` events is one
+ * step's calls. `stretch` is the index of the event that opened it: every loop reading the
+ * same log agrees on it, and it tells a reused call id (`xml_0`) apart from the same id in
+ * a later step. `anchored` is whether this loop read the log from where the stretch could
+ * have begun.
  */
-function latestPendingToolCalls(
-  batch: readonly SessionEvent[],
-  previous: PendingToolCall[],
-): PendingToolCall[] {
-  let calls = previous;
-  for (const event of batch) {
-    if (event.type !== "ActiveStateChangeEvent") {
-      continue;
-    }
-    // Events arrive through the serde layer, so data is camelCase (pendingToolCalls / toolName).
-    const data = (event.data ?? {}) as ActiveStateChangeData;
-    calls =
-      data.state === "awaiting_tool_results"
-        ? (data.pendingToolCalls ?? []).map((c) => ({ id: c.id, tool_name: c.toolName, args: c.args }))
-        : [];
+class Advertised {
+  stretch: number | null = null;
+  calls: PendingToolCall[] = [];
+
+  constructor(public anchored: boolean) {}
+
+  /** Fold in `batch`, the events just before index `end`. */
+  read(batch: readonly SessionEvent[], end: number): void {
+    batch.forEach((event, offset) => {
+      if (event.type !== "ActiveStateChangeEvent") {
+        return;
+      }
+      // Events arrive through the serde layer, so data is camelCase (pendingToolCalls / toolName).
+      const data = (event.data ?? {}) as ActiveStateChangeData;
+      if (data.state === "awaiting_tool_results") {
+        this.stretch ??= end - batch.length + offset;
+        this.calls = (data.pendingToolCalls ?? []).map((c) => ({ id: c.id, tool_name: c.toolName, args: c.args }));
+      } else {
+        this.stretch = null;
+        this.calls = [];
+        this.anchored = true;
+      }
+    });
   }
-  return calls;
+
+  adopt(other: Advertised): void {
+    this.stretch = other.stretch;
+    this.calls = other.calls;
+    this.anchored = other.anchored;
+  }
 }
 
 function jsonSafe(value: unknown): unknown {
@@ -340,15 +356,18 @@ async function finalChanges(
   return fetched ?? lastChanges;
 }
 
-/** A wait that joins mid-stream may start past the advertising event; replay from 0 to find the latest batch. */
-async function recoverPendingToolCalls(client: HaiAgentsClient, id: string): Promise<PendingToolCall[]> {
+/** A loop that joins mid-stream may start past the advertising event; replay from 0 to find the latest batch. */
+async function recoverPendingToolCalls(client: HaiAgentsClient, id: string): Promise<Advertised> {
   const changes = await client.sessions.getSessionChanges({
     id,
     fromIndex: 0,
     includeEvents: true,
     waitForSeconds: 0,
   });
-  return latestPendingToolCalls(changes?.newEvents ?? [], []);
+  const events = changes?.newEvents ?? [];
+  const replayed = new Advertised(true);
+  replayed.read(events, (changes?.firstIndex ?? 0) + events.length);
+  return replayed;
 }
 
 /** Custom tools plus the calls already claimed; a handle shares one across its waits and streams. */
@@ -360,18 +379,19 @@ class ToolDispatch {
     this.toolsByName = new Map(asTools(tools).map((t) => [t.name, t]));
   }
 
-  /** Return the calls no loop has claimed yet, claiming them. */
-  claim(calls: readonly PendingToolCall[]): PendingToolCall[] {
-    const fresh = calls.filter((call) => !this.claimed.has(callKey(call)));
+  /** Return the advertised calls no loop has claimed yet, claiming them. */
+  claim(advertised: Advertised): PendingToolCall[] {
+    const key = (call: PendingToolCall) => JSON.stringify([advertised.stretch, callKey(call)]);
+    const fresh = advertised.calls.filter((call) => !this.claimed.has(key(call)));
     for (const call of fresh) {
-      this.claimed.add(callKey(call));
+      this.claimed.add(key(call));
     }
     return fresh;
   }
 
-  release(calls: readonly PendingToolCall[]): void {
+  release(stretch: number | null, calls: readonly PendingToolCall[]): void {
     for (const call of calls) {
-      this.claimed.delete(callKey(call));
+      this.claimed.delete(JSON.stringify([stretch, callKey(call)]));
     }
   }
 }
@@ -385,23 +405,21 @@ function caughtUp(batch: readonly SessionEvent[], limit: number | null | undefin
   return !limit || batch.length < limit;
 }
 
-/** Run and post the calls the session awaits, each once; resolves with this loop's latest advertised calls. */
+/** Run and post the calls the session awaits, each once per step. */
 async function answerToolCalls(
   client: HaiAgentsClient,
   id: string,
   dispatch: ToolDispatch,
-  previous: PendingToolCall[],
-  batch: readonly SessionEvent[],
+  advertised: Advertised,
   status: TrajectoryStatus,
   isCaughtUp: boolean,
-): Promise<PendingToolCall[]> {
-  let advertised = latestPendingToolCalls(batch, previous);
+): Promise<void> {
   // The live status describes the tip: a lagging cursor's advertised calls may already be answered.
   if (!isCaughtUp || (status as string) !== "awaiting_tool_results") {
-    return advertised;
+    return;
   }
-  if (advertised.length === 0) {
-    advertised = await recoverPendingToolCalls(client, id);
+  if (!advertised.anchored || advertised.calls.length === 0) {
+    advertised.adopt(await recoverPendingToolCalls(client, id));
   }
   const calls = dispatch.claim(advertised);
   if (calls.length > 0) {
@@ -409,11 +427,10 @@ async function answerToolCalls(
       const results = await Promise.all(calls.map((call) => executeToolCall(dispatch.toolsByName, call)));
       await postToolResults(client, id, results);
     } catch (error) {
-      dispatch.release(calls);
+      dispatch.release(advertised.stretch, calls);
       throw error;
     }
   }
-  return advertised;
 }
 
 /** Cursor past `changes`; starts at the server's `firstIndex` when it skipped evicted events. */
@@ -455,7 +472,7 @@ async function waitWithDispatch<TAnswer>(
     maxPolls,
     answerSchema,
   } = options;
-  let advertised: PendingToolCall[] = [];
+  const advertised = new Advertised(fromIndex === 0);
   if (dispatch !== undefined && !includeEvents) {
     throw new Error("tools require includeEvents=true: pending calls arrive on the event stream.");
   }
@@ -484,6 +501,7 @@ async function waitWithDispatch<TAnswer>(
         batch = changes.newEvents ?? [];
         events.push(...batch);
         nextFromIndex = cursorAfter(nextFromIndex, changes);
+        advertised.read(batch, nextFromIndex);
       }
     }
     isCaughtUp = caughtUp(batch, limit);
@@ -528,7 +546,7 @@ async function waitWithDispatch<TAnswer>(
     }
 
     if (dispatch !== undefined) {
-      advertised = await answerToolCalls(client, id, dispatch, advertised, batch, status, isCaughtUp);
+      await answerToolCalls(client, id, dispatch, advertised, status, isCaughtUp);
     }
 
     // The long-poll above paces the loop when streaming events; otherwise sleep.
@@ -603,7 +621,7 @@ async function* streamWithDispatch(
 ): AsyncGenerator<SessionEvent> {
   const { id, fromIndex = 0, waitForSeconds = 20, limit, until = "settled", timeoutMs } = options;
   const shouldStop = until === "terminal" ? isTerminalSessionStatus : isSettledSessionStatus;
-  let advertised: PendingToolCall[] = [];
+  const advertised = new Advertised(fromIndex === 0);
   let nextFromIndex = fromIndex;
   let isCaughtUp = true;
   const deadline = timeoutMs === undefined ? undefined : Date.now() + timeoutMs;
@@ -623,13 +641,13 @@ async function* streamWithDispatch(
     const batch = changes?.newEvents ?? [];
     yield* batch;
     nextFromIndex = cursorAfter(nextFromIndex, changes);
+    advertised.read(batch, nextFromIndex);
     isCaughtUp = caughtUp(batch, limit);
 
     const { status } = await client.sessions.getSessionStatus({ id });
     if (shouldStop(status)) {
-      // Drain to exhaustion: one page may not cover the backlog past the cursor,
-      // since the server caps page size (and honors `limit`). Keep honoring the
-      // wall-clock budget so a large tail cannot outlive `timeoutMs`.
+      // Drain to exhaustion: with `limit`, one page may not cover the backlog past the
+      // cursor. Keep honoring the wall-clock budget so a large tail cannot outlive `timeoutMs`.
       for (;;) {
         if (deadline !== undefined && Date.now() >= deadline) {
           throw new HaiAgentsTimeoutError(`Session ${id} did not settle within ${timeoutMs}ms`);
@@ -651,7 +669,7 @@ async function* streamWithDispatch(
     }
 
     if (dispatch !== undefined) {
-      advertised = await answerToolCalls(client, id, dispatch, advertised, batch, status, isCaughtUp);
+      await answerToolCalls(client, id, dispatch, advertised, status, isCaughtUp);
     }
   }
 }
