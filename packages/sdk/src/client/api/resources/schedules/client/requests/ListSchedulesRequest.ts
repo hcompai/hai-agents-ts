@@ -12,5 +12,5 @@ export interface ListSchedulesRequest {
     /** Number of items per page */
     size?: number;
     /** Sort by field */
-    sort?: HaiAgents.ListSchedulesRequestSortItem[] | null;
+    sort?: HaiAgents.ListSchedulesRequestSortItem | HaiAgents.ListSchedulesRequestSortItem[];
 }

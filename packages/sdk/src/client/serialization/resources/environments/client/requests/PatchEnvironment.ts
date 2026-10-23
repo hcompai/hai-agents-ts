@@ -4,6 +4,7 @@ import type * as HaiAgents from "../../../../../api/index.js";
 import * as core from "../../../../../core/index.js";
 import type * as serializers from "../../../../index.js";
 import { BrowserNetwork } from "../../../../types/BrowserNetwork.js";
+import { WorkstationStorage } from "../../../../types/WorkstationStorage.js";
 import { PatchEnvironmentHost } from "../../types/PatchEnvironmentHost.js";
 import { PatchEnvironmentMode } from "../../types/PatchEnvironmentMode.js";
 
@@ -34,6 +35,7 @@ export const PatchEnvironment: core.serialization.Schema<
         core.serialization.number().optionalNullable(),
     ),
     image: core.serialization.string().optionalNullable(),
+    storage: WorkstationStorage.optionalNullable(),
 });
 
 export declare namespace PatchEnvironment {
@@ -52,5 +54,6 @@ export declare namespace PatchEnvironment {
         network?: (BrowserNetwork.Raw | null | undefined) | null;
         screenshot_max_width?: (number | null | undefined) | null;
         image?: (string | null | undefined) | null;
+        storage?: (WorkstationStorage.Raw | null | undefined) | null;
     }
 }

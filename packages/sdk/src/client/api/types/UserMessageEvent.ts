@@ -13,5 +13,7 @@ export interface UserMessageEvent {
     images?: string[];
     /** Optional files attached to the message: up to 10, 7 MB in total. They are saved under files/ in the workspace of a workstation or code sandbox, and ~/Downloads on a cloud browser. */
     files?: HaiAgents.FileContent[];
+    /** Skills for this message only, as inline definitions. Skills with files are not supported here yet: add those to the agent's skills. */
+    skills?: HaiAgents.Skill[];
     callerId?: string;
 }

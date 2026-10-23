@@ -351,6 +351,79 @@ async function recoverPendingToolCalls(client: HaiAgentsClient, id: string): Pro
   return latestPendingToolCalls(changes?.newEvents ?? [], []);
 }
 
+/** Custom tools plus the calls already claimed; a handle shares one across its waits and streams. */
+class ToolDispatch {
+  readonly toolsByName: ReadonlyMap<string, Tool>;
+  private readonly claimed = new Set<string>();
+
+  constructor(tools: readonly Tool[]) {
+    this.toolsByName = new Map(asTools(tools).map((t) => [t.name, t]));
+  }
+
+  /** Return the calls no loop has claimed yet, claiming them. */
+  claim(calls: readonly PendingToolCall[]): PendingToolCall[] {
+    const fresh = calls.filter((call) => !this.claimed.has(callKey(call)));
+    for (const call of fresh) {
+      this.claimed.add(callKey(call));
+    }
+    return fresh;
+  }
+
+  release(calls: readonly PendingToolCall[]): void {
+    for (const call of calls) {
+      this.claimed.delete(callKey(call));
+    }
+  }
+}
+
+function toolDispatch(tools: readonly Tool[] | undefined): ToolDispatch | undefined {
+  return tools !== undefined && tools.length > 0 ? new ToolDispatch(tools) : undefined;
+}
+
+/** Only a short page proves the cursor reached the live tip; without a positive `limit` no page is full. */
+function caughtUp(batch: readonly SessionEvent[], limit: number | null | undefined): boolean {
+  return !limit || batch.length < limit;
+}
+
+/** Run and post the calls the session awaits, each once; resolves with this loop's latest advertised calls. */
+async function answerToolCalls(
+  client: HaiAgentsClient,
+  id: string,
+  dispatch: ToolDispatch,
+  previous: PendingToolCall[],
+  batch: readonly SessionEvent[],
+  status: TrajectoryStatus,
+  isCaughtUp: boolean,
+): Promise<PendingToolCall[]> {
+  let advertised = latestPendingToolCalls(batch, previous);
+  // The live status describes the tip: a lagging cursor's advertised calls may already be answered.
+  if (!isCaughtUp || (status as string) !== "awaiting_tool_results") {
+    return advertised;
+  }
+  if (advertised.length === 0) {
+    advertised = await recoverPendingToolCalls(client, id);
+  }
+  const calls = dispatch.claim(advertised);
+  if (calls.length > 0) {
+    try {
+      const results = await Promise.all(calls.map((call) => executeToolCall(dispatch.toolsByName, call)));
+      await postToolResults(client, id, results);
+    } catch (error) {
+      dispatch.release(calls);
+      throw error;
+    }
+  }
+  return advertised;
+}
+
+/** Cursor past `changes`; starts at the server's `firstIndex` when it skipped evicted events. */
+function cursorAfter(cursor: number, changes: SessionChanges | undefined): number {
+  if (!changes) return cursor;
+  const start = changes.firstIndex ?? cursor;
+  if (start > cursor) console.warn(`Skipped ${start - cursor} session events evicted before they were read`);
+  return start + (changes.newEvents?.length ?? 0);
+}
+
 /**
  * Poll a session until it settles: a terminal status, or idle awaiting the next message.
  * Without `tools`, a session awaiting tool results also ends the wait, since nothing here will answer it.
@@ -359,9 +432,17 @@ async function recoverPendingToolCalls(client: HaiAgentsClient, id: string): Pro
  * and the final answer, since it 204s whenever no new events exist past `fromIndex` --
  * even after the session has finished.
  */
-export async function waitForSession<TAnswer = SessionChanges["answer"]>(
+export function waitForSession<TAnswer = SessionChanges["answer"]>(
   client: HaiAgentsClient,
   options: WaitForSessionOptions<TAnswer>,
+): Promise<SessionRunResult<TAnswer>> {
+  return waitWithDispatch(client, options, toolDispatch(options.tools));
+}
+
+async function waitWithDispatch<TAnswer>(
+  client: HaiAgentsClient,
+  options: WaitForSessionOptions<TAnswer>,
+  dispatch: ToolDispatch | undefined,
 ): Promise<SessionRunResult<TAnswer>> {
   const {
     id,
@@ -373,17 +454,15 @@ export async function waitForSession<TAnswer = SessionChanges["answer"]>(
     pollBackoffMs = 0,
     maxPolls,
     answerSchema,
-    tools,
   } = options;
-  const toolsByName = new Map(asTools(tools ?? []).map((t) => [t.name, t]));
-  if (toolsByName.size > 0 && !includeEvents) {
+  let advertised: PendingToolCall[] = [];
+  if (dispatch !== undefined && !includeEvents) {
     throw new Error("tools require includeEvents=true: pending calls arrive on the event stream.");
   }
-  const answered = new Set<string>();
-  let advertised: PendingToolCall[] = [];
   const events: SessionEvent[] = [];
   let nextFromIndex = fromIndex;
   let lastChanges: SessionChanges | undefined;
+  let isCaughtUp = true;
   const deadline = timeoutMs === undefined ? undefined : Date.now() + timeoutMs;
 
   for (let polls = 0; maxPolls === undefined || polls < maxPolls; polls += 1) {
@@ -398,19 +477,20 @@ export async function waitForSession<TAnswer = SessionChanges["answer"]>(
         fromIndex: nextFromIndex,
         includeEvents: true,
         limit: limit ?? undefined,
-        waitForSeconds,
+        waitForSeconds: isCaughtUp ? waitForSeconds : 0,
       });
       if (changes) {
         lastChanges = changes;
         batch = changes.newEvents ?? [];
         events.push(...batch);
-        nextFromIndex += batch.length;
+        nextFromIndex = cursorAfter(nextFromIndex, changes);
       }
     }
+    isCaughtUp = caughtUp(batch, limit);
 
     const statusResponse = await client.sessions.getSessionStatus({ id });
     const status = statusResponse.status;
-    if (isSettledSessionStatus(status) || ((status as string) === "awaiting_tool_results" && toolsByName.size === 0)) {
+    if (isSettledSessionStatus(status) || ((status as string) === "awaiting_tool_results" && dispatch === undefined)) {
       if (includeEvents) {
         for (;;) {
           if (deadline !== undefined && Date.now() >= deadline) {
@@ -427,7 +507,7 @@ export async function waitForSession<TAnswer = SessionChanges["answer"]>(
           if (drained.length === 0) break;
           if (tail?.answer != null) lastChanges = tail;
           events.push(...drained);
-          nextFromIndex += drained.length;
+          nextFromIndex = cursorAfter(nextFromIndex, tail);
         }
       }
       const changes = await finalChanges(client, id, lastChanges, limit, status);
@@ -447,22 +527,8 @@ export async function waitForSession<TAnswer = SessionChanges["answer"]>(
       };
     }
 
-    if (toolsByName.size > 0) {
-      advertised = latestPendingToolCalls(batch, advertised);
-      // Status gate: on a replayed stream the live status decides whether calls are still open.
-      if ((status as string) === "awaiting_tool_results") {
-        if (advertised.length === 0) {
-          advertised = await recoverPendingToolCalls(client, id);
-        }
-        const calls = advertised.filter((call) => !answered.has(callKey(call)));
-        if (calls.length > 0) {
-          const results = await Promise.all(calls.map((call) => executeToolCall(toolsByName, call)));
-          await postToolResults(client, id, results);
-          for (const call of calls) {
-            answered.add(callKey(call));
-          }
-        }
-      }
+    if (dispatch !== undefined) {
+      advertised = await answerToolCalls(client, id, dispatch, advertised, batch, status, isCaughtUp);
     }
 
     // The long-poll above paces the loop when streaming events; otherwise sleep.
@@ -509,6 +575,8 @@ export type StreamSessionOptions = {
   until?: "settled" | "terminal";
   /** Overall wall-clock budget; throws once exceeded. */
   timeoutMs?: number;
+  /** Custom tools to run when the agent calls them. */
+  tools?: readonly Tool[];
 };
 
 /**
@@ -518,16 +586,26 @@ export type StreamSessionOptions = {
  * loop reads the authoritative status and stops per `until` ("settled" = terminal
  * or idle; "terminal" keeps the stream open across the idle turns of an interactive
  * session). A final non-blocking drain loop flushes any backlog remaining when it
- * stops. Unlike `waitForSession`, this does not execute custom tools: it is a
- * read-only view of the event stream.
+ * stops.
+ *
+ * With `tools`, each poll then runs the custom tool calls the session awaits and
+ * posts their results. Without them the stream is a read-only view that keeps
+ * polling through `awaiting_tool_results`, for calls another process answers.
  */
-export async function* streamSession(
+export function streamSession(client: HaiAgentsClient, options: StreamSessionOptions): AsyncGenerator<SessionEvent> {
+  return streamWithDispatch(client, options, toolDispatch(options.tools));
+}
+
+async function* streamWithDispatch(
   client: HaiAgentsClient,
   options: StreamSessionOptions,
+  dispatch: ToolDispatch | undefined,
 ): AsyncGenerator<SessionEvent> {
   const { id, fromIndex = 0, waitForSeconds = 20, limit, until = "settled", timeoutMs } = options;
   const shouldStop = until === "terminal" ? isTerminalSessionStatus : isSettledSessionStatus;
+  let advertised: PendingToolCall[] = [];
   let nextFromIndex = fromIndex;
+  let isCaughtUp = true;
   const deadline = timeoutMs === undefined ? undefined : Date.now() + timeoutMs;
 
   for (;;) {
@@ -540,13 +618,12 @@ export async function* streamSession(
       fromIndex: nextFromIndex,
       includeEvents: true,
       limit: limit ?? undefined,
-      waitForSeconds,
+      waitForSeconds: isCaughtUp ? waitForSeconds : 0,
     });
-    if (changes) {
-      const batch = changes.newEvents ?? [];
-      yield* batch;
-      nextFromIndex += batch.length;
-    }
+    const batch = changes?.newEvents ?? [];
+    yield* batch;
+    nextFromIndex = cursorAfter(nextFromIndex, changes);
+    isCaughtUp = caughtUp(batch, limit);
 
     const { status } = await client.sessions.getSessionStatus({ id });
     if (shouldStop(status)) {
@@ -564,25 +641,33 @@ export async function* streamSession(
           limit: limit ?? undefined,
           waitForSeconds: 0,
         });
-        const batch = tail?.newEvents ?? [];
-        if (batch.length === 0) {
+        const drained = tail?.newEvents ?? [];
+        if (drained.length === 0) {
           return;
         }
-        yield* batch;
-        nextFromIndex += batch.length;
+        yield* drained;
+        nextFromIndex = cursorAfter(nextFromIndex, tail);
       }
+    }
+
+    if (dispatch !== undefined) {
+      advertised = await answerToolCalls(client, id, dispatch, advertised, batch, status, isCaughtUp);
     }
   }
 }
 
 /** A created session bound to its client: object-oriented sugar over the polling helpers. */
 export class SessionHandle<TAnswer = SessionChanges["answer"]> {
+  private readonly dispatch: ToolDispatch | undefined;
+
   constructor(
     private readonly client: HaiAgentsClient,
     public readonly id: string,
     private readonly answerSchema?: AnswerSchema<TAnswer>,
-    private readonly tools?: readonly Tool[],
-  ) {}
+    tools?: readonly Tool[],
+  ) {
+    this.dispatch = toolDispatch(tools);
+  }
 
   get(): Promise<Session> {
     return this.client.sessions.getSession({ id: this.id });
@@ -619,11 +704,16 @@ export class SessionHandle<TAnswer = SessionChanges["answer"]> {
 
   /** Block until the session settles (terminal or idle); resolves with the result and final answer. */
   waitForCompletion(options?: Omit<WaitForSessionOptions<TAnswer>, "id">): Promise<SessionRunResult<TAnswer>> {
-    return waitForSession(this.client, { id: this.id, answerSchema: this.answerSchema, tools: this.tools, ...options });
+    const request = { id: this.id, answerSchema: this.answerSchema, ...options };
+    return waitWithDispatch(this.client, request, this.dispatchFor(options?.tools));
   }
 
-  /** Yield this session's events live until it settles (terminal or idle). */
+  /** Yield events until settled, running `tools` (default: the handle's); each call runs once per handle. */
   stream(options?: Omit<StreamSessionOptions, "id">): AsyncGenerator<SessionEvent> {
-    return streamSession(this.client, { id: this.id, ...options });
+    return streamWithDispatch(this.client, { id: this.id, ...options }, this.dispatchFor(options?.tools));
+  }
+
+  private dispatchFor(tools: readonly Tool[] | undefined): ToolDispatch | undefined {
+    return tools === undefined ? this.dispatch : toolDispatch(tools);
   }
 }

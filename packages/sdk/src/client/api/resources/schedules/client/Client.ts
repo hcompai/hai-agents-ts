@@ -4,7 +4,6 @@ import type { BaseClientOptions, BaseRequestOptions } from "../../../../BaseClie
 import { type NormalizedClientOptionsWithAuth, normalizeClientOptionsWithAuth } from "../../../../BaseClient.js";
 import { mergeHeaders } from "../../../../core/headers.js";
 import * as core from "../../../../core/index.js";
-import { toJson } from "../../../../core/json.js";
 import * as environments from "../../../../environments.js";
 import { handleNonStatusCodeError } from "../../../../errors/handleNonStatusCodeError.js";
 import * as errors from "../../../../errors/index.js";
@@ -50,7 +49,23 @@ export class SchedulesClient {
         const _queryParams: Record<string, unknown> = {
             page,
             size,
-            sort: sort !== undefined ? toJson(sort) : undefined,
+            sort: Array.isArray(sort)
+                ? sort.map((item) =>
+                      serializers.ListSchedulesRequestSortItem.jsonOrThrow(item, {
+                          unrecognizedObjectKeys: "passthrough",
+                          allowUnrecognizedUnionMembers: true,
+                          allowUnrecognizedEnumValues: true,
+                          omitUndefined: true,
+                      }),
+                  )
+                : sort != null
+                  ? serializers.ListSchedulesRequestSortItem.jsonOrThrow(sort, {
+                        unrecognizedObjectKeys: "passthrough",
+                        allowUnrecognizedUnionMembers: true,
+                        allowUnrecognizedEnumValues: true,
+                        omitUndefined: true,
+                    })
+                  : undefined,
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
@@ -791,7 +806,23 @@ export class SchedulesClient {
         const _queryParams: Record<string, unknown> = {
             page,
             size,
-            sort: sort !== undefined ? toJson(sort) : undefined,
+            sort: Array.isArray(sort)
+                ? sort.map((item) =>
+                      serializers.ListScheduleRunsRequestSortItem.jsonOrThrow(item, {
+                          unrecognizedObjectKeys: "passthrough",
+                          allowUnrecognizedUnionMembers: true,
+                          allowUnrecognizedEnumValues: true,
+                          omitUndefined: true,
+                      }),
+                  )
+                : sort != null
+                  ? serializers.ListScheduleRunsRequestSortItem.jsonOrThrow(sort, {
+                        unrecognizedObjectKeys: "passthrough",
+                        allowUnrecognizedUnionMembers: true,
+                        allowUnrecognizedEnumValues: true,
+                        omitUndefined: true,
+                    })
+                  : undefined,
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(

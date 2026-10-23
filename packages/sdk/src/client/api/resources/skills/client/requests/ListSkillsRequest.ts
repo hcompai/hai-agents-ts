@@ -16,5 +16,5 @@ export interface ListSkillsRequest {
     /** Number of items per page */
     size?: number;
     /** Sort by field */
-    sort?: HaiAgents.ListSkillsRequestSortItem[] | null;
+    sort?: HaiAgents.ListSkillsRequestSortItem | HaiAgents.ListSkillsRequestSortItem[];
 }

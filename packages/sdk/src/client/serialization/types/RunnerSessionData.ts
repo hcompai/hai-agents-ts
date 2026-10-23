@@ -3,6 +3,7 @@
 import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
+import { EnvironmentKind } from "./EnvironmentKind.js";
 
 export const RunnerSessionData: core.serialization.ObjectSchema<
     serializers.RunnerSessionData.Raw,
@@ -10,12 +11,14 @@ export const RunnerSessionData: core.serialization.ObjectSchema<
 > = core.serialization
     .object({
         runnerSessionId: core.serialization.property("runner_session_id", core.serialization.string()),
+        kind: EnvironmentKind.optionalNullable(),
     })
     .passthrough();
 
 export declare namespace RunnerSessionData {
     export interface Raw {
         runner_session_id: string;
+        kind?: (EnvironmentKind.Raw | null | undefined) | null;
         [key: string]: any;
     }
 }

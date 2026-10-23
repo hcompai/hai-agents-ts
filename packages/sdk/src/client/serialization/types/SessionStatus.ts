@@ -6,6 +6,7 @@ import type * as serializers from "../index.js";
 import { AnswerOutcome } from "./AnswerOutcome.js";
 import { ModelUsage } from "./ModelUsage.js";
 import { SessionErrorCode } from "./SessionErrorCode.js";
+import { ToolRequest } from "./ToolRequest.js";
 import { TrajectoryStatus } from "./TrajectoryStatus.js";
 
 export const SessionStatus: core.serialization.ObjectSchema<serializers.SessionStatus.Raw, HaiAgents.SessionStatus> =
@@ -20,6 +21,10 @@ export const SessionStatus: core.serialization.ObjectSchema<serializers.SessionS
             "subagent_session_ids",
             core.serialization.list(core.serialization.string()).optional(),
         ),
+        pendingToolCalls: core.serialization.property(
+            "pending_tool_calls",
+            core.serialization.list(ToolRequest).optional(),
+        ),
     });
 
 export declare namespace SessionStatus {
@@ -31,5 +36,6 @@ export declare namespace SessionStatus {
         steps?: number | null;
         usage_per_model?: ModelUsage.Raw[] | null;
         subagent_session_ids?: string[] | null;
+        pending_tool_calls?: ToolRequest.Raw[] | null;
     }
 }

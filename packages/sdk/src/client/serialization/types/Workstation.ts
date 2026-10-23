@@ -4,12 +4,14 @@ import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
 import { WorkstationHost } from "./WorkstationHost.js";
+import { WorkstationStorage } from "./WorkstationStorage.js";
 
 export const Workstation: core.serialization.ObjectSchema<serializers.Workstation.Raw, HaiAgents.Workstation> =
     core.serialization.object({
         id: core.serialization.string(),
         host: WorkstationHost.optional(),
         sessionId: core.serialization.property("session_id", core.serialization.string().optionalNullable()),
+        storage: WorkstationStorage.optionalNullable(),
         lazy: core.serialization.boolean().optional(),
     });
 
@@ -18,6 +20,7 @@ export declare namespace Workstation {
         id: string;
         host?: WorkstationHost.Raw | null;
         session_id?: (string | null | undefined) | null;
+        storage?: (WorkstationStorage.Raw | null | undefined) | null;
         lazy?: boolean | null;
     }
 }
