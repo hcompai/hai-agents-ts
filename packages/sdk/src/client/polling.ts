@@ -225,8 +225,13 @@ export async function fileFromPath(path: string, mediaType?: string): Promise<Fi
   return { type: "base64", source: bytes.toString("base64"), name: basename(path), mediaType };
 }
 
-/** Carry the tool definitions via the `agent.tools` override; the server applies it to referenced and inline agents alike. */
+/** Set the agent's tools: on an inline agent directly, since the server validates it before applying overrides. */
 export function attachToolDefinitions(params: CreateSessionParams, tools: readonly Tool[]): CreateSessionParams {
+  const agent = params.agent;
+  if (agent && typeof agent === "object") {
+    const definitions = tools.map((t) => ({ name: t.name, description: t.description, inputSchema: t.inputSchema }));
+    return { ...params, agent: { ...agent, tools: definitions } };
+  }
   return { ...params, overrides: { ...(params.overrides ?? {}), "agent.tools": tools.map(toolDefinition) } };
 }
 
