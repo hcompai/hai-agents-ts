@@ -11,5 +11,5 @@ import type * as HaiAgents from "../../../../index.js";
 export interface VaultUpdateRequest {
     vaultId: string;
     name?: string | null;
-    providerConfig?: HaiAgents.OnePasswordConfig | null;
+    providerConfig?: HaiAgents.VaultUpdateRequestProviderConfig | null;
 }

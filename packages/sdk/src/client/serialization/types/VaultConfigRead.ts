@@ -3,7 +3,7 @@
 import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
-import { OnePasswordConfig } from "./OnePasswordConfig.js";
+import { VaultConfigReadProviderConfig } from "./VaultConfigReadProviderConfig.js";
 
 export const VaultConfigRead: core.serialization.ObjectSchema<
     serializers.VaultConfigRead.Raw,
@@ -11,8 +11,9 @@ export const VaultConfigRead: core.serialization.ObjectSchema<
 > = core.serialization.object({
     id: core.serialization.string(),
     orgId: core.serialization.property("org_id", core.serialization.string()),
+    createdBy: core.serialization.property("created_by", core.serialization.string().optionalNullable()),
     name: core.serialization.string(),
-    providerConfig: core.serialization.property("provider_config", OnePasswordConfig),
+    providerConfig: core.serialization.property("provider_config", VaultConfigReadProviderConfig),
     createdAt: core.serialization.property("created_at", core.serialization.date()),
     updatedAt: core.serialization.property("updated_at", core.serialization.date()),
 });
@@ -21,8 +22,9 @@ export declare namespace VaultConfigRead {
     export interface Raw {
         id: string;
         org_id: string;
+        created_by?: (string | null | undefined) | null;
         name: string;
-        provider_config: OnePasswordConfig.Raw;
+        provider_config: VaultConfigReadProviderConfig.Raw;
         created_at: string;
         updated_at: string;
     }

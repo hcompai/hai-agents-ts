@@ -7,13 +7,13 @@ import type * as HaiAgents from "../../../../index.js";
  *     {
  *         name: "name",
  *         providerConfig: {
- *             opVaultId: "op_vault_id"
- *         },
- *         token: "token"
+ *             provider: "internal"
+ *         }
  *     }
  */
 export interface VaultCreateRequest {
     name: string;
-    providerConfig: HaiAgents.OnePasswordConfig;
-    token: string;
+    providerConfig: HaiAgents.VaultCreateRequestProviderConfig;
+    /** Provider token. Required for third-party providers; internal vaults take none. */
+    token?: string | null;
 }

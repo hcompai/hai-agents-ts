@@ -3,19 +3,16 @@
 import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
-import { OnePasswordConfigProvider } from "./OnePasswordConfigProvider.js";
 
 export const OnePasswordConfig: core.serialization.ObjectSchema<
     serializers.OnePasswordConfig.Raw,
     HaiAgents.OnePasswordConfig
-> = core.serialization.withJsonDefaults(core.serialization.object({
-    provider: OnePasswordConfigProvider.optional(),
+> = core.serialization.object({
     opVaultId: core.serialization.property("op_vault_id", core.serialization.string()),
-}), { provider: "onepassword" });
+});
 
 export declare namespace OnePasswordConfig {
     export interface Raw {
-        provider?: OnePasswordConfigProvider.Raw | null;
         op_vault_id: string;
     }
 }

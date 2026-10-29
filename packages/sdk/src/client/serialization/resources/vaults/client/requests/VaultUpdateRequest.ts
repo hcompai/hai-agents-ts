@@ -3,19 +3,19 @@
 import type * as HaiAgents from "../../../../../api/index.js";
 import * as core from "../../../../../core/index.js";
 import type * as serializers from "../../../../index.js";
-import { OnePasswordConfig } from "../../../../types/OnePasswordConfig.js";
+import { VaultUpdateRequestProviderConfig } from "../../types/VaultUpdateRequestProviderConfig.js";
 
 export const VaultUpdateRequest: core.serialization.Schema<
     serializers.VaultUpdateRequest.Raw,
     Omit<HaiAgents.VaultUpdateRequest, "vaultId">
 > = core.serialization.object({
     name: core.serialization.string().optionalNullable(),
-    providerConfig: core.serialization.property("provider_config", OnePasswordConfig.optionalNullable()),
+    providerConfig: core.serialization.property("provider_config", VaultUpdateRequestProviderConfig.optionalNullable()),
 });
 
 export declare namespace VaultUpdateRequest {
     export interface Raw {
         name?: (string | null | undefined) | null;
-        provider_config?: (OnePasswordConfig.Raw | null | undefined) | null;
+        provider_config?: (VaultUpdateRequestProviderConfig.Raw | null | undefined) | null;
     }
 }

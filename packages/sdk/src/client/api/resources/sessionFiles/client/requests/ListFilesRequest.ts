@@ -8,7 +8,8 @@
  */
 export interface ListFilesRequest {
     sessionId: string;
-    path?: string;
+    /** Directory to list; by default the environment's own, such as `~/Downloads` on a browser. */
+    path?: string | null;
     maxEntries?: number;
     modifiedBefore?: Date | null;
     nameAfter?: string | null;
