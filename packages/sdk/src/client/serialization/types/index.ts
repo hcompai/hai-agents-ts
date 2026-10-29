@@ -39,6 +39,7 @@ export * from "./CronTiming.js";
 export * from "./CronTimingType.js";
 export * from "./Desktop.js";
 export * from "./DesktopHost.js";
+export * from "./DetailErrorResponse.js";
 export * from "./Environment.js";
 export * from "./EnvironmentKind.js";
 export * from "./EnvironmentPage.js";
