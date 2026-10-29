@@ -3,13 +3,14 @@
 import type * as HaiAgents from "../index.js";
 
 /**
- * Response model for a vault config. Never includes the stored token.
+ * A vault config. Never includes the stored token.
  */
 export interface VaultConfigRead {
     id: string;
     orgId: string;
+    createdBy?: string | null;
     name: string;
-    providerConfig: HaiAgents.OnePasswordConfig;
+    providerConfig: HaiAgents.VaultConfigReadProviderConfig;
     createdAt: Date;
     updatedAt: Date;
 }

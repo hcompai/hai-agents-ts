@@ -23,6 +23,7 @@ export declare namespace HaiAgentsClient {
 export class HaiAgentsClient {
     protected readonly _options: NormalizedClientOptionsWithAuth<HaiAgentsClient.Options>;
     protected _sessions: SessionsClient | undefined;
+    protected _sessionFiles: SessionFilesClient | undefined;
     protected _skills: SkillsClient | undefined;
     protected _environments: EnvironmentsClient | undefined;
     protected _agents: AgentsClient | undefined;
@@ -30,7 +31,6 @@ export class HaiAgentsClient {
     protected _schedules: SchedulesClient | undefined;
     protected _browserProfiles: BrowserProfilesClient | undefined;
     protected _vaults: VaultsClient | undefined;
-    protected _sessionFiles: SessionFilesClient | undefined;
     protected _quota: QuotaClient | undefined;
 
     constructor(options: HaiAgentsClient.Options = {}) {
@@ -39,6 +39,10 @@ export class HaiAgentsClient {
 
     public get sessions(): SessionsClient {
         return (this._sessions ??= new SessionsClient(this._options));
+    }
+
+    public get sessionFiles(): SessionFilesClient {
+        return (this._sessionFiles ??= new SessionFilesClient(this._options));
     }
 
     public get skills(): SkillsClient {
@@ -67,10 +71,6 @@ export class HaiAgentsClient {
 
     public get vaults(): VaultsClient {
         return (this._vaults ??= new VaultsClient(this._options));
-    }
-
-    public get sessionFiles(): SessionFilesClient {
-        return (this._sessionFiles ??= new SessionFilesClient(this._options));
     }
 
     public get quota(): QuotaClient {

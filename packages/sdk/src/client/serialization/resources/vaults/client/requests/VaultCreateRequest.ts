@@ -3,21 +3,21 @@
 import type * as HaiAgents from "../../../../../api/index.js";
 import * as core from "../../../../../core/index.js";
 import type * as serializers from "../../../../index.js";
-import { OnePasswordConfig } from "../../../../types/OnePasswordConfig.js";
+import { VaultCreateRequestProviderConfig } from "../../types/VaultCreateRequestProviderConfig.js";
 
 export const VaultCreateRequest: core.serialization.Schema<
     serializers.VaultCreateRequest.Raw,
     HaiAgents.VaultCreateRequest
 > = core.serialization.object({
     name: core.serialization.string(),
-    providerConfig: core.serialization.property("provider_config", OnePasswordConfig),
-    token: core.serialization.string(),
+    providerConfig: core.serialization.property("provider_config", VaultCreateRequestProviderConfig),
+    token: core.serialization.string().optionalNullable(),
 });
 
 export declare namespace VaultCreateRequest {
     export interface Raw {
         name: string;
-        provider_config: OnePasswordConfig.Raw;
-        token: string;
+        provider_config: VaultCreateRequestProviderConfig.Raw;
+        token?: (string | null | undefined) | null;
     }
 }

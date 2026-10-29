@@ -24,6 +24,66 @@ export class SessionFilesClient {
     }
 
     /**
+     * Download a file shared in a session, by the ``file_id`` its ``AttachmentEvent`` carries.
+     *
+     * @throws {@link HaiAgents.NotFoundError}
+     */
+    public downloadFile(
+        request: HaiAgents.DownloadFileRequest,
+        requestOptions?: SessionFilesClient.RequestOptions,
+    ): core.HttpResponsePromise<core.BinaryResponse> {
+        return core.HttpResponsePromise.fromPromise(this.__downloadFile(request, requestOptions));
+    }
+
+    private async __downloadFile(
+        request: HaiAgents.DownloadFileRequest,
+        requestOptions?: SessionFilesClient.RequestOptions,
+    ): Promise<core.WithRawResponse<core.BinaryResponse>> {
+        const { fileId } = request;
+        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
+        const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
+            _authRequest.headers,
+            this._options?.headers,
+            requestOptions?.headers,
+        );
+        const _response = await core.fetcher<core.BinaryResponse>({
+            url: core.url.join(
+                (await core.Supplier.get(this._options.baseUrl)) ??
+                    (await core.Supplier.get(this._options.environment)) ??
+                    environments.HaiAgentsEnvironment.Eu,
+                `api/v2/files/${core.url.encodePathParam(fileId)}`,
+            ),
+            method: "GET",
+            headers: _headers,
+            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            responseType: "binary-response",
+            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
+            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
+            abortSignal: requestOptions?.abortSignal,
+            fetchFn: this._options?.fetch,
+            logging: this._options.logging,
+        });
+        if (_response.ok) {
+            return { data: _response.body, rawResponse: _response.rawResponse };
+        }
+
+        if (_response.error.reason === "status-code") {
+            switch (_response.error.statusCode) {
+                case 404:
+                    throw new HaiAgents.NotFoundError(_response.error.body, _response.rawResponse);
+                default:
+                    throw new errors.HaiAgentsError({
+                        statusCode: _response.error.statusCode,
+                        body: _response.error.body,
+                        rawResponse: _response.rawResponse,
+                    });
+            }
+        }
+
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v2/files/{file_id}");
+    }
+
+    /**
      * List files on the session's pod (allowlisted roots only), newest first, paged via the cursor.
      *
      * @param {HaiAgents.ListFilesRequest} request

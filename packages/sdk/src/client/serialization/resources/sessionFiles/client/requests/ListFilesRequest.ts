@@ -8,7 +8,7 @@ export const ListFilesRequest: core.serialization.Schema<
     serializers.ListFilesRequest.Raw,
     Omit<HaiAgents.ListFilesRequest, "sessionId">
 > = core.serialization.object({
-    path: core.serialization.string().optional(),
+    path: core.serialization.string().optionalNullable(),
     maxEntries: core.serialization.property("max_entries", core.serialization.number().optional()),
     modifiedBefore: core.serialization.property("modified_before", core.serialization.date().optionalNullable()),
     nameAfter: core.serialization.property("name_after", core.serialization.string().optionalNullable()),
@@ -16,7 +16,7 @@ export const ListFilesRequest: core.serialization.Schema<
 
 export declare namespace ListFilesRequest {
     export interface Raw {
-        path?: string | null;
+        path?: (string | null | undefined) | null;
         max_entries?: number | null;
         modified_before?: (string | null | undefined) | null;
         name_after?: (string | null | undefined) | null;

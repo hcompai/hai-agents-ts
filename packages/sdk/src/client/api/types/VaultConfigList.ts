@@ -3,7 +3,7 @@
 import type * as HaiAgents from "../index.js";
 
 /**
- * Response model for listing vault configs.
+ * A page of vault configs.
  */
 export interface VaultConfigList {
     total: number;

@@ -29,7 +29,7 @@ export const SETTLED_SESSION_STATUSES = [
   "idle",
 ] as const satisfies readonly TrajectoryStatus[];
 
-/** The API gateway rejects request bodies above this size; enforced client-side for a clear early error. */
+/** Largest request body the SDK sends, enforced client-side for a clear early error. */
 export const MAX_REQUEST_BYTES = 10_000_000;
 
 export type SessionRunResult<TAnswer = SessionChanges["answer"]> = {

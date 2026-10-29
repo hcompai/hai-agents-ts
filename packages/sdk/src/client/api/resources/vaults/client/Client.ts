@@ -115,7 +115,7 @@ export class VaultsClient {
     }
 
     /**
-     * Create a vault config. The provider token is validated by env-manager before storage.
+     * Create a vault config. A third-party provider's token is validated by env-manager before storage.
      *
      * @param {HaiAgents.VaultCreateRequest} request
      * @param {VaultsClient.RequestOptions} requestOptions - Request-specific configuration.
@@ -126,9 +126,8 @@ export class VaultsClient {
      *     await client.vaults.createVault({
      *         name: "name",
      *         providerConfig: {
-     *             opVaultId: "op_vault_id"
-     *         },
-     *         token: "token"
+     *             provider: "internal"
+     *         }
      *     })
      */
     public createVault(
@@ -296,7 +295,7 @@ export class VaultsClient {
     }
 
     /**
-     * Delete a vault config.
+     * Delete a vault config. An internal vault's items are deleted with it.
      *
      * @param {HaiAgents.DeleteVaultRequest} request
      * @param {VaultsClient.RequestOptions} requestOptions - Request-specific configuration.
@@ -641,6 +640,570 @@ export class VaultsClient {
             _response.rawResponse,
             "GET",
             "/api/v2/vaults/{vault_id}/health",
+        );
+    }
+
+    /**
+     * List an internal vault's items, newest first.
+     *
+     * @param {HaiAgents.ListVaultItemsRequest} request
+     * @param {VaultsClient.RequestOptions} requestOptions - Request-specific configuration.
+     *
+     * @throws {@link HaiAgents.UnprocessableEntityError}
+     *
+     * @example
+     *     await client.vaults.listVaultItems({
+     *         vaultId: "vault_id"
+     *     })
+     */
+    public listVaultItems(
+        request: HaiAgents.ListVaultItemsRequest,
+        requestOptions?: VaultsClient.RequestOptions,
+    ): core.HttpResponsePromise<HaiAgents.VaultItemList> {
+        return core.HttpResponsePromise.fromPromise(this.__listVaultItems(request, requestOptions));
+    }
+
+    private async __listVaultItems(
+        request: HaiAgents.ListVaultItemsRequest,
+        requestOptions?: VaultsClient.RequestOptions,
+    ): Promise<core.WithRawResponse<HaiAgents.VaultItemList>> {
+        const { vaultId, limit, offset } = request;
+        const _queryParams: Record<string, unknown> = {
+            limit,
+            offset,
+        };
+        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
+        const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
+            _authRequest.headers,
+            this._options?.headers,
+            requestOptions?.headers,
+        );
+        const _response = await core.fetcher({
+            url: core.url.join(
+                (await core.Supplier.get(this._options.baseUrl)) ??
+                    (await core.Supplier.get(this._options.environment)) ??
+                    environments.HaiAgentsEnvironment.Eu,
+                `api/v2/vaults/${core.url.encodePathParam(vaultId)}/items`,
+            ),
+            method: "GET",
+            headers: _headers,
+            queryString: core.url
+                .queryBuilder()
+                .addMany(_queryParams)
+                .mergeAdditional(requestOptions?.queryParams)
+                .build(),
+            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
+            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
+            abortSignal: requestOptions?.abortSignal,
+            fetchFn: this._options?.fetch,
+            logging: this._options.logging,
+        });
+        if (_response.ok) {
+            return {
+                data: serializers.VaultItemList.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
+                rawResponse: _response.rawResponse,
+            };
+        }
+
+        if (_response.error.reason === "status-code") {
+            switch (_response.error.statusCode) {
+                case 422:
+                    throw new HaiAgents.UnprocessableEntityError(
+                        serializers.ErrorResponse.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                default:
+                    throw new errors.HaiAgentsError({
+                        statusCode: _response.error.statusCode,
+                        body: _response.error.body,
+                        rawResponse: _response.rawResponse,
+                    });
+            }
+        }
+
+        return handleNonStatusCodeError(
+            _response.error,
+            _response.rawResponse,
+            "GET",
+            "/api/v2/vaults/{vault_id}/items",
+        );
+    }
+
+    /**
+     * Add an item to an internal vault. The response lists which fields are set, never their values.
+     *
+     * @param {HaiAgents.VaultItemCreateRequest} request
+     * @param {VaultsClient.RequestOptions} requestOptions - Request-specific configuration.
+     *
+     * @throws {@link HaiAgents.UnprocessableEntityError}
+     *
+     * @example
+     *     await client.vaults.createVaultItem({
+     *         vaultId: "vault_id",
+     *         name: "name",
+     *         urls: ["urls"],
+     *         values: {
+     *             "key": "value"
+     *         }
+     *     })
+     */
+    public createVaultItem(
+        request: HaiAgents.VaultItemCreateRequest,
+        requestOptions?: VaultsClient.RequestOptions,
+    ): core.HttpResponsePromise<HaiAgents.VaultItemRead> {
+        return core.HttpResponsePromise.fromPromise(this.__createVaultItem(request, requestOptions));
+    }
+
+    private async __createVaultItem(
+        request: HaiAgents.VaultItemCreateRequest,
+        requestOptions?: VaultsClient.RequestOptions,
+    ): Promise<core.WithRawResponse<HaiAgents.VaultItemRead>> {
+        const { vaultId, ..._body } = request;
+        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
+        const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
+            _authRequest.headers,
+            this._options?.headers,
+            requestOptions?.headers,
+        );
+        const _response = await core.fetcher({
+            url: core.url.join(
+                (await core.Supplier.get(this._options.baseUrl)) ??
+                    (await core.Supplier.get(this._options.environment)) ??
+                    environments.HaiAgentsEnvironment.Eu,
+                `api/v2/vaults/${core.url.encodePathParam(vaultId)}/items`,
+            ),
+            method: "POST",
+            headers: _headers,
+            contentType: "application/json",
+            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            requestType: "json",
+            body: serializers.VaultItemCreateRequest.jsonOrThrow(_body, {
+                unrecognizedObjectKeys: "passthrough",
+                allowUnrecognizedUnionMembers: true,
+                allowUnrecognizedEnumValues: true,
+                omitUndefined: true,
+            }),
+            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
+            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
+            abortSignal: requestOptions?.abortSignal,
+            fetchFn: this._options?.fetch,
+            logging: this._options.logging,
+        });
+        if (_response.ok) {
+            return {
+                data: serializers.VaultItemRead.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
+                rawResponse: _response.rawResponse,
+            };
+        }
+
+        if (_response.error.reason === "status-code") {
+            switch (_response.error.statusCode) {
+                case 422:
+                    throw new HaiAgents.UnprocessableEntityError(
+                        serializers.ErrorResponse.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                default:
+                    throw new errors.HaiAgentsError({
+                        statusCode: _response.error.statusCode,
+                        body: _response.error.body,
+                        rawResponse: _response.rawResponse,
+                    });
+            }
+        }
+
+        return handleNonStatusCodeError(
+            _response.error,
+            _response.rawResponse,
+            "POST",
+            "/api/v2/vaults/{vault_id}/items",
+        );
+    }
+
+    /**
+     * Fetch an internal vault item's metadata.
+     *
+     * @param {HaiAgents.GetVaultItemRequest} request
+     * @param {VaultsClient.RequestOptions} requestOptions - Request-specific configuration.
+     *
+     * @throws {@link HaiAgents.UnprocessableEntityError}
+     *
+     * @example
+     *     await client.vaults.getVaultItem({
+     *         vaultId: "vault_id",
+     *         itemId: "item_id"
+     *     })
+     */
+    public getVaultItem(
+        request: HaiAgents.GetVaultItemRequest,
+        requestOptions?: VaultsClient.RequestOptions,
+    ): core.HttpResponsePromise<HaiAgents.VaultItemRead> {
+        return core.HttpResponsePromise.fromPromise(this.__getVaultItem(request, requestOptions));
+    }
+
+    private async __getVaultItem(
+        request: HaiAgents.GetVaultItemRequest,
+        requestOptions?: VaultsClient.RequestOptions,
+    ): Promise<core.WithRawResponse<HaiAgents.VaultItemRead>> {
+        const { vaultId, itemId } = request;
+        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
+        const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
+            _authRequest.headers,
+            this._options?.headers,
+            requestOptions?.headers,
+        );
+        const _response = await core.fetcher({
+            url: core.url.join(
+                (await core.Supplier.get(this._options.baseUrl)) ??
+                    (await core.Supplier.get(this._options.environment)) ??
+                    environments.HaiAgentsEnvironment.Eu,
+                `api/v2/vaults/${core.url.encodePathParam(vaultId)}/items/${core.url.encodePathParam(itemId)}`,
+            ),
+            method: "GET",
+            headers: _headers,
+            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
+            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
+            abortSignal: requestOptions?.abortSignal,
+            fetchFn: this._options?.fetch,
+            logging: this._options.logging,
+        });
+        if (_response.ok) {
+            return {
+                data: serializers.VaultItemRead.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
+                rawResponse: _response.rawResponse,
+            };
+        }
+
+        if (_response.error.reason === "status-code") {
+            switch (_response.error.statusCode) {
+                case 422:
+                    throw new HaiAgents.UnprocessableEntityError(
+                        serializers.ErrorResponse.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                default:
+                    throw new errors.HaiAgentsError({
+                        statusCode: _response.error.statusCode,
+                        body: _response.error.body,
+                        rawResponse: _response.rawResponse,
+                    });
+            }
+        }
+
+        return handleNonStatusCodeError(
+            _response.error,
+            _response.rawResponse,
+            "GET",
+            "/api/v2/vaults/{vault_id}/items/{item_id}",
+        );
+    }
+
+    /**
+     * Delete an internal vault item and its stored values.
+     *
+     * @param {HaiAgents.DeleteVaultItemRequest} request
+     * @param {VaultsClient.RequestOptions} requestOptions - Request-specific configuration.
+     *
+     * @throws {@link HaiAgents.UnprocessableEntityError}
+     *
+     * @example
+     *     await client.vaults.deleteVaultItem({
+     *         vaultId: "vault_id",
+     *         itemId: "item_id"
+     *     })
+     */
+    public deleteVaultItem(
+        request: HaiAgents.DeleteVaultItemRequest,
+        requestOptions?: VaultsClient.RequestOptions,
+    ): core.HttpResponsePromise<void> {
+        return core.HttpResponsePromise.fromPromise(this.__deleteVaultItem(request, requestOptions));
+    }
+
+    private async __deleteVaultItem(
+        request: HaiAgents.DeleteVaultItemRequest,
+        requestOptions?: VaultsClient.RequestOptions,
+    ): Promise<core.WithRawResponse<void>> {
+        const { vaultId, itemId } = request;
+        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
+        const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
+            _authRequest.headers,
+            this._options?.headers,
+            requestOptions?.headers,
+        );
+        const _response = await core.fetcher({
+            url: core.url.join(
+                (await core.Supplier.get(this._options.baseUrl)) ??
+                    (await core.Supplier.get(this._options.environment)) ??
+                    environments.HaiAgentsEnvironment.Eu,
+                `api/v2/vaults/${core.url.encodePathParam(vaultId)}/items/${core.url.encodePathParam(itemId)}`,
+            ),
+            method: "DELETE",
+            headers: _headers,
+            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
+            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
+            abortSignal: requestOptions?.abortSignal,
+            fetchFn: this._options?.fetch,
+            logging: this._options.logging,
+        });
+        if (_response.ok) {
+            return { data: undefined, rawResponse: _response.rawResponse };
+        }
+
+        if (_response.error.reason === "status-code") {
+            switch (_response.error.statusCode) {
+                case 422:
+                    throw new HaiAgents.UnprocessableEntityError(
+                        serializers.ErrorResponse.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                default:
+                    throw new errors.HaiAgentsError({
+                        statusCode: _response.error.statusCode,
+                        body: _response.error.body,
+                        rawResponse: _response.rawResponse,
+                    });
+            }
+        }
+
+        return handleNonStatusCodeError(
+            _response.error,
+            _response.rawResponse,
+            "DELETE",
+            "/api/v2/vaults/{vault_id}/items/{item_id}",
+        );
+    }
+
+    /**
+     * Partial update of an internal vault item.
+     *
+     * @param {HaiAgents.VaultItemUpdateRequest} request
+     * @param {VaultsClient.RequestOptions} requestOptions - Request-specific configuration.
+     *
+     * @throws {@link HaiAgents.UnprocessableEntityError}
+     *
+     * @example
+     *     await client.vaults.updateVaultItem({
+     *         vaultId: "vault_id",
+     *         itemId: "item_id"
+     *     })
+     */
+    public updateVaultItem(
+        request: HaiAgents.VaultItemUpdateRequest,
+        requestOptions?: VaultsClient.RequestOptions,
+    ): core.HttpResponsePromise<HaiAgents.VaultItemRead> {
+        return core.HttpResponsePromise.fromPromise(this.__updateVaultItem(request, requestOptions));
+    }
+
+    private async __updateVaultItem(
+        request: HaiAgents.VaultItemUpdateRequest,
+        requestOptions?: VaultsClient.RequestOptions,
+    ): Promise<core.WithRawResponse<HaiAgents.VaultItemRead>> {
+        const { vaultId, itemId, ..._body } = request;
+        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
+        const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
+            _authRequest.headers,
+            this._options?.headers,
+            requestOptions?.headers,
+        );
+        const _response = await core.fetcher({
+            url: core.url.join(
+                (await core.Supplier.get(this._options.baseUrl)) ??
+                    (await core.Supplier.get(this._options.environment)) ??
+                    environments.HaiAgentsEnvironment.Eu,
+                `api/v2/vaults/${core.url.encodePathParam(vaultId)}/items/${core.url.encodePathParam(itemId)}`,
+            ),
+            method: "PATCH",
+            headers: _headers,
+            contentType: "application/json",
+            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            requestType: "json",
+            body: serializers.VaultItemUpdateRequest.jsonOrThrow(_body, {
+                unrecognizedObjectKeys: "passthrough",
+                allowUnrecognizedUnionMembers: true,
+                allowUnrecognizedEnumValues: true,
+                omitUndefined: true,
+            }),
+            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
+            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
+            abortSignal: requestOptions?.abortSignal,
+            fetchFn: this._options?.fetch,
+            logging: this._options.logging,
+        });
+        if (_response.ok) {
+            return {
+                data: serializers.VaultItemRead.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
+                rawResponse: _response.rawResponse,
+            };
+        }
+
+        if (_response.error.reason === "status-code") {
+            switch (_response.error.statusCode) {
+                case 422:
+                    throw new HaiAgents.UnprocessableEntityError(
+                        serializers.ErrorResponse.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                default:
+                    throw new errors.HaiAgentsError({
+                        statusCode: _response.error.statusCode,
+                        body: _response.error.body,
+                        rawResponse: _response.rawResponse,
+                    });
+            }
+        }
+
+        return handleNonStatusCodeError(
+            _response.error,
+            _response.rawResponse,
+            "PATCH",
+            "/api/v2/vaults/{vault_id}/items/{item_id}",
+        );
+    }
+
+    /**
+     * Return an internal vault item's values, with the current TOTP code in place of its seed. Audit-logged.
+     *
+     * @param {HaiAgents.RevealVaultItemRequest} request
+     * @param {VaultsClient.RequestOptions} requestOptions - Request-specific configuration.
+     *
+     * @throws {@link HaiAgents.UnprocessableEntityError}
+     *
+     * @example
+     *     await client.vaults.revealVaultItem({
+     *         vaultId: "vault_id",
+     *         itemId: "item_id"
+     *     })
+     */
+    public revealVaultItem(
+        request: HaiAgents.RevealVaultItemRequest,
+        requestOptions?: VaultsClient.RequestOptions,
+    ): core.HttpResponsePromise<HaiAgents.VaultItemValues> {
+        return core.HttpResponsePromise.fromPromise(this.__revealVaultItem(request, requestOptions));
+    }
+
+    private async __revealVaultItem(
+        request: HaiAgents.RevealVaultItemRequest,
+        requestOptions?: VaultsClient.RequestOptions,
+    ): Promise<core.WithRawResponse<HaiAgents.VaultItemValues>> {
+        const { vaultId, itemId } = request;
+        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
+        const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
+            _authRequest.headers,
+            this._options?.headers,
+            requestOptions?.headers,
+        );
+        const _response = await core.fetcher({
+            url: core.url.join(
+                (await core.Supplier.get(this._options.baseUrl)) ??
+                    (await core.Supplier.get(this._options.environment)) ??
+                    environments.HaiAgentsEnvironment.Eu,
+                `api/v2/vaults/${core.url.encodePathParam(vaultId)}/items/${core.url.encodePathParam(itemId)}/reveal`,
+            ),
+            method: "POST",
+            headers: _headers,
+            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
+            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
+            abortSignal: requestOptions?.abortSignal,
+            fetchFn: this._options?.fetch,
+            logging: this._options.logging,
+        });
+        if (_response.ok) {
+            return {
+                data: serializers.VaultItemValues.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
+                rawResponse: _response.rawResponse,
+            };
+        }
+
+        if (_response.error.reason === "status-code") {
+            switch (_response.error.statusCode) {
+                case 422:
+                    throw new HaiAgents.UnprocessableEntityError(
+                        serializers.ErrorResponse.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                default:
+                    throw new errors.HaiAgentsError({
+                        statusCode: _response.error.statusCode,
+                        body: _response.error.body,
+                        rawResponse: _response.rawResponse,
+                    });
+            }
+        }
+
+        return handleNonStatusCodeError(
+            _response.error,
+            _response.rawResponse,
+            "POST",
+            "/api/v2/vaults/{vault_id}/items/{item_id}/reveal",
         );
     }
 }
