@@ -110,4 +110,17 @@ describe("spec const+default discriminators", () => {
         const android = serialization.AgentEnvironmentsItem.jsonOrThrow({ kind: "android", id: "phone" });
         expect((android as any).kind).toBe("android");
     });
+
+    it("keeps provider on the wire through the vault create path", () => {
+        const onepassword = serialization.VaultCreateRequest.jsonOrThrow({
+            name: "vault",
+            providerConfig: { provider: "onepassword", opVaultId: "vault_1" },
+        });
+        expect((onepassword as any).provider_config.provider).toBe("onepassword");
+        const internal = serialization.VaultCreateRequest.jsonOrThrow({
+            name: "vault",
+            providerConfig: { provider: "internal" },
+        });
+        expect((internal as any).provider_config.provider).toBe("internal");
+    });
 });
