@@ -120,6 +120,8 @@ export class VaultsClient {
      * @param {HaiAgents.VaultCreateRequest} request
      * @param {VaultsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link HaiAgents.BadRequestError}
+     * @throws {@link HaiAgents.ConflictError}
      * @throws {@link HaiAgents.UnprocessableEntityError}
      *
      * @example
@@ -186,6 +188,28 @@ export class VaultsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400:
+                    throw new HaiAgents.BadRequestError(
+                        serializers.DetailErrorResponse.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                case 409:
+                    throw new HaiAgents.ConflictError(
+                        serializers.DetailErrorResponse.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
                         serializers.ErrorResponse.parseOrThrow(_response.error.body, {
@@ -215,6 +239,7 @@ export class VaultsClient {
      * @param {HaiAgents.GetVaultRequest} request
      * @param {VaultsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link HaiAgents.NotFoundError}
      * @throws {@link HaiAgents.UnprocessableEntityError}
      *
      * @example
@@ -271,6 +296,8 @@ export class VaultsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 404:
+                    throw new HaiAgents.NotFoundError(_response.error.body, _response.rawResponse);
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
                         serializers.ErrorResponse.parseOrThrow(_response.error.body, {
@@ -300,6 +327,8 @@ export class VaultsClient {
      * @param {HaiAgents.DeleteVaultRequest} request
      * @param {VaultsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link HaiAgents.NotFoundError}
+     * @throws {@link HaiAgents.ConflictError}
      * @throws {@link HaiAgents.UnprocessableEntityError}
      *
      * @example
@@ -347,6 +376,19 @@ export class VaultsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 404:
+                    throw new HaiAgents.NotFoundError(_response.error.body, _response.rawResponse);
+                case 409:
+                    throw new HaiAgents.ConflictError(
+                        serializers.DetailErrorResponse.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
                         serializers.ErrorResponse.parseOrThrow(_response.error.body, {
@@ -376,6 +418,9 @@ export class VaultsClient {
      * @param {HaiAgents.VaultUpdateRequest} request
      * @param {VaultsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link HaiAgents.BadRequestError}
+     * @throws {@link HaiAgents.NotFoundError}
+     * @throws {@link HaiAgents.ConflictError}
      * @throws {@link HaiAgents.UnprocessableEntityError}
      *
      * @example
@@ -440,6 +485,30 @@ export class VaultsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400:
+                    throw new HaiAgents.BadRequestError(
+                        serializers.DetailErrorResponse.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                case 404:
+                    throw new HaiAgents.NotFoundError(_response.error.body, _response.rawResponse);
+                case 409:
+                    throw new HaiAgents.ConflictError(
+                        serializers.DetailErrorResponse.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
                         serializers.ErrorResponse.parseOrThrow(_response.error.body, {
@@ -469,6 +538,8 @@ export class VaultsClient {
      * @param {HaiAgents.VaultTokenRotateRequest} request
      * @param {VaultsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link HaiAgents.BadRequestError}
+     * @throws {@link HaiAgents.NotFoundError}
      * @throws {@link HaiAgents.UnprocessableEntityError}
      *
      * @example
@@ -525,6 +596,19 @@ export class VaultsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400:
+                    throw new HaiAgents.BadRequestError(
+                        serializers.DetailErrorResponse.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                case 404:
+                    throw new HaiAgents.NotFoundError(_response.error.body, _response.rawResponse);
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
                         serializers.ErrorResponse.parseOrThrow(_response.error.body, {
@@ -559,6 +643,7 @@ export class VaultsClient {
      * @param {HaiAgents.VaultHealthRequest} request
      * @param {VaultsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link HaiAgents.NotFoundError}
      * @throws {@link HaiAgents.UnprocessableEntityError}
      *
      * @example
@@ -615,6 +700,8 @@ export class VaultsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 404:
+                    throw new HaiAgents.NotFoundError(_response.error.body, _response.rawResponse);
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
                         serializers.ErrorResponse.parseOrThrow(_response.error.body, {
@@ -649,6 +736,8 @@ export class VaultsClient {
      * @param {HaiAgents.ListVaultItemsRequest} request
      * @param {VaultsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link HaiAgents.BadRequestError}
+     * @throws {@link HaiAgents.NotFoundError}
      * @throws {@link HaiAgents.UnprocessableEntityError}
      *
      * @example
@@ -713,6 +802,19 @@ export class VaultsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400:
+                    throw new HaiAgents.BadRequestError(
+                        serializers.DetailErrorResponse.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                case 404:
+                    throw new HaiAgents.NotFoundError(_response.error.body, _response.rawResponse);
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
                         serializers.ErrorResponse.parseOrThrow(_response.error.body, {
@@ -747,6 +849,9 @@ export class VaultsClient {
      * @param {HaiAgents.VaultItemCreateRequest} request
      * @param {VaultsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link HaiAgents.BadRequestError}
+     * @throws {@link HaiAgents.ForbiddenError}
+     * @throws {@link HaiAgents.NotFoundError}
      * @throws {@link HaiAgents.UnprocessableEntityError}
      *
      * @example
@@ -816,6 +921,21 @@ export class VaultsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400:
+                    throw new HaiAgents.BadRequestError(
+                        serializers.DetailErrorResponse.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                case 403:
+                    throw new HaiAgents.ForbiddenError(_response.error.body, _response.rawResponse);
+                case 404:
+                    throw new HaiAgents.NotFoundError(_response.error.body, _response.rawResponse);
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
                         serializers.ErrorResponse.parseOrThrow(_response.error.body, {
@@ -850,6 +970,8 @@ export class VaultsClient {
      * @param {HaiAgents.GetVaultItemRequest} request
      * @param {VaultsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link HaiAgents.BadRequestError}
+     * @throws {@link HaiAgents.NotFoundError}
      * @throws {@link HaiAgents.UnprocessableEntityError}
      *
      * @example
@@ -907,6 +1029,19 @@ export class VaultsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400:
+                    throw new HaiAgents.BadRequestError(
+                        serializers.DetailErrorResponse.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                case 404:
+                    throw new HaiAgents.NotFoundError(_response.error.body, _response.rawResponse);
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
                         serializers.ErrorResponse.parseOrThrow(_response.error.body, {
@@ -941,6 +1076,8 @@ export class VaultsClient {
      * @param {HaiAgents.DeleteVaultItemRequest} request
      * @param {VaultsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link HaiAgents.BadRequestError}
+     * @throws {@link HaiAgents.NotFoundError}
      * @throws {@link HaiAgents.UnprocessableEntityError}
      *
      * @example
@@ -989,6 +1126,19 @@ export class VaultsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400:
+                    throw new HaiAgents.BadRequestError(
+                        serializers.DetailErrorResponse.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                case 404:
+                    throw new HaiAgents.NotFoundError(_response.error.body, _response.rawResponse);
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
                         serializers.ErrorResponse.parseOrThrow(_response.error.body, {
@@ -1023,7 +1173,10 @@ export class VaultsClient {
      * @param {HaiAgents.VaultItemUpdateRequest} request
      * @param {VaultsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link HaiAgents.BadRequestError}
+     * @throws {@link HaiAgents.NotFoundError}
      * @throws {@link HaiAgents.UnprocessableEntityError}
+     * @throws {@link HaiAgents.BadGatewayError}
      *
      * @example
      *     await client.vaults.updateVaultItem({
@@ -1088,9 +1241,33 @@ export class VaultsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400:
+                    throw new HaiAgents.BadRequestError(
+                        serializers.DetailErrorResponse.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                case 404:
+                    throw new HaiAgents.NotFoundError(_response.error.body, _response.rawResponse);
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
                         serializers.ErrorResponse.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                case 502:
+                    throw new HaiAgents.BadGatewayError(
+                        serializers.DetailErrorResponse.parseOrThrow(_response.error.body, {
                             unrecognizedObjectKeys: "passthrough",
                             allowUnrecognizedUnionMembers: true,
                             allowUnrecognizedEnumValues: true,
@@ -1122,7 +1299,10 @@ export class VaultsClient {
      * @param {HaiAgents.RevealVaultItemRequest} request
      * @param {VaultsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link HaiAgents.BadRequestError}
+     * @throws {@link HaiAgents.NotFoundError}
      * @throws {@link HaiAgents.UnprocessableEntityError}
+     * @throws {@link HaiAgents.BadGatewayError}
      *
      * @example
      *     await client.vaults.revealVaultItem({
@@ -1179,9 +1359,33 @@ export class VaultsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400:
+                    throw new HaiAgents.BadRequestError(
+                        serializers.DetailErrorResponse.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                case 404:
+                    throw new HaiAgents.NotFoundError(_response.error.body, _response.rawResponse);
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
                         serializers.ErrorResponse.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                case 502:
+                    throw new HaiAgents.BadGatewayError(
+                        serializers.DetailErrorResponse.parseOrThrow(_response.error.body, {
                             unrecognizedObjectKeys: "passthrough",
                             allowUnrecognizedUnionMembers: true,
                             allowUnrecognizedEnumValues: true,
