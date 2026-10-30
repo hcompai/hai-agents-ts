@@ -22,6 +22,8 @@ export interface Agent {
     subagents?: HaiAgents.AgentSubagentsItem[] | null;
     /** Skills the agent can draw on. Each entry is a registered skill's name or an inline definition. */
     skills?: HaiAgents.AgentSkillsItem[] | null;
+    /** Exact first-party registry skill IDs, loaded on demand from the runtime-pinned release. Omitted, null, or empty disables registry skills. No wildcards or subagent inheritance. Only text-only packages are supported. Separate from user-authored skills. */
+    registrySkills?: string[] | null;
     /** JSON Schema the agent's final answer must conform to. Null returns a free-form text answer. */
     answerFormat?: Record<string, unknown> | null;
     /** Custom tools executed by the API client. The agent emits a tool call, pauses, and resumes once the client sends back the matching tool result. */

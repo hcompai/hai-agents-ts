@@ -11,11 +11,11 @@
  *         }
  *     }
  */
-export interface VaultItemCreateRequest {
+export interface VaultItemCreate {
     vaultId: string;
     name: string;
     /** http(s) URLs of the sites this item signs in to; secrets resolve by host. */
     urls: string[];
-    /** Secret values by field. `totp` takes the seed or an `otpauth://` URI and is never returned. */
+    /** Secret values by field. `totp` takes the seed or an `otpauth://totp/` URI and is never returned. */
     values: Record<string, string>;
 }

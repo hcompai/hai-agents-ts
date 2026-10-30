@@ -4,9 +4,9 @@ import type * as HaiAgents from "../../../../../api/index.js";
 import * as core from "../../../../../core/index.js";
 import type * as serializers from "../../../../index.js";
 
-export const VaultItemUpdateRequest: core.serialization.Schema<
-    serializers.VaultItemUpdateRequest.Raw,
-    Omit<HaiAgents.VaultItemUpdateRequest, "vaultId" | "itemId">
+export const VaultItemUpdate: core.serialization.Schema<
+    serializers.VaultItemUpdate.Raw,
+    Omit<HaiAgents.VaultItemUpdate, "vaultId" | "itemId">
 > = core.serialization.object({
     name: core.serialization.string().optionalNullable(),
     urls: core.serialization.list(core.serialization.string()).optionalNullable(),
@@ -15,7 +15,7 @@ export const VaultItemUpdateRequest: core.serialization.Schema<
         .optionalNullable(),
 });
 
-export declare namespace VaultItemUpdateRequest {
+export declare namespace VaultItemUpdate {
     export interface Raw {
         name?: (string | null | undefined) | null;
         urls?: (string[] | null | undefined) | null;

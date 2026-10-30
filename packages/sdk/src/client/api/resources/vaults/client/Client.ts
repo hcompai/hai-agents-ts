@@ -846,7 +846,7 @@ export class VaultsClient {
     /**
      * Add an item to an internal vault. The response lists which fields are set, never their values.
      *
-     * @param {HaiAgents.VaultItemCreateRequest} request
+     * @param {HaiAgents.VaultItemCreate} request
      * @param {VaultsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
      * @throws {@link HaiAgents.BadRequestError}
@@ -865,14 +865,14 @@ export class VaultsClient {
      *     })
      */
     public createVaultItem(
-        request: HaiAgents.VaultItemCreateRequest,
+        request: HaiAgents.VaultItemCreate,
         requestOptions?: VaultsClient.RequestOptions,
     ): core.HttpResponsePromise<HaiAgents.VaultItemRead> {
         return core.HttpResponsePromise.fromPromise(this.__createVaultItem(request, requestOptions));
     }
 
     private async __createVaultItem(
-        request: HaiAgents.VaultItemCreateRequest,
+        request: HaiAgents.VaultItemCreate,
         requestOptions?: VaultsClient.RequestOptions,
     ): Promise<core.WithRawResponse<HaiAgents.VaultItemRead>> {
         const { vaultId, ..._body } = request;
@@ -894,7 +894,7 @@ export class VaultsClient {
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: serializers.VaultItemCreateRequest.jsonOrThrow(_body, {
+            body: serializers.VaultItemCreate.jsonOrThrow(_body, {
                 unrecognizedObjectKeys: "passthrough",
                 allowUnrecognizedUnionMembers: true,
                 allowUnrecognizedEnumValues: true,
@@ -1170,7 +1170,7 @@ export class VaultsClient {
     /**
      * Partial update of an internal vault item.
      *
-     * @param {HaiAgents.VaultItemUpdateRequest} request
+     * @param {HaiAgents.VaultItemUpdate} request
      * @param {VaultsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
      * @throws {@link HaiAgents.BadRequestError}
@@ -1185,14 +1185,14 @@ export class VaultsClient {
      *     })
      */
     public updateVaultItem(
-        request: HaiAgents.VaultItemUpdateRequest,
+        request: HaiAgents.VaultItemUpdate,
         requestOptions?: VaultsClient.RequestOptions,
     ): core.HttpResponsePromise<HaiAgents.VaultItemRead> {
         return core.HttpResponsePromise.fromPromise(this.__updateVaultItem(request, requestOptions));
     }
 
     private async __updateVaultItem(
-        request: HaiAgents.VaultItemUpdateRequest,
+        request: HaiAgents.VaultItemUpdate,
         requestOptions?: VaultsClient.RequestOptions,
     ): Promise<core.WithRawResponse<HaiAgents.VaultItemRead>> {
         const { vaultId, itemId, ..._body } = request;
@@ -1214,7 +1214,7 @@ export class VaultsClient {
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: serializers.VaultItemUpdateRequest.jsonOrThrow(_body, {
+            body: serializers.VaultItemUpdate.jsonOrThrow(_body, {
                 unrecognizedObjectKeys: "passthrough",
                 allowUnrecognizedUnionMembers: true,
                 allowUnrecognizedEnumValues: true,

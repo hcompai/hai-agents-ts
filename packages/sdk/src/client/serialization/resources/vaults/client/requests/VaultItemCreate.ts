@@ -4,16 +4,16 @@ import type * as HaiAgents from "../../../../../api/index.js";
 import * as core from "../../../../../core/index.js";
 import type * as serializers from "../../../../index.js";
 
-export const VaultItemCreateRequest: core.serialization.Schema<
-    serializers.VaultItemCreateRequest.Raw,
-    Omit<HaiAgents.VaultItemCreateRequest, "vaultId">
+export const VaultItemCreate: core.serialization.Schema<
+    serializers.VaultItemCreate.Raw,
+    Omit<HaiAgents.VaultItemCreate, "vaultId">
 > = core.serialization.object({
     name: core.serialization.string(),
     urls: core.serialization.list(core.serialization.string()),
     values: core.serialization.record(core.serialization.string(), core.serialization.string()),
 });
 
-export declare namespace VaultItemCreateRequest {
+export declare namespace VaultItemCreate {
     export interface Raw {
         name: string;
         urls: string[];
