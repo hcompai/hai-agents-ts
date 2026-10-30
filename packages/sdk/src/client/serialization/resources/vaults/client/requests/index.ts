@@ -1,5 +1,5 @@
 export { VaultCreateRequest } from "./VaultCreateRequest.js";
-export { VaultItemCreateRequest } from "./VaultItemCreateRequest.js";
-export { VaultItemUpdateRequest } from "./VaultItemUpdateRequest.js";
+export { VaultItemCreate } from "./VaultItemCreate.js";
+export { VaultItemUpdate } from "./VaultItemUpdate.js";
 export { VaultTokenRotateRequest } from "./VaultTokenRotateRequest.js";
 export { VaultUpdateRequest } from "./VaultUpdateRequest.js";

@@ -20,6 +20,10 @@ export const PatchAgent: core.serialization.Schema<
     instructions: core.serialization.string().optionalNullable(),
     subagents: core.serialization.list(PatchAgentSubagentsItem).optionalNullable(),
     skills: core.serialization.list(PatchAgentSkillsItem).optionalNullable(),
+    registrySkills: core.serialization.property(
+        "registry_skills",
+        core.serialization.list(core.serialization.string()).optionalNullable(),
+    ),
     answerFormat: core.serialization.property(
         "answer_format",
         core.serialization.record(core.serialization.string(), core.serialization.unknown()).optionalNullable(),
@@ -36,6 +40,7 @@ export declare namespace PatchAgent {
         instructions?: (string | null | undefined) | null;
         subagents?: (PatchAgentSubagentsItem.Raw[] | null | undefined) | null;
         skills?: (PatchAgentSkillsItem.Raw[] | null | undefined) | null;
+        registry_skills?: (string[] | null | undefined) | null;
         answer_format?: (Record<string, unknown> | null | undefined) | null;
         tools?: (ToolDefinition.Raw[] | null | undefined) | null;
     }

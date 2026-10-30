@@ -7,12 +7,12 @@
  *         itemId: "item_id"
  *     }
  */
-export interface VaultItemUpdateRequest {
+export interface VaultItemUpdate {
     vaultId: string;
     itemId: string;
     name?: string | null;
     /** Replaces the item's URLs. */
     urls?: string[] | null;
-    /** Values to set. Omitted fields are unchanged; a field set to null is removed. */
+    /** Values to set: omitted keys are unchanged and a key set to null is removed. An update that would leave the item with no value is rejected. */
     values?: Record<string, string | null> | null;
 }
