@@ -7,6 +7,7 @@
  *     }
  */
 export interface GetAgentRequest {
+    /** The agent's `name` from its spec, slashes allowed. Not a UUID. */
     agentName: string;
     /** Read this revision instead of the latest. References to an agent elsewhere, such as a session's ``agent``, pin a revision as ``name:N`` instead. */
     revision?: number | null;

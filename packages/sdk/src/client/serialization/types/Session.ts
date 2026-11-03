@@ -3,6 +3,7 @@
 import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
+import { DependencyRevisions } from "./DependencyRevisions.js";
 import { SessionRequest } from "./SessionRequest.js";
 import { SessionStatus } from "./SessionStatus.js";
 
@@ -12,6 +13,10 @@ export const Session: core.serialization.ObjectSchema<serializers.Session.Raw, H
         request: SessionRequest,
         status: SessionStatus,
         agentRevision: core.serialization.property("agent_revision", core.serialization.number().optionalNullable()),
+        dependencyRevisions: core.serialization.property(
+            "dependency_revisions",
+            DependencyRevisions.optionalNullable(),
+        ),
         agentViewUrl: core.serialization.property("agent_view_url", core.serialization.string().optionalNullable()),
         latestAnswer: core.serialization.property("latest_answer", core.serialization.unknown().optional()),
         createdAt: core.serialization.property("created_at", core.serialization.date()),
@@ -25,6 +30,7 @@ export declare namespace Session {
         request: SessionRequest.Raw;
         status: SessionStatus.Raw;
         agent_revision?: (number | null | undefined) | null;
+        dependency_revisions?: (DependencyRevisions.Raw | null | undefined) | null;
         agent_view_url?: (string | null | undefined) | null;
         latest_answer?: unknown | null;
         created_at: string;

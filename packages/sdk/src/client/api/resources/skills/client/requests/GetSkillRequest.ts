@@ -7,5 +7,8 @@
  *     }
  */
 export interface GetSkillRequest {
+    /** The skill's `name`, slashes allowed. Not a UUID. */
     name: string;
+    /** Read this revision instead of the latest. References to a skill elsewhere, such as an agent's ``skills``, pin a revision as ``name:N`` instead. */
+    revision?: number | null;
 }

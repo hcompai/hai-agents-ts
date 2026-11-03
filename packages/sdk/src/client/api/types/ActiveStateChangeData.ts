@@ -5,6 +5,7 @@ import type * as HaiAgents from "../index.js";
 export interface ActiveStateChangeData {
     state: HaiAgents.ActiveStateChangeDataState;
     pendingToolCalls?: HaiAgents.ToolRequest[] | null;
+    pendingApprovals?: HaiAgents.ToolApprovalRequest[] | null;
     /** Accepts any additional properties */
     [key: string]: any;
 }

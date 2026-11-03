@@ -9,7 +9,12 @@ import type * as HaiAgents from "../../../../index.js";
  *     }
  */
 export interface PatchEnvironment {
+    /** The environment's `id` from its spec, slashes allowed. Not a UUID. */
     id: string;
+    /** Optional note stored on the revision this write creates, such as why the change was made. */
+    message?: string | null;
+    /** The ``ETag`` of the revision this write is based on, e.g. ``"3"``. If the resource has moved past it the write is refused with 412. Omit it, or send ``*``, to write unconditionally. */
+    ifMatch?: string | null;
     host?: HaiAgents.PatchEnvironmentHost;
     startUrl?: string;
     headless?: boolean;
@@ -22,6 +27,7 @@ export interface PatchEnvironment {
     useDefaultBrowserProfile?: boolean;
     persistBrowserProfile?: boolean;
     network?: HaiAgents.BrowserNetwork | null;
+    shell?: boolean;
     screenshotMaxWidth?: number | null;
     image?: string | null;
     storage?: HaiAgents.WorkstationStorage | null;

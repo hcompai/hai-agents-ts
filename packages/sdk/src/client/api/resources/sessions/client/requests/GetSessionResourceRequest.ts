@@ -10,6 +10,8 @@
  */
 export interface GetSessionResourceRequest {
     id: string;
+    /** Storage bucket, as it appears in the resource URL an event carries. */
     bucket: string;
+    /** Object key inside the bucket, slashes allowed. */
     key: string;
 }

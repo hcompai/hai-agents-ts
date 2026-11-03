@@ -9,6 +9,7 @@ import type * as HaiAgents from "../../../../index.js";
  *     }
  */
 export interface ListAgentRevisionsRequest {
+    /** The agent's `name` from its spec, slashes allowed. Not a UUID. */
     agentName: string;
     /** Page number (1-based) */
     page?: number;

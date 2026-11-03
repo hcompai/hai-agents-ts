@@ -18,13 +18,15 @@ const spec = JSON.parse(readFileSync(join(__dirname, "../../../openapi.json"), "
 
 const MINIMAL_PARSED: Record<string, object> = {
     Browser: { id: "browser" },
-    Desktop: { id: "desktop", host: "user_device" },
+    Desktop: { id: "desktop" },
     Android: { id: "phone" },
     OnePasswordConfig: { opVaultId: "vault_1" },
     ToolResultEvent: { toolReq: { toolName: "click" }, result: "ok" },
     UserMessageEvent: { message: "hi" },
     ErrorEvent: { error: "boom", origin: "loop" },
     ToolResultBatch: { results: [] },
+    ToolApprovalResponseEvent: { callId: "call_1", action: "approve" },
+    ToolApprovalBatch: { responses: [] },
     UserMessageBatch: { messages: [] },
     AnswerEvent: { answer: "done" },
     FlowEvent: { flow: "step", origin: "loop" },
@@ -101,11 +103,7 @@ describe("spec const+default discriminators", () => {
     it("keeps kind on the wire through the inline-agent environments path", () => {
         const web = serialization.AgentEnvironmentsItem.jsonOrThrow({ kind: "web", id: "browser" });
         expect((web as any).kind).toBe("web");
-        const desktop = serialization.AgentEnvironmentsItem.jsonOrThrow({
-            kind: "desktop",
-            id: "desktop",
-            host: "user_device",
-        });
+        const desktop = serialization.AgentEnvironmentsItem.jsonOrThrow({ kind: "desktop", id: "desktop" });
         expect((desktop as any).kind).toBe("desktop");
         const android = serialization.AgentEnvironmentsItem.jsonOrThrow({ kind: "android", id: "phone" });
         expect((android as any).kind).toBe("android");

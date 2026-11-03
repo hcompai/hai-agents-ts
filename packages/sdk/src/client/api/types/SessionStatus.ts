@@ -22,4 +22,6 @@ export interface SessionStatus {
     subagentSessionIds?: string[];
     /** Custom tool calls the agent is blocked on; echo each ``id`` back in the ToolResultEvent. Empty unless the agent is awaiting tool results (a pause keeps them). */
     pendingToolCalls?: HaiAgents.ToolRequest[];
+    /** Calls held for a human decision; answer each with a ToolApprovalResponseEvent naming its ``id``. Empty unless the agent is awaiting tool results (a pause keeps them). */
+    pendingApprovals?: HaiAgents.ToolApprovalRequest[];
 }

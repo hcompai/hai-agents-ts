@@ -3,15 +3,13 @@
 import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
-import { DesktopHost } from "./DesktopHost.js";
 
 export const Desktop: core.serialization.ObjectSchema<serializers.Desktop.Raw, HaiAgents.Desktop> =
     core.serialization.object({
         id: core.serialization.string(),
-        host: DesktopHost,
+        shell: core.serialization.boolean().optional(),
         sessionId: core.serialization.property("session_id", core.serialization.string().optionalNullable()),
         lazy: core.serialization.boolean().optional(),
-        settleS: core.serialization.property("settle_s", core.serialization.number().optional()),
         screenshotMaxWidth: core.serialization.property(
             "screenshot_max_width",
             core.serialization.number().optionalNullable(),
@@ -21,10 +19,9 @@ export const Desktop: core.serialization.ObjectSchema<serializers.Desktop.Raw, H
 export declare namespace Desktop {
     export interface Raw {
         id: string;
-        host: DesktopHost.Raw;
+        shell?: boolean | null;
         session_id?: (string | null | undefined) | null;
         lazy?: boolean | null;
-        settle_s?: number | null;
         screenshot_max_width?: (number | null | undefined) | null;
     }
 }

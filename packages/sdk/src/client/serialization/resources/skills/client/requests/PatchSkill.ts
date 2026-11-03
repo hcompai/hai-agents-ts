@@ -6,7 +6,7 @@ import type * as serializers from "../../../../index.js";
 
 export const PatchSkill: core.serialization.Schema<
     serializers.PatchSkill.Raw,
-    Omit<HaiAgents.PatchSkill, "name">
+    Omit<HaiAgents.PatchSkill, "name" | "message" | "ifMatch">
 > = core.serialization.object({
     description: core.serialization.string().optional(),
     body: core.serialization.string().optional(),

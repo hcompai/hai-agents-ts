@@ -16,6 +16,8 @@ import { MetricsUpdateEvent } from "./MetricsUpdateEvent.js";
 import { RequestStartDispatchedEvent } from "./RequestStartDispatchedEvent.js";
 import { RequestStartEvent } from "./RequestStartEvent.js";
 import { RunnerSessionEvent } from "./RunnerSessionEvent.js";
+import { ToolApprovalDecidedEvent } from "./ToolApprovalDecidedEvent.js";
+import { ToolApprovalRequestedEvent } from "./ToolApprovalRequestedEvent.js";
 
 export const SessionEventZero: core.serialization.Schema<serializers.SessionEventZero.Raw, HaiAgents.SessionEventZero> =
     core.serialization
@@ -33,6 +35,8 @@ export const SessionEventZero: core.serialization.Schema<serializers.SessionEven
             RequestStartDispatchedEvent: RequestStartDispatchedEvent,
             RequestStartEvent: RequestStartEvent,
             RunnerSessionEvent: RunnerSessionEvent,
+            ToolApprovalDecidedEvent: ToolApprovalDecidedEvent,
+            ToolApprovalRequestedEvent: ToolApprovalRequestedEvent,
         })
         .transform<HaiAgents.SessionEventZero>({
             transform: (value) => value,
@@ -53,7 +57,9 @@ export declare namespace SessionEventZero {
         | SessionEventZero.MetricsUpdateEvent
         | SessionEventZero.RequestStartDispatchedEvent
         | SessionEventZero.RequestStartEvent
-        | SessionEventZero.RunnerSessionEvent;
+        | SessionEventZero.RunnerSessionEvent
+        | SessionEventZero.ToolApprovalDecidedEvent
+        | SessionEventZero.ToolApprovalRequestedEvent;
 
     export interface ActiveStateChangeEvent extends ActiveStateChangeEvent.Raw {
         type: "ActiveStateChangeEvent";
@@ -105,5 +111,13 @@ export declare namespace SessionEventZero {
 
     export interface RunnerSessionEvent extends RunnerSessionEvent.Raw {
         type: "RunnerSessionEvent";
+    }
+
+    export interface ToolApprovalDecidedEvent extends ToolApprovalDecidedEvent.Raw {
+        type: "ToolApprovalDecidedEvent";
+    }
+
+    export interface ToolApprovalRequestedEvent extends ToolApprovalRequestedEvent.Raw {
+        type: "ToolApprovalRequestedEvent";
     }
 }

@@ -4,6 +4,7 @@ import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
 import { ActiveStateChangeDataState } from "./ActiveStateChangeDataState.js";
+import { ToolApprovalRequest } from "./ToolApprovalRequest.js";
 import { ToolRequest } from "./ToolRequest.js";
 
 export const ActiveStateChangeData: core.serialization.ObjectSchema<
@@ -16,6 +17,10 @@ export const ActiveStateChangeData: core.serialization.ObjectSchema<
             "pending_tool_calls",
             core.serialization.list(ToolRequest).optionalNullable(),
         ),
+        pendingApprovals: core.serialization.property(
+            "pending_approvals",
+            core.serialization.list(ToolApprovalRequest).optionalNullable(),
+        ),
     })
     .passthrough();
 
@@ -23,6 +28,7 @@ export declare namespace ActiveStateChangeData {
     export interface Raw {
         state: ActiveStateChangeDataState.Raw;
         pending_tool_calls?: (ToolRequest.Raw[] | null | undefined) | null;
+        pending_approvals?: (ToolApprovalRequest.Raw[] | null | undefined) | null;
         [key: string]: any;
     }
 }

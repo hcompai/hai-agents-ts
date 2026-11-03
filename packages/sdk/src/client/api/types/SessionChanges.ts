@@ -17,4 +17,5 @@ export interface SessionChanges {
     outcome?: HaiAgents.AnswerOutcome | null;
     metrics?: HaiAgents.Metrics;
     pendingToolCalls?: HaiAgents.ToolRequest[];
+    pendingApprovals?: HaiAgents.ToolApprovalRequest[];
 }

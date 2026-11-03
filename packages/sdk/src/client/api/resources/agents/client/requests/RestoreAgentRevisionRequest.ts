@@ -8,6 +8,7 @@
  *     }
  */
 export interface RestoreAgentRevisionRequest {
+    /** The agent's `name` from its spec, slashes allowed. Not a UUID. */
     agentName: string;
     /** The revision whose spec becomes current again. */
     number: number;
