@@ -2,7 +2,7 @@
 
 import type { BaseClientOptions, BaseRequestOptions } from "../../../../BaseClient.js";
 import { type NormalizedClientOptionsWithAuth, normalizeClientOptionsWithAuth } from "../../../../BaseClient.js";
-import { mergeHeaders } from "../../../../core/headers.js";
+import { mergeHeaders, mergeOnlyDefinedHeaders } from "../../../../core/headers.js";
 import * as core from "../../../../core/index.js";
 import * as environments from "../../../../environments.js";
 import { handleNonStatusCodeError } from "../../../../errors/handleNonStatusCodeError.js";
@@ -137,31 +137,37 @@ export class SkillsClient {
     }
 
     /**
-     * Create a skill. The ``h/`` namespace is reserved for built-in skills.
+     * Create a skill at revision 1. The ``h/`` namespace is reserved for built-in skills.
      *
-     * @param {HaiAgents.Skill} request
+     * @param {HaiAgents.CreateSkillRequest} request
      * @param {SkillsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
      * @throws {@link HaiAgents.UnprocessableEntityError}
      *
      * @example
      *     await client.skills.createSkill({
-     *         name: "name",
-     *         description: "description",
-     *         body: "body"
+     *         body: {
+     *             name: "name",
+     *             description: "description",
+     *             body: "body"
+     *         }
      *     })
      */
     public createSkill(
-        request: HaiAgents.Skill,
+        request: HaiAgents.CreateSkillRequest,
         requestOptions?: SkillsClient.RequestOptions,
     ): core.HttpResponsePromise<HaiAgents.Skill> {
         return core.HttpResponsePromise.fromPromise(this.__createSkill(request, requestOptions));
     }
 
     private async __createSkill(
-        request: HaiAgents.Skill,
+        request: HaiAgents.CreateSkillRequest,
         requestOptions?: SkillsClient.RequestOptions,
     ): Promise<core.WithRawResponse<HaiAgents.Skill>> {
+        const { message, body: _body } = request;
+        const _queryParams: Record<string, unknown> = {
+            message,
+        };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
             _authRequest.headers,
@@ -178,9 +184,13 @@ export class SkillsClient {
             method: "POST",
             headers: _headers,
             contentType: "application/json",
-            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            queryString: core.url
+                .queryBuilder()
+                .addMany(_queryParams)
+                .mergeAdditional(requestOptions?.queryParams)
+                .build(),
             requestType: "json",
-            body: serializers.Skill.jsonOrThrow(request, {
+            body: serializers.Skill.jsonOrThrow(_body, {
                 unrecognizedObjectKeys: "passthrough",
                 allowUnrecognizedUnionMembers: true,
                 allowUnrecognizedEnumValues: true,
@@ -231,7 +241,224 @@ export class SkillsClient {
     }
 
     /**
-     * Fetch by name; 404 if not visible. ``:path`` so slash-containing names round-trip.
+     * List a skill's revisions without their content, newest first. Read one with ``?revision=N``.
+     *
+     * Unauthenticated callers can list reserved ``h/`` skills only.
+     *
+     * @param {HaiAgents.ListSkillRevisionsRequest} request
+     * @param {SkillsClient.RequestOptions} requestOptions - Request-specific configuration.
+     *
+     * @throws {@link HaiAgents.UnprocessableEntityError}
+     *
+     * @example
+     *     await client.skills.listSkillRevisions({
+     *         name: "name"
+     *     })
+     */
+    public listSkillRevisions(
+        request: HaiAgents.ListSkillRevisionsRequest,
+        requestOptions?: SkillsClient.RequestOptions,
+    ): core.HttpResponsePromise<HaiAgents.PageSkillRevisionRecord> {
+        return core.HttpResponsePromise.fromPromise(this.__listSkillRevisions(request, requestOptions));
+    }
+
+    private async __listSkillRevisions(
+        request: HaiAgents.ListSkillRevisionsRequest,
+        requestOptions?: SkillsClient.RequestOptions,
+    ): Promise<core.WithRawResponse<HaiAgents.PageSkillRevisionRecord>> {
+        const { name, page, size, sort } = request;
+        const _queryParams: Record<string, unknown> = {
+            page,
+            size,
+            sort: Array.isArray(sort)
+                ? sort.map((item) =>
+                      serializers.ListSkillRevisionsRequestSortItem.jsonOrThrow(item, {
+                          unrecognizedObjectKeys: "passthrough",
+                          allowUnrecognizedUnionMembers: true,
+                          allowUnrecognizedEnumValues: true,
+                          omitUndefined: true,
+                      }),
+                  )
+                : sort != null
+                  ? serializers.ListSkillRevisionsRequestSortItem.jsonOrThrow(sort, {
+                        unrecognizedObjectKeys: "passthrough",
+                        allowUnrecognizedUnionMembers: true,
+                        allowUnrecognizedEnumValues: true,
+                        omitUndefined: true,
+                    })
+                  : undefined,
+        };
+        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
+        const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
+            _authRequest.headers,
+            this._options?.headers,
+            requestOptions?.headers,
+        );
+        const _response = await core.fetcher({
+            url: core.url.join(
+                (await core.Supplier.get(this._options.baseUrl)) ??
+                    (await core.Supplier.get(this._options.environment)) ??
+                    environments.HaiAgentsEnvironment.Eu,
+                `api/v2/skills/${core.url.encodePathParam(name)}/revisions`,
+            ),
+            method: "GET",
+            headers: _headers,
+            queryString: core.url
+                .queryBuilder()
+                .addMany(_queryParams)
+                .mergeAdditional(requestOptions?.queryParams)
+                .build(),
+            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
+            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
+            abortSignal: requestOptions?.abortSignal,
+            fetchFn: this._options?.fetch,
+            logging: this._options.logging,
+        });
+        if (_response.ok) {
+            return {
+                data: serializers.PageSkillRevisionRecord.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
+                rawResponse: _response.rawResponse,
+            };
+        }
+
+        if (_response.error.reason === "status-code") {
+            switch (_response.error.statusCode) {
+                case 422:
+                    throw new HaiAgents.UnprocessableEntityError(
+                        serializers.ErrorResponse.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                default:
+                    throw new errors.HaiAgentsError({
+                        statusCode: _response.error.statusCode,
+                        body: _response.error.body,
+                        rawResponse: _response.rawResponse,
+                    });
+            }
+        }
+
+        return handleNonStatusCodeError(
+            _response.error,
+            _response.rawResponse,
+            "GET",
+            "/api/v2/skills/{name}/revisions",
+        );
+    }
+
+    /**
+     * Make revision ``number``'s content current again, as a new revision with the message ``Restored from vN``.
+     *
+     * Validated and authorised like ``PUT``. The new revision's ``restored_from`` is ``number``.
+     * Restoring content that is already current changes nothing and returns the current revision.
+     *
+     * @param {HaiAgents.RestoreSkillRevisionRequest} request
+     * @param {SkillsClient.RequestOptions} requestOptions - Request-specific configuration.
+     *
+     * @throws {@link HaiAgents.PreconditionFailedError}
+     * @throws {@link HaiAgents.UnprocessableEntityError}
+     *
+     * @example
+     *     await client.skills.restoreSkillRevision({
+     *         name: "name",
+     *         number: 1
+     *     })
+     */
+    public restoreSkillRevision(
+        request: HaiAgents.RestoreSkillRevisionRequest,
+        requestOptions?: SkillsClient.RequestOptions,
+    ): core.HttpResponsePromise<HaiAgents.Skill> {
+        return core.HttpResponsePromise.fromPromise(this.__restoreSkillRevision(request, requestOptions));
+    }
+
+    private async __restoreSkillRevision(
+        request: HaiAgents.RestoreSkillRevisionRequest,
+        requestOptions?: SkillsClient.RequestOptions,
+    ): Promise<core.WithRawResponse<HaiAgents.Skill>> {
+        const { name, number: number_, ifMatch } = request;
+        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
+        const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
+            _authRequest.headers,
+            this._options?.headers,
+            mergeOnlyDefinedHeaders({ "If-Match": ifMatch ?? undefined }),
+            requestOptions?.headers,
+        );
+        const _response = await core.fetcher({
+            url: core.url.join(
+                (await core.Supplier.get(this._options.baseUrl)) ??
+                    (await core.Supplier.get(this._options.environment)) ??
+                    environments.HaiAgentsEnvironment.Eu,
+                `api/v2/skills/${core.url.encodePathParam(name)}/revisions/${core.url.encodePathParam(number_)}/restore`,
+            ),
+            method: "POST",
+            headers: _headers,
+            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
+            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
+            abortSignal: requestOptions?.abortSignal,
+            fetchFn: this._options?.fetch,
+            logging: this._options.logging,
+        });
+        if (_response.ok) {
+            return {
+                data: serializers.Skill.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
+                rawResponse: _response.rawResponse,
+            };
+        }
+
+        if (_response.error.reason === "status-code") {
+            switch (_response.error.statusCode) {
+                case 412:
+                    throw new HaiAgents.PreconditionFailedError(_response.error.body, _response.rawResponse);
+                case 422:
+                    throw new HaiAgents.UnprocessableEntityError(
+                        serializers.ErrorResponse.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                default:
+                    throw new errors.HaiAgentsError({
+                        statusCode: _response.error.statusCode,
+                        body: _response.error.body,
+                        rawResponse: _response.rawResponse,
+                    });
+            }
+        }
+
+        return handleNonStatusCodeError(
+            _response.error,
+            _response.rawResponse,
+            "POST",
+            "/api/v2/skills/{name}/revisions/{number}/restore",
+        );
+    }
+
+    /**
+     * Fetch by name at its latest revision, or at ``revision``; 404 if not visible or no such revision.
+     *
+     * ``:path`` so slash-containing names round-trip.
      *
      * @param {HaiAgents.GetSkillRequest} request
      * @param {SkillsClient.RequestOptions} requestOptions - Request-specific configuration.
@@ -254,7 +481,10 @@ export class SkillsClient {
         request: HaiAgents.GetSkillRequest,
         requestOptions?: SkillsClient.RequestOptions,
     ): Promise<core.WithRawResponse<HaiAgents.Skill>> {
-        const { name } = request;
+        const { name, revision } = request;
+        const _queryParams: Record<string, unknown> = {
+            revision,
+        };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
             _authRequest.headers,
@@ -270,7 +500,11 @@ export class SkillsClient {
             ),
             method: "GET",
             headers: _headers,
-            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            queryString: core.url
+                .queryBuilder()
+                .addMany(_queryParams)
+                .mergeAdditional(requestOptions?.queryParams)
+                .build(),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
             abortSignal: requestOptions?.abortSignal,
@@ -316,11 +550,14 @@ export class SkillsClient {
     }
 
     /**
-     * Replace a skill's content. ``name`` must match the URL identifier; renames are not supported.
+     * Replace a skill's content as a new revision. ``name`` must match the URL; renames are not supported.
+     *
+     * Sending the content that is already current changes nothing and returns the current revision.
      *
      * @param {HaiAgents.UpdateSkillRequest} request
      * @param {SkillsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link HaiAgents.PreconditionFailedError}
      * @throws {@link HaiAgents.UnprocessableEntityError}
      *
      * @example
@@ -344,11 +581,15 @@ export class SkillsClient {
         request: HaiAgents.UpdateSkillRequest,
         requestOptions?: SkillsClient.RequestOptions,
     ): Promise<core.WithRawResponse<HaiAgents.Skill>> {
-        const { name, body: _body } = request;
+        const { name, message, ifMatch, body: _body } = request;
+        const _queryParams: Record<string, unknown> = {
+            message,
+        };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
             _authRequest.headers,
             this._options?.headers,
+            mergeOnlyDefinedHeaders({ "If-Match": ifMatch ?? undefined }),
             requestOptions?.headers,
         );
         const _response = await core.fetcher({
@@ -361,7 +602,11 @@ export class SkillsClient {
             method: "PUT",
             headers: _headers,
             contentType: "application/json",
-            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            queryString: core.url
+                .queryBuilder()
+                .addMany(_queryParams)
+                .mergeAdditional(requestOptions?.queryParams)
+                .build(),
             requestType: "json",
             body: serializers.Skill.jsonOrThrow(_body, {
                 unrecognizedObjectKeys: "passthrough",
@@ -390,6 +635,8 @@ export class SkillsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 412:
+                    throw new HaiAgents.PreconditionFailedError(_response.error.body, _response.rawResponse);
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
                         serializers.ErrorResponse.parseOrThrow(_response.error.body, {
@@ -414,11 +661,12 @@ export class SkillsClient {
     }
 
     /**
-     * Delete by name. Reserved rows: H employee only.
+     * Delete by name, with its revisions. Reserved rows: H employee only.
      *
      * @param {HaiAgents.DeleteSkillRequest} request
      * @param {SkillsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link HaiAgents.PreconditionFailedError}
      * @throws {@link HaiAgents.UnprocessableEntityError}
      *
      * @example
@@ -437,11 +685,12 @@ export class SkillsClient {
         request: HaiAgents.DeleteSkillRequest,
         requestOptions?: SkillsClient.RequestOptions,
     ): Promise<core.WithRawResponse<void>> {
-        const { name } = request;
+        const { name, ifMatch } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
             _authRequest.headers,
             this._options?.headers,
+            mergeOnlyDefinedHeaders({ "If-Match": ifMatch ?? undefined }),
             requestOptions?.headers,
         );
         const _response = await core.fetcher({
@@ -466,6 +715,8 @@ export class SkillsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 412:
+                    throw new HaiAgents.PreconditionFailedError(_response.error.body, _response.rawResponse);
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
                         serializers.ErrorResponse.parseOrThrow(_response.error.body, {
@@ -490,11 +741,12 @@ export class SkillsClient {
     }
 
     /**
-     * Partially update a skill; only provided fields change.
+     * Partially update a skill as a new revision; only provided fields change.
      *
      * @param {HaiAgents.PatchSkill} request
      * @param {SkillsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link HaiAgents.PreconditionFailedError}
      * @throws {@link HaiAgents.UnprocessableEntityError}
      *
      * @example
@@ -513,11 +765,15 @@ export class SkillsClient {
         request: HaiAgents.PatchSkill,
         requestOptions?: SkillsClient.RequestOptions,
     ): Promise<core.WithRawResponse<HaiAgents.Skill>> {
-        const { name, ..._body } = request;
+        const { name, message, ifMatch, ..._body } = request;
+        const _queryParams: Record<string, unknown> = {
+            message,
+        };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
             _authRequest.headers,
             this._options?.headers,
+            mergeOnlyDefinedHeaders({ "If-Match": ifMatch ?? undefined }),
             requestOptions?.headers,
         );
         const _response = await core.fetcher({
@@ -530,7 +786,11 @@ export class SkillsClient {
             method: "PATCH",
             headers: _headers,
             contentType: "application/json",
-            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            queryString: core.url
+                .queryBuilder()
+                .addMany(_queryParams)
+                .mergeAdditional(requestOptions?.queryParams)
+                .build(),
             requestType: "json",
             body: serializers.PatchSkill.jsonOrThrow(_body, {
                 unrecognizedObjectKeys: "passthrough",
@@ -559,6 +819,8 @@ export class SkillsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 412:
+                    throw new HaiAgents.PreconditionFailedError(_response.error.body, _response.rawResponse);
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
                         serializers.ErrorResponse.parseOrThrow(_response.error.body, {

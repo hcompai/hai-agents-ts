@@ -3,17 +3,17 @@
 import type * as HaiAgents from "../index.js";
 
 /**
- * A desktop computer with a browser, office apps and a shell, which the agent drives from that shell.
+ * A cloud computer with a browser, apps and a shell.
  */
 export interface Workstation {
     /** Catalog identifier for this environment. */
     id: string;
-    /** Where the workstation runs: 'cloud' on H Company infrastructure, or 'user_device' on your own machine. */
-    host?: HaiAgents.WorkstationHost;
     /** Connect to an existing workstation session by id instead of starting a new one. */
     sessionId?: string | null;
-    /** Which disk a cloud workstation runs on. Omit to let the stage decide: the caller's default volume where the workstation is persistent by default, a fresh machine elsewhere. Ignored when session_id attaches to an existing session, and on a user_device host. */
+    /** Which disk a cloud workstation runs on. Omit to let the stage decide: the caller's default volume where the workstation is persistent by default, a fresh machine elsewhere. Ignored when session_id attaches to an existing session. */
     storage?: HaiAgents.WorkstationStorage | null;
-    /** Start on the agent's first use instead of at startup. Skips the initial observation. A cloud workstation is provisioned on first use; a user_device one is not probed until then. */
+    /** Provision on the agent's first use instead of at startup. Skips the initial observation. */
     lazy?: boolean;
+    /** Maximum screenshot width in pixels. Null uses 1920; images are never upscaled. */
+    screenshotMaxWidth?: number | null;
 }

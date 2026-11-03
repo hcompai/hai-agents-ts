@@ -2,13 +2,13 @@
 
 import type * as HaiAgents from "../../../index.js";
 
-export type CreateEnvironmentRequest =
-    | HaiAgents.CreateEnvironmentRequest.Web
-    | HaiAgents.CreateEnvironmentRequest.Desktop
-    | HaiAgents.CreateEnvironmentRequest.Android
-    | HaiAgents.CreateEnvironmentRequest.Workstation;
+export type CreateEnvironmentRequestBody =
+    | HaiAgents.CreateEnvironmentRequestBody.Web
+    | HaiAgents.CreateEnvironmentRequestBody.Desktop
+    | HaiAgents.CreateEnvironmentRequestBody.Android
+    | HaiAgents.CreateEnvironmentRequestBody.Workstation;
 
-export namespace CreateEnvironmentRequest {
+export namespace CreateEnvironmentRequestBody {
     export interface Web extends HaiAgents.Browser {
         kind: "web";
     }

@@ -15,7 +15,9 @@ export type SessionEventZero =
     | HaiAgents.SessionEventZero.MetricsUpdateEvent
     | HaiAgents.SessionEventZero.RequestStartDispatchedEvent
     | HaiAgents.SessionEventZero.RequestStartEvent
-    | HaiAgents.SessionEventZero.RunnerSessionEvent;
+    | HaiAgents.SessionEventZero.RunnerSessionEvent
+    | HaiAgents.SessionEventZero.ToolApprovalDecidedEvent
+    | HaiAgents.SessionEventZero.ToolApprovalRequestedEvent;
 
 export namespace SessionEventZero {
     export interface ActiveStateChangeEvent extends HaiAgents.ActiveStateChangeEvent {
@@ -68,5 +70,13 @@ export namespace SessionEventZero {
 
     export interface RunnerSessionEvent extends HaiAgents.RunnerSessionEvent {
         type: "RunnerSessionEvent";
+    }
+
+    export interface ToolApprovalDecidedEvent extends HaiAgents.ToolApprovalDecidedEvent {
+        type: "ToolApprovalDecidedEvent";
+    }
+
+    export interface ToolApprovalRequestedEvent extends HaiAgents.ToolApprovalRequestedEvent {
+        type: "ToolApprovalRequestedEvent";
     }
 }

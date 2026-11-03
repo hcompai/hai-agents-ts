@@ -7,5 +7,6 @@
  *     }
  */
 export interface DownloadFileRequest {
+    /** Opaque `file_id` from the session's `AttachmentEvent`. Not a UUID. */
     fileId: string;
 }

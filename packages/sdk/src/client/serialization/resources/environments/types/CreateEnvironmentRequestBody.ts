@@ -8,9 +8,9 @@ import { Browser } from "../../../types/Browser.js";
 import { Desktop } from "../../../types/Desktop.js";
 import { Workstation } from "../../../types/Workstation.js";
 
-export const CreateEnvironmentRequest: core.serialization.Schema<
-    serializers.CreateEnvironmentRequest.Raw,
-    HaiAgents.CreateEnvironmentRequest
+export const CreateEnvironmentRequestBody: core.serialization.Schema<
+    serializers.CreateEnvironmentRequestBody.Raw,
+    HaiAgents.CreateEnvironmentRequestBody
 > = core.serialization
     .union("kind", {
         web: Browser,
@@ -18,17 +18,17 @@ export const CreateEnvironmentRequest: core.serialization.Schema<
         android: Android,
         workstation: Workstation,
     })
-    .transform<HaiAgents.CreateEnvironmentRequest>({
+    .transform<HaiAgents.CreateEnvironmentRequestBody>({
         transform: (value) => value,
         untransform: (value) => value,
     });
 
-export declare namespace CreateEnvironmentRequest {
+export declare namespace CreateEnvironmentRequestBody {
     export type Raw =
-        | CreateEnvironmentRequest.Web
-        | CreateEnvironmentRequest.Desktop
-        | CreateEnvironmentRequest.Android
-        | CreateEnvironmentRequest.Workstation;
+        | CreateEnvironmentRequestBody.Web
+        | CreateEnvironmentRequestBody.Desktop
+        | CreateEnvironmentRequestBody.Android
+        | CreateEnvironmentRequestBody.Workstation;
 
     export interface Web extends Browser.Raw {
         kind: "web";

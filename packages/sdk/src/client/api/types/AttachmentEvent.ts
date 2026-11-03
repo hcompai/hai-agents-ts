@@ -3,7 +3,8 @@
 import type * as HaiAgents from "../index.js";
 
 /**
- * A file passed between the user and the agent's environment; ``data.url`` downloads it.
+ * A file passed between the user and the agent's environment; ``data.url`` downloads it, as does
+ * ``GET /v2/files/{data.file_id}`` when the platform stored it.
  */
 export interface AttachmentEvent {
     timestamp: Date;

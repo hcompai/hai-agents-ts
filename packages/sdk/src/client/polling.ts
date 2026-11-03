@@ -50,6 +50,11 @@ export type SessionRunResult<TAnswer = SessionChanges["answer"]> = {
   error?: SessionChanges["error"];
   /** Machine-readable failure category when the session failed or timed out. */
   errorCode?: SessionChanges["errorCode"];
+  /**
+   * Tool calls held for a decision when the wait stopped on them: answer each with
+   * `approve`/`deny` on the session handle, then wait again.
+   */
+  pendingApprovals: NonNullable<SessionStatus["pendingApprovals"]>;
 };
 
 /**
@@ -329,16 +334,33 @@ async function executeToolCall(
 }
 
 async function postToolResults(client: HaiAgentsClient, id: string, results: ToolResultPayload[]): Promise<void> {
-  const body = results.length === 1 ? results[0] : { type: "batch", results };
-  const response = await client.fetch(`api/v2/sessions/${encodeURIComponent(id)}/tool_results`, {
+  await postSettlement(client, id, "tool_results", results.length === 1 ? results[0] : { type: "batch", results });
+}
+
+async function postSettlement(
+  client: HaiAgentsClient,
+  id: string,
+  route: "tool_results" | "tool_approvals",
+  body: unknown,
+): Promise<void> {
+  const response = await client.fetch(`api/v2/sessions/${encodeURIComponent(id)}/${route}`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(body),
   });
-  // 409 means the session finished and resolved the calls itself; the status poll will exit the loop.
+  // 409 means the session finished and settled the calls itself; the status poll will exit the loop.
   if (!(response.status >= 200 && response.status < 300) && response.status !== 409) {
-    throw new Error(`Posting tool results to session ${id} failed: HTTP ${response.status} ${await response.text()}`);
+    throw new Error(`Posting ${route} to session ${id} failed: HTTP ${response.status} ${await response.text()}`);
   }
+}
+
+/** Only held calls block the session: nothing a tool loop runs will settle them. */
+function holdsForApproval(status: SessionStatus): boolean {
+  return (
+    (status.status as string) === "awaiting_tool_results" &&
+    (status.pendingApprovals?.length ?? 0) > 0 &&
+    (status.pendingToolCalls?.length ?? 0) === 0
+  );
 }
 
 // The terminal answer lives in /changes; fetch it once if streaming didn't surface it.
@@ -419,11 +441,11 @@ async function answerToolCalls(
   id: string,
   dispatch: ToolDispatch,
   advertised: Advertised,
-  status: TrajectoryStatus,
+  status: SessionStatus,
   isCaughtUp: boolean,
 ): Promise<void> {
   // The live status describes the tip: a lagging cursor's advertised calls may already be answered.
-  if (!isCaughtUp || (status as string) !== "awaiting_tool_results") {
+  if (!isCaughtUp || (status.status as string) !== "awaiting_tool_results" || holdsForApproval(status)) {
     return;
   }
   if (!advertised.anchored || advertised.calls.length === 0) {
@@ -452,6 +474,7 @@ function cursorAfter(cursor: number, changes: SessionChanges | undefined): numbe
 /**
  * Poll a session until it settles: a terminal status, or idle awaiting the next message.
  * Without `tools`, a session awaiting tool results also ends the wait, since nothing here will answer it.
+ * Calls held for approval end it too, listed on `result.pendingApprovals`.
  *
  * Status is read from `/status` (authoritative); `/changes` only feeds events
  * and the final answer, since it 204s whenever no new events exist past `fromIndex` --
@@ -516,7 +539,11 @@ async function waitWithDispatch<TAnswer>(
 
     const statusResponse = await client.sessions.getSessionStatus({ id });
     const status = statusResponse.status;
-    if (isSettledSessionStatus(status) || ((status as string) === "awaiting_tool_results" && dispatch === undefined)) {
+    if (
+      isSettledSessionStatus(status) ||
+      ((status as string) === "awaiting_tool_results" && dispatch === undefined) ||
+      holdsForApproval(statusResponse)
+    ) {
       if (includeEvents) {
         for (;;) {
           if (deadline !== undefined && Date.now() >= deadline) {
@@ -550,11 +577,12 @@ async function waitWithDispatch<TAnswer>(
         outcome: statusResponse.outcome ?? changes?.outcome,
         error: statusResponse.error ?? changes?.error,
         errorCode: statusResponse.errorCode ?? changes?.errorCode,
+        pendingApprovals: statusResponse.pendingApprovals ?? [],
       };
     }
 
     if (dispatch !== undefined) {
-      await answerToolCalls(client, id, dispatch, advertised, status, isCaughtUp);
+      await answerToolCalls(client, id, dispatch, advertised, statusResponse, isCaughtUp);
     }
 
     // The long-poll above paces the loop when streaming events; otherwise sleep.
@@ -617,6 +645,8 @@ export type StreamSessionOptions = {
  * With `tools`, each poll then runs the custom tool calls the session awaits and
  * posts their results. Without them the stream is a read-only view that keeps
  * polling through `awaiting_tool_results`, for calls another process answers.
+ * Calls held for approval keep either stream open: answer each with `approve`/`deny`
+ * on the session handle when its `ToolApprovalRequestedEvent` arrives.
  */
 export function streamSession(client: HaiAgentsClient, options: StreamSessionOptions): AsyncGenerator<SessionEvent> {
   return streamWithDispatch(client, options, toolDispatch(options.tools));
@@ -652,8 +682,8 @@ async function* streamWithDispatch(
     advertised.read(batch, nextFromIndex);
     isCaughtUp = caughtUp(batch, limit);
 
-    const { status } = await client.sessions.getSessionStatus({ id });
-    if (shouldStop(status)) {
+    const statusResponse = await client.sessions.getSessionStatus({ id });
+    if (shouldStop(statusResponse.status)) {
       // Drain to exhaustion: with `limit`, one page may not cover the backlog past the
       // cursor. Keep honoring the wall-clock budget so a large tail cannot outlive `timeoutMs`.
       for (;;) {
@@ -677,7 +707,7 @@ async function* streamWithDispatch(
     }
 
     if (dispatch !== undefined) {
-      await answerToolCalls(client, id, dispatch, advertised, status, isCaughtUp);
+      await answerToolCalls(client, id, dispatch, advertised, statusResponse, isCaughtUp);
     }
   }
 }
@@ -726,6 +756,25 @@ export class SessionHandle<TAnswer = SessionChanges["answer"]> {
 
   forceAnswer(): Promise<void> {
     return this.client.sessions.forceSessionAnswer({ id: this.id });
+  }
+
+  /** Run a call listed in `pendingApprovals`. */
+  approve(callId: string): Promise<void> {
+    return postSettlement(this.client, this.id, "tool_approvals", {
+      type: "tool_approval_response",
+      call_id: callId,
+      action: "approve",
+    });
+  }
+
+  /** Refuse a call listed in `pendingApprovals`; the model reads `message`. */
+  deny(callId: string, message?: string): Promise<void> {
+    return postSettlement(this.client, this.id, "tool_approvals", {
+      type: "tool_approval_response",
+      call_id: callId,
+      action: "deny",
+      ...(message === undefined ? {} : { message }),
+    });
   }
 
   /** Block until the session settles (terminal or idle); resolves with the result and final answer. */

@@ -10,7 +10,7 @@ import { PatchEnvironmentMode } from "../../types/PatchEnvironmentMode.js";
 
 export const PatchEnvironment: core.serialization.Schema<
     serializers.PatchEnvironment.Raw,
-    Omit<HaiAgents.PatchEnvironment, "id">
+    Omit<HaiAgents.PatchEnvironment, "id" | "message" | "ifMatch">
 > = core.serialization.object({
     host: PatchEnvironmentHost.optional(),
     startUrl: core.serialization.property("start_url", core.serialization.string().optional()),
@@ -30,6 +30,7 @@ export const PatchEnvironment: core.serialization.Schema<
         core.serialization.boolean().optional(),
     ),
     network: BrowserNetwork.optionalNullable(),
+    shell: core.serialization.boolean().optional(),
     screenshotMaxWidth: core.serialization.property(
         "screenshot_max_width",
         core.serialization.number().optionalNullable(),
@@ -52,6 +53,7 @@ export declare namespace PatchEnvironment {
         use_default_browser_profile?: boolean | null;
         persist_browser_profile?: boolean | null;
         network?: (BrowserNetwork.Raw | null | undefined) | null;
+        shell?: boolean | null;
         screenshot_max_width?: (number | null | undefined) | null;
         image?: (string | null | undefined) | null;
         storage?: (WorkstationStorage.Raw | null | undefined) | null;

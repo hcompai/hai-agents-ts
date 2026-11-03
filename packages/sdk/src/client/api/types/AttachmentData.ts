@@ -9,6 +9,7 @@ export interface AttachmentData {
     mediaType: string;
     sizeBytes: number;
     url: string;
+    fileId?: string | null;
     /** Accepts any additional properties */
     [key: string]: any;
 }

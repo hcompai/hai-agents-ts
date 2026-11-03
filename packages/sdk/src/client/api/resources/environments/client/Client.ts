@@ -2,7 +2,7 @@
 
 import type { BaseClientOptions, BaseRequestOptions } from "../../../../BaseClient.js";
 import { type NormalizedClientOptionsWithAuth, normalizeClientOptionsWithAuth } from "../../../../BaseClient.js";
-import { mergeHeaders } from "../../../../core/headers.js";
+import { mergeHeaders, mergeOnlyDefinedHeaders } from "../../../../core/headers.js";
 import * as core from "../../../../core/index.js";
 import * as environments from "../../../../environments.js";
 import { handleNonStatusCodeError } from "../../../../errors/handleNonStatusCodeError.js";
@@ -143,7 +143,7 @@ export class EnvironmentsClient {
     }
 
     /**
-     * Create an environment.
+     * Create an environment at revision 1. Ids cannot contain ``:``, which pins a revision in references.
      *
      * @param {HaiAgents.CreateEnvironmentRequest} request
      * @param {EnvironmentsClient.RequestOptions} requestOptions - Request-specific configuration.
@@ -152,8 +152,10 @@ export class EnvironmentsClient {
      *
      * @example
      *     await client.environments.createEnvironment({
-     *         kind: "web",
-     *         id: "id"
+     *         body: {
+     *             kind: "web",
+     *             id: "id"
+     *         }
      *     })
      */
     public createEnvironment(
@@ -167,6 +169,10 @@ export class EnvironmentsClient {
         request: HaiAgents.CreateEnvironmentRequest,
         requestOptions?: EnvironmentsClient.RequestOptions,
     ): Promise<core.WithRawResponse<HaiAgents.Environment>> {
+        const { message, body: _body } = request;
+        const _queryParams: Record<string, unknown> = {
+            message,
+        };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
             _authRequest.headers,
@@ -183,9 +189,13 @@ export class EnvironmentsClient {
             method: "POST",
             headers: _headers,
             contentType: "application/json",
-            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            queryString: core.url
+                .queryBuilder()
+                .addMany(_queryParams)
+                .mergeAdditional(requestOptions?.queryParams)
+                .build(),
             requestType: "json",
-            body: serializers.CreateEnvironmentRequest.jsonOrThrow(request, {
+            body: serializers.CreateEnvironmentRequestBody.jsonOrThrow(_body, {
                 unrecognizedObjectKeys: "passthrough",
                 allowUnrecognizedUnionMembers: true,
                 allowUnrecognizedEnumValues: true,
@@ -236,7 +246,224 @@ export class EnvironmentsClient {
     }
 
     /**
-     * Fetch by identifier; 404 if not visible. ``:path`` so slash-containing ids round-trip.
+     * List an environment's revisions without their specs, newest first. Read one with ``?revision=N``.
+     *
+     * Unauthenticated callers can list reserved ``h/`` environments only.
+     *
+     * @param {HaiAgents.ListEnvironmentRevisionsRequest} request
+     * @param {EnvironmentsClient.RequestOptions} requestOptions - Request-specific configuration.
+     *
+     * @throws {@link HaiAgents.UnprocessableEntityError}
+     *
+     * @example
+     *     await client.environments.listEnvironmentRevisions({
+     *         id: "id"
+     *     })
+     */
+    public listEnvironmentRevisions(
+        request: HaiAgents.ListEnvironmentRevisionsRequest,
+        requestOptions?: EnvironmentsClient.RequestOptions,
+    ): core.HttpResponsePromise<HaiAgents.PageEnvironmentRevisionRecord> {
+        return core.HttpResponsePromise.fromPromise(this.__listEnvironmentRevisions(request, requestOptions));
+    }
+
+    private async __listEnvironmentRevisions(
+        request: HaiAgents.ListEnvironmentRevisionsRequest,
+        requestOptions?: EnvironmentsClient.RequestOptions,
+    ): Promise<core.WithRawResponse<HaiAgents.PageEnvironmentRevisionRecord>> {
+        const { id, page, size, sort } = request;
+        const _queryParams: Record<string, unknown> = {
+            page,
+            size,
+            sort: Array.isArray(sort)
+                ? sort.map((item) =>
+                      serializers.ListEnvironmentRevisionsRequestSortItem.jsonOrThrow(item, {
+                          unrecognizedObjectKeys: "passthrough",
+                          allowUnrecognizedUnionMembers: true,
+                          allowUnrecognizedEnumValues: true,
+                          omitUndefined: true,
+                      }),
+                  )
+                : sort != null
+                  ? serializers.ListEnvironmentRevisionsRequestSortItem.jsonOrThrow(sort, {
+                        unrecognizedObjectKeys: "passthrough",
+                        allowUnrecognizedUnionMembers: true,
+                        allowUnrecognizedEnumValues: true,
+                        omitUndefined: true,
+                    })
+                  : undefined,
+        };
+        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
+        const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
+            _authRequest.headers,
+            this._options?.headers,
+            requestOptions?.headers,
+        );
+        const _response = await core.fetcher({
+            url: core.url.join(
+                (await core.Supplier.get(this._options.baseUrl)) ??
+                    (await core.Supplier.get(this._options.environment)) ??
+                    environments.HaiAgentsEnvironment.Eu,
+                `api/v2/environments/${core.url.encodePathParam(id)}/revisions`,
+            ),
+            method: "GET",
+            headers: _headers,
+            queryString: core.url
+                .queryBuilder()
+                .addMany(_queryParams)
+                .mergeAdditional(requestOptions?.queryParams)
+                .build(),
+            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
+            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
+            abortSignal: requestOptions?.abortSignal,
+            fetchFn: this._options?.fetch,
+            logging: this._options.logging,
+        });
+        if (_response.ok) {
+            return {
+                data: serializers.PageEnvironmentRevisionRecord.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
+                rawResponse: _response.rawResponse,
+            };
+        }
+
+        if (_response.error.reason === "status-code") {
+            switch (_response.error.statusCode) {
+                case 422:
+                    throw new HaiAgents.UnprocessableEntityError(
+                        serializers.ErrorResponse.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                default:
+                    throw new errors.HaiAgentsError({
+                        statusCode: _response.error.statusCode,
+                        body: _response.error.body,
+                        rawResponse: _response.rawResponse,
+                    });
+            }
+        }
+
+        return handleNonStatusCodeError(
+            _response.error,
+            _response.rawResponse,
+            "GET",
+            "/api/v2/environments/{id}/revisions",
+        );
+    }
+
+    /**
+     * Make revision ``number``'s spec current again, as a new revision with the message ``Restored from vN``.
+     *
+     * Validated and authorised like ``PUT``. The new revision's ``restored_from`` is ``number``.
+     * Restoring a spec that is already current changes nothing and returns the current revision.
+     *
+     * @param {HaiAgents.RestoreEnvironmentRevisionRequest} request
+     * @param {EnvironmentsClient.RequestOptions} requestOptions - Request-specific configuration.
+     *
+     * @throws {@link HaiAgents.PreconditionFailedError}
+     * @throws {@link HaiAgents.UnprocessableEntityError}
+     *
+     * @example
+     *     await client.environments.restoreEnvironmentRevision({
+     *         id: "id",
+     *         number: 1
+     *     })
+     */
+    public restoreEnvironmentRevision(
+        request: HaiAgents.RestoreEnvironmentRevisionRequest,
+        requestOptions?: EnvironmentsClient.RequestOptions,
+    ): core.HttpResponsePromise<HaiAgents.Environment> {
+        return core.HttpResponsePromise.fromPromise(this.__restoreEnvironmentRevision(request, requestOptions));
+    }
+
+    private async __restoreEnvironmentRevision(
+        request: HaiAgents.RestoreEnvironmentRevisionRequest,
+        requestOptions?: EnvironmentsClient.RequestOptions,
+    ): Promise<core.WithRawResponse<HaiAgents.Environment>> {
+        const { id, number: number_, ifMatch } = request;
+        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
+        const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
+            _authRequest.headers,
+            this._options?.headers,
+            mergeOnlyDefinedHeaders({ "If-Match": ifMatch ?? undefined }),
+            requestOptions?.headers,
+        );
+        const _response = await core.fetcher({
+            url: core.url.join(
+                (await core.Supplier.get(this._options.baseUrl)) ??
+                    (await core.Supplier.get(this._options.environment)) ??
+                    environments.HaiAgentsEnvironment.Eu,
+                `api/v2/environments/${core.url.encodePathParam(id)}/revisions/${core.url.encodePathParam(number_)}/restore`,
+            ),
+            method: "POST",
+            headers: _headers,
+            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
+            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
+            abortSignal: requestOptions?.abortSignal,
+            fetchFn: this._options?.fetch,
+            logging: this._options.logging,
+        });
+        if (_response.ok) {
+            return {
+                data: serializers.Environment.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
+                rawResponse: _response.rawResponse,
+            };
+        }
+
+        if (_response.error.reason === "status-code") {
+            switch (_response.error.statusCode) {
+                case 412:
+                    throw new HaiAgents.PreconditionFailedError(_response.error.body, _response.rawResponse);
+                case 422:
+                    throw new HaiAgents.UnprocessableEntityError(
+                        serializers.ErrorResponse.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                default:
+                    throw new errors.HaiAgentsError({
+                        statusCode: _response.error.statusCode,
+                        body: _response.error.body,
+                        rawResponse: _response.rawResponse,
+                    });
+            }
+        }
+
+        return handleNonStatusCodeError(
+            _response.error,
+            _response.rawResponse,
+            "POST",
+            "/api/v2/environments/{id}/revisions/{number}/restore",
+        );
+    }
+
+    /**
+     * Fetch by id at its latest revision, or at ``revision``; 404 if not visible or no such revision.
+     *
+     * ``:path`` so slash-containing ids round-trip.
      *
      * @param {HaiAgents.GetEnvironmentRequest} request
      * @param {EnvironmentsClient.RequestOptions} requestOptions - Request-specific configuration.
@@ -259,7 +486,10 @@ export class EnvironmentsClient {
         request: HaiAgents.GetEnvironmentRequest,
         requestOptions?: EnvironmentsClient.RequestOptions,
     ): Promise<core.WithRawResponse<HaiAgents.Environment>> {
-        const { id } = request;
+        const { id, revision } = request;
+        const _queryParams: Record<string, unknown> = {
+            revision,
+        };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
             _authRequest.headers,
@@ -275,7 +505,11 @@ export class EnvironmentsClient {
             ),
             method: "GET",
             headers: _headers,
-            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            queryString: core.url
+                .queryBuilder()
+                .addMany(_queryParams)
+                .mergeAdditional(requestOptions?.queryParams)
+                .build(),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
             abortSignal: requestOptions?.abortSignal,
@@ -321,11 +555,14 @@ export class EnvironmentsClient {
     }
 
     /**
-     * Replace the environment spec.
+     * Replace the environment spec as a new revision. ``id`` must match the URL.
+     *
+     * Sending the spec that is already current changes nothing and returns the current revision.
      *
      * @param {HaiAgents.UpdateEnvironmentRequest} request
      * @param {EnvironmentsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link HaiAgents.PreconditionFailedError}
      * @throws {@link HaiAgents.UnprocessableEntityError}
      *
      * @example
@@ -348,11 +585,15 @@ export class EnvironmentsClient {
         request: HaiAgents.UpdateEnvironmentRequest,
         requestOptions?: EnvironmentsClient.RequestOptions,
     ): Promise<core.WithRawResponse<HaiAgents.Environment>> {
-        const { id, body: _body } = request;
+        const { id, message, ifMatch, body: _body } = request;
+        const _queryParams: Record<string, unknown> = {
+            message,
+        };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
             _authRequest.headers,
             this._options?.headers,
+            mergeOnlyDefinedHeaders({ "If-Match": ifMatch ?? undefined }),
             requestOptions?.headers,
         );
         const _response = await core.fetcher({
@@ -365,7 +606,11 @@ export class EnvironmentsClient {
             method: "PUT",
             headers: _headers,
             contentType: "application/json",
-            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            queryString: core.url
+                .queryBuilder()
+                .addMany(_queryParams)
+                .mergeAdditional(requestOptions?.queryParams)
+                .build(),
             requestType: "json",
             body: serializers.UpdateEnvironmentRequestBody.jsonOrThrow(_body, {
                 unrecognizedObjectKeys: "passthrough",
@@ -394,6 +639,8 @@ export class EnvironmentsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 412:
+                    throw new HaiAgents.PreconditionFailedError(_response.error.body, _response.rawResponse);
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
                         serializers.ErrorResponse.parseOrThrow(_response.error.body, {
@@ -418,11 +665,12 @@ export class EnvironmentsClient {
     }
 
     /**
-     * Delete by identifier. Reserved rows: H employee only.
+     * Delete by id, with its revisions. Reserved rows: H employee only.
      *
      * @param {HaiAgents.DeleteEnvironmentRequest} request
      * @param {EnvironmentsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link HaiAgents.PreconditionFailedError}
      * @throws {@link HaiAgents.UnprocessableEntityError}
      *
      * @example
@@ -441,11 +689,12 @@ export class EnvironmentsClient {
         request: HaiAgents.DeleteEnvironmentRequest,
         requestOptions?: EnvironmentsClient.RequestOptions,
     ): Promise<core.WithRawResponse<void>> {
-        const { id } = request;
+        const { id, ifMatch } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
             _authRequest.headers,
             this._options?.headers,
+            mergeOnlyDefinedHeaders({ "If-Match": ifMatch ?? undefined }),
             requestOptions?.headers,
         );
         const _response = await core.fetcher({
@@ -470,6 +719,8 @@ export class EnvironmentsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 412:
+                    throw new HaiAgents.PreconditionFailedError(_response.error.body, _response.rawResponse);
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
                         serializers.ErrorResponse.parseOrThrow(_response.error.body, {
@@ -494,11 +745,12 @@ export class EnvironmentsClient {
     }
 
     /**
-     * Partially update an environment spec; only provided fields change.
+     * Partially update an environment spec as a new revision; only provided fields change.
      *
      * @param {HaiAgents.PatchEnvironment} request
      * @param {EnvironmentsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link HaiAgents.PreconditionFailedError}
      * @throws {@link HaiAgents.UnprocessableEntityError}
      *
      * @example
@@ -517,11 +769,15 @@ export class EnvironmentsClient {
         request: HaiAgents.PatchEnvironment,
         requestOptions?: EnvironmentsClient.RequestOptions,
     ): Promise<core.WithRawResponse<HaiAgents.Environment>> {
-        const { id, ..._body } = request;
+        const { id, message, ifMatch, ..._body } = request;
+        const _queryParams: Record<string, unknown> = {
+            message,
+        };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
             _authRequest.headers,
             this._options?.headers,
+            mergeOnlyDefinedHeaders({ "If-Match": ifMatch ?? undefined }),
             requestOptions?.headers,
         );
         const _response = await core.fetcher({
@@ -534,7 +790,11 @@ export class EnvironmentsClient {
             method: "PATCH",
             headers: _headers,
             contentType: "application/json",
-            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            queryString: core.url
+                .queryBuilder()
+                .addMany(_queryParams)
+                .mergeAdditional(requestOptions?.queryParams)
+                .build(),
             requestType: "json",
             body: serializers.PatchEnvironment.jsonOrThrow(_body, {
                 unrecognizedObjectKeys: "passthrough",
@@ -563,6 +823,8 @@ export class EnvironmentsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 412:
+                    throw new HaiAgents.PreconditionFailedError(_response.error.body, _response.rawResponse);
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
                         serializers.ErrorResponse.parseOrThrow(_response.error.body, {

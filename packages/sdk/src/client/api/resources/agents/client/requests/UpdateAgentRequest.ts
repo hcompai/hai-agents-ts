@@ -14,6 +14,7 @@ import type * as HaiAgents from "../../../../index.js";
  *     }
  */
 export interface UpdateAgentRequest {
+    /** The agent's `name` from its spec, slashes allowed. Not a UUID. */
     agentName: string;
     /** Optional note stored on the revision this write creates, such as why the change was made. */
     message?: string | null;

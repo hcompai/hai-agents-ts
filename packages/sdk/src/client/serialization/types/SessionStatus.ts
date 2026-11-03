@@ -6,6 +6,7 @@ import type * as serializers from "../index.js";
 import { AnswerOutcome } from "./AnswerOutcome.js";
 import { ModelUsage } from "./ModelUsage.js";
 import { SessionErrorCode } from "./SessionErrorCode.js";
+import { ToolApprovalRequest } from "./ToolApprovalRequest.js";
 import { ToolRequest } from "./ToolRequest.js";
 import { TrajectoryStatus } from "./TrajectoryStatus.js";
 
@@ -25,6 +26,10 @@ export const SessionStatus: core.serialization.ObjectSchema<serializers.SessionS
             "pending_tool_calls",
             core.serialization.list(ToolRequest).optional(),
         ),
+        pendingApprovals: core.serialization.property(
+            "pending_approvals",
+            core.serialization.list(ToolApprovalRequest).optional(),
+        ),
     });
 
 export declare namespace SessionStatus {
@@ -37,5 +42,6 @@ export declare namespace SessionStatus {
         usage_per_model?: ModelUsage.Raw[] | null;
         subagent_session_ids?: string[] | null;
         pending_tool_calls?: ToolRequest.Raw[] | null;
+        pending_approvals?: ToolApprovalRequest.Raw[] | null;
     }
 }

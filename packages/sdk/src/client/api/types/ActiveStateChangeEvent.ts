@@ -3,7 +3,7 @@
 import type * as HaiAgents from "../index.js";
 
 /**
- * The agent switched between running, idle and awaiting custom tool results.
+ * The agent switched between running, idle and awaiting the client, for custom tool results or approvals.
  */
 export interface ActiveStateChangeEvent {
     timestamp: Date;

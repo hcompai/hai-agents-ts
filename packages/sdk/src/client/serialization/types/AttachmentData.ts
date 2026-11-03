@@ -14,6 +14,7 @@ export const AttachmentData: core.serialization.ObjectSchema<serializers.Attachm
             mediaType: core.serialization.property("media_type", core.serialization.string()),
             sizeBytes: core.serialization.property("size_bytes", core.serialization.number()),
             url: core.serialization.string(),
+            fileId: core.serialization.property("file_id", core.serialization.string().optionalNullable()),
         })
         .passthrough();
 
@@ -25,6 +26,7 @@ export declare namespace AttachmentData {
         media_type: string;
         size_bytes: number;
         url: string;
+        file_id?: (string | null | undefined) | null;
         [key: string]: any;
     }
 }

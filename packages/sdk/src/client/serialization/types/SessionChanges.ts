@@ -8,6 +8,7 @@ import { Metrics } from "./Metrics.js";
 import { SessionChangesAnswer } from "./SessionChangesAnswer.js";
 import { SessionErrorCode } from "./SessionErrorCode.js";
 import { SessionEvent } from "./SessionEvent.js";
+import { ToolApprovalRequest } from "./ToolApprovalRequest.js";
 import { ToolRequest } from "./ToolRequest.js";
 import { TrajectoryStatus } from "./TrajectoryStatus.js";
 
@@ -27,6 +28,10 @@ export const SessionChanges: core.serialization.ObjectSchema<serializers.Session
             "pending_tool_calls",
             core.serialization.list(ToolRequest).optional(),
         ),
+        pendingApprovals: core.serialization.property(
+            "pending_approvals",
+            core.serialization.list(ToolApprovalRequest).optional(),
+        ),
     });
 
 export declare namespace SessionChanges {
@@ -42,5 +47,6 @@ export declare namespace SessionChanges {
         outcome?: (AnswerOutcome.Raw | null | undefined) | null;
         metrics?: Metrics.Raw | null;
         pending_tool_calls?: ToolRequest.Raw[] | null;
+        pending_approvals?: ToolApprovalRequest.Raw[] | null;
     }
 }

@@ -7,5 +7,8 @@
  *     }
  */
 export interface GetEnvironmentRequest {
+    /** The environment's `id` from its spec, slashes allowed. Not a UUID. */
     id: string;
+    /** Read this revision instead of the latest. References to an environment elsewhere, such as an agent's ``environment``, pin a revision as ``id:N`` instead. */
+    revision?: number | null;
 }
