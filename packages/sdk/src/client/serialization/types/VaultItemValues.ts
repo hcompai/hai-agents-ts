@@ -10,13 +10,13 @@ export const VaultItemValues: core.serialization.ObjectSchema<
 > = core.serialization.object({
     values: core.serialization.record(core.serialization.string(), core.serialization.string()),
     totpCode: core.serialization.property("totp_code", core.serialization.string().optionalNullable()),
-    totpValidUntil: core.serialization.property("totp_valid_until", core.serialization.date().optionalNullable()),
+    totpExpiresIn: core.serialization.property("totp_expires_in", core.serialization.number().optionalNullable()),
 });
 
 export declare namespace VaultItemValues {
     export interface Raw {
         values: Record<string, string>;
         totp_code?: (string | null | undefined) | null;
-        totp_valid_until?: (string | null | undefined) | null;
+        totp_expires_in?: (number | null | undefined) | null;
     }
 }

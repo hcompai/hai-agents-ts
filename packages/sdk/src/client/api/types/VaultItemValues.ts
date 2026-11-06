@@ -6,5 +6,6 @@
 export interface VaultItemValues {
     values: Record<string, string>;
     totpCode?: string | null;
-    totpValidUntil?: Date | null;
+    /** Whole seconds the code stays valid, counted when it was generated; at least 3, as a nearly spent code is waited out. Count down from when you sent the request: that ends early by the request's travel time, and is unaffected by your clock's skew. */
+    totpExpiresIn?: number | null;
 }
