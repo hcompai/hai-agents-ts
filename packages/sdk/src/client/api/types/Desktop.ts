@@ -6,8 +6,6 @@
 export interface Desktop {
     /** Catalog identifier for this environment. */
     id: string;
-    /** Drive the machine from a shell: commands, files, and the screen and browser through CLIs. False drives the screen with mouse and keyboard actions and a screenshot after each step. */
-    shell?: boolean;
     /** Connect to an existing desktop session by id. */
     sessionId?: string | null;
     /** Reach the desktop on the agent's first use instead of at startup. Skips the initial observation. */

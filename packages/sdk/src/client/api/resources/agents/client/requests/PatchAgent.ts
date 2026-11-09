@@ -22,7 +22,6 @@ export interface PatchAgent {
     instructions?: string | null;
     subagents?: HaiAgents.PatchAgentSubagentsItem[] | null;
     skills?: HaiAgents.PatchAgentSkillsItem[] | null;
-    registrySkills?: string[] | null;
     answerFormat?: Record<string, unknown> | null;
     tools?: HaiAgents.ToolDefinition[] | null;
 }
