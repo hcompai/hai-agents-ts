@@ -30,7 +30,6 @@ export const PatchEnvironment: core.serialization.Schema<
         core.serialization.boolean().optional(),
     ),
     network: BrowserNetwork.optionalNullable(),
-    shell: core.serialization.boolean().optional(),
     screenshotMaxWidth: core.serialization.property(
         "screenshot_max_width",
         core.serialization.number().optionalNullable(),
@@ -53,7 +52,6 @@ export declare namespace PatchEnvironment {
         use_default_browser_profile?: boolean | null;
         persist_browser_profile?: boolean | null;
         network?: (BrowserNetwork.Raw | null | undefined) | null;
-        shell?: boolean | null;
         screenshot_max_width?: (number | null | undefined) | null;
         image?: (string | null | undefined) | null;
         storage?: (WorkstationStorage.Raw | null | undefined) | null;

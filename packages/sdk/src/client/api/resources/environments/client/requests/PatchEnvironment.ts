@@ -27,7 +27,6 @@ export interface PatchEnvironment {
     useDefaultBrowserProfile?: boolean;
     persistBrowserProfile?: boolean;
     network?: HaiAgents.BrowserNetwork | null;
-    shell?: boolean;
     screenshotMaxWidth?: number | null;
     image?: string | null;
     storage?: HaiAgents.WorkstationStorage | null;

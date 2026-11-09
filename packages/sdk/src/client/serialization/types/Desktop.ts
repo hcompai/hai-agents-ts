@@ -7,7 +7,6 @@ import type * as serializers from "../index.js";
 export const Desktop: core.serialization.ObjectSchema<serializers.Desktop.Raw, HaiAgents.Desktop> =
     core.serialization.object({
         id: core.serialization.string(),
-        shell: core.serialization.boolean().optional(),
         sessionId: core.serialization.property("session_id", core.serialization.string().optionalNullable()),
         lazy: core.serialization.boolean().optional(),
         screenshotMaxWidth: core.serialization.property(
@@ -19,7 +18,6 @@ export const Desktop: core.serialization.ObjectSchema<serializers.Desktop.Raw, H
 export declare namespace Desktop {
     export interface Raw {
         id: string;
-        shell?: boolean | null;
         session_id?: (string | null | undefined) | null;
         lazy?: boolean | null;
         screenshot_max_width?: (number | null | undefined) | null;
