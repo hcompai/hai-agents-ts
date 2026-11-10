@@ -13,9 +13,13 @@ export interface PatchSkill {
     message?: string | null;
     /** The ``ETag`` of the revision this write is based on, e.g. ``"3"``. If the resource has moved past it the write is refused with 412. Omit it, or send ``*``, to write unconditionally. */
     ifMatch?: string | null;
+    /** When to use this skill. The agent reads this to decide whether to load it. */
     description?: string;
+    /** Markdown instructions the agent loads when it uses the skill. */
     body?: string;
+    /** Optional URL the content was sourced from. */
     source?: string | null;
+    /** Optional regex hinting at URLs where this skill applies. */
     urlPattern?: string | null;
     compatibility?: string | null;
     files?: Record<string, string>;

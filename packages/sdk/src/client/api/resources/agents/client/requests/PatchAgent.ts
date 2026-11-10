@@ -15,13 +15,22 @@ export interface PatchAgent {
     message?: string | null;
     /** The ``ETag`` of the revision this write is based on, e.g. ``"3"``. If the resource has moved past it the write is refused with 412. Omit it, or send ``*``, to write unconditionally. */
     ifMatch?: string | null;
+    /** What the agent does. Parent agents read this to decide when to delegate to it. */
     description?: string;
+    /** Environments the agent runs in. Each entry is a registered environment's id or an inline definition. At most one per kind. Required unless the agent delegates to subagents or uses client-executed custom tools. */
     environments?: HaiAgents.PatchAgentEnvironmentsItem[];
+    /** Model that serves the agent. Defaults to the platform model if omitted. */
     model?: string | null;
+    /** How much the model thinks before each step: more is slower and more careful. Null uses the model's default. Models without effort levels only honor 'disabled'. */
     reasoningEffort?: HaiAgents.PatchAgentReasoningEffort | null;
+    /** Instructions appended to the agent's system prompt to steer behavior. */
     instructions?: string | null;
+    /** Agents this one can delegate to. Each entry is a registered agent's name or an inline definition. */
     subagents?: HaiAgents.PatchAgentSubagentsItem[] | null;
+    /** Skills the agent can draw on. Each entry is a registered skill's name or an inline definition. */
     skills?: HaiAgents.PatchAgentSkillsItem[] | null;
+    /** JSON Schema the agent's final answer must conform to. Null returns a free-form text answer. */
     answerFormat?: Record<string, unknown> | null;
+    /** Custom tools executed by the API client. The agent emits a tool call, pauses, and resumes once the client sends back the matching tool result. */
     tools?: HaiAgents.ToolDefinition[] | null;
 }
