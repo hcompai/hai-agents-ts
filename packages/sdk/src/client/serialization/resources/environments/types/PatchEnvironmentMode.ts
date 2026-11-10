@@ -3,14 +3,36 @@
 import type * as HaiAgents from "../../../../api/index.js";
 import * as core from "../../../../core/index.js";
 import type * as serializers from "../../../index.js";
-import { PatchEnvironmentModeOne } from "./PatchEnvironmentModeOne.js";
-import { PatchEnvironmentModeZero } from "./PatchEnvironmentModeZero.js";
+import { BrowserTextMode } from "../../../types/BrowserTextMode.js";
+import { DesktopShellMode } from "../../../types/DesktopShellMode.js";
+import { PatchEnvironmentModeVisual } from "../../../types/PatchEnvironmentModeVisual.js";
 
 export const PatchEnvironmentMode: core.serialization.Schema<
     serializers.PatchEnvironmentMode.Raw,
     HaiAgents.PatchEnvironmentMode
-> = core.serialization.undiscriminatedUnion([PatchEnvironmentModeZero, PatchEnvironmentModeOne]);
+> = core.serialization
+    .union("type", {
+        shell: DesktopShellMode,
+        text: BrowserTextMode,
+        visual: PatchEnvironmentModeVisual,
+    })
+    .transform<HaiAgents.PatchEnvironmentMode>({
+        transform: (value) => value,
+        untransform: (value) => value,
+    });
 
 export declare namespace PatchEnvironmentMode {
-    export type Raw = PatchEnvironmentModeZero.Raw | PatchEnvironmentModeOne.Raw;
+    export type Raw = PatchEnvironmentMode.Shell | PatchEnvironmentMode.Text | PatchEnvironmentMode.Visual;
+
+    export interface Shell extends DesktopShellMode.Raw {
+        type: "shell";
+    }
+
+    export interface Text extends BrowserTextMode.Raw {
+        type: "text";
+    }
+
+    export interface Visual extends PatchEnvironmentModeVisual.Raw {
+        type: "visual";
+    }
 }
