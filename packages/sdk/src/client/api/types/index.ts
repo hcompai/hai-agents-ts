@@ -88,6 +88,7 @@ export * from "./PageSessionSummary.js";
 export * from "./PageSkill.js";
 export * from "./PageSkillRevisionRecord.js";
 export * from "./PageWebhookRecord.js";
+export * from "./PatchEnvironmentModeVisual.js";
 export * from "./PauseSchedule.js";
 export * from "./PolicyEvent.js";
 export * from "./ProxyPool.js";
