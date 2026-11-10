@@ -2,14 +2,4 @@
 
 import type * as HaiAgents from "../../../index.js";
 
-export type PatchEnvironmentMode = HaiAgents.PatchEnvironmentMode.Text | HaiAgents.PatchEnvironmentMode.Visual;
-
-export namespace PatchEnvironmentMode {
-    export interface Text extends HaiAgents.BrowserTextMode {
-        type: "text";
-    }
-
-    export interface Visual extends HaiAgents.BrowserVisualMode {
-        type: "visual";
-    }
-}
+export type PatchEnvironmentMode = HaiAgents.PatchEnvironmentModeZero | HaiAgents.PatchEnvironmentModeOne;
