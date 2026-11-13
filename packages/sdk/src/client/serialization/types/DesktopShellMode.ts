@@ -3,12 +3,35 @@
 import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
+import { DesktopShellModeCommandApproval } from "./DesktopShellModeCommandApproval.js";
+import { DesktopShellModeSandbox } from "./DesktopShellModeSandbox.js";
 
 export const DesktopShellMode: core.serialization.ObjectSchema<
     serializers.DesktopShellMode.Raw,
     HaiAgents.DesktopShellMode
-> = core.serialization.object({});
+> = core.serialization.object({
+    commandApproval: core.serialization.property("command_approval", DesktopShellModeCommandApproval.optional()),
+    allowedCommands: core.serialization.property(
+        "allowed_commands",
+        core.serialization.list(core.serialization.string()).optional(),
+    ),
+    sandbox: DesktopShellModeSandbox.optional(),
+    allowedDomains: core.serialization.property(
+        "allowed_domains",
+        core.serialization.list(core.serialization.string()).optional(),
+    ),
+    writableFolders: core.serialization.property(
+        "writable_folders",
+        core.serialization.list(core.serialization.string()).optional(),
+    ),
+});
 
 export declare namespace DesktopShellMode {
-    export type Raw = {};
+    export interface Raw {
+        command_approval?: DesktopShellModeCommandApproval.Raw | null;
+        allowed_commands?: string[] | null;
+        sandbox?: DesktopShellModeSandbox.Raw | null;
+        allowed_domains?: string[] | null;
+        writable_folders?: string[] | null;
+    }
 }
