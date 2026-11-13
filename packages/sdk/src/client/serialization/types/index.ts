@@ -43,6 +43,8 @@ export * from "./DependencyRevisions.js";
 export * from "./Desktop.js";
 export * from "./DesktopMode.js";
 export * from "./DesktopShellMode.js";
+export * from "./DesktopShellModeCommandApproval.js";
+export * from "./DesktopShellModeSandbox.js";
 export * from "./DesktopVisualMode.js";
 export * from "./DetailErrorResponse.js";
 export * from "./Environment.js";
