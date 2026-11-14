@@ -17,4 +17,6 @@ export interface UpdateSchedule {
     sessionRequest?: HaiAgents.SessionRequest;
     /** How many sessions to create before the schedule becomes inactive. Omit to run until paused or deleted. */
     repeats?: number | null;
+    /** Completion probe each run's browser end state is checked against once its session finished; the verdict is written as a `probe` score on the session and as the run's `probe_outcome`. Null leaves runs to judge rules. */
+    probe?: Record<string, (HaiAgents.JsonValue | undefined) | null> | null;
 }

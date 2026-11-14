@@ -3,6 +3,7 @@
 import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
+import { ScheduleRunRecordProbeOutcome } from "./ScheduleRunRecordProbeOutcome.js";
 import { ScheduleRunRecordStatus } from "./ScheduleRunRecordStatus.js";
 
 export const ScheduleRunRecord: core.serialization.ObjectSchema<
@@ -16,6 +17,7 @@ export const ScheduleRunRecord: core.serialization.ObjectSchema<
     sessionId: core.serialization.property("session_id", core.serialization.string().nullable()),
     error: core.serialization.string().nullable(),
     triggeredManually: core.serialization.property("triggered_manually", core.serialization.boolean()),
+    probeOutcome: core.serialization.property("probe_outcome", ScheduleRunRecordProbeOutcome.nullable()),
     createdAt: core.serialization.property("created_at", core.serialization.date()),
 });
 
@@ -28,6 +30,7 @@ export declare namespace ScheduleRunRecord {
         session_id?: string | null;
         error?: string | null;
         triggered_manually: boolean;
+        probe_outcome?: ScheduleRunRecordProbeOutcome.Raw | null;
         created_at: string;
     }
 }

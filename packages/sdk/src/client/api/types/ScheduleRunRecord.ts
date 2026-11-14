@@ -13,5 +13,7 @@ export interface ScheduleRunRecord {
     sessionId: string | null;
     error: string | null;
     triggeredManually: boolean;
+    /** What the schedule's probe said of the session's browser end state; `unjudged` when it could not tell. Null until the session finished and its end state was checked (`unjudged` if that takes over 24 hours), or when the run is over a day older than the schedule's probe. */
+    probeOutcome: HaiAgents.ScheduleRunRecordProbeOutcome | null;
     createdAt: Date;
 }
