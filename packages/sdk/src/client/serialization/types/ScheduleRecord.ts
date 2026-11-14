@@ -4,6 +4,7 @@ import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
 import { CronTiming } from "./CronTiming.js";
+import { JsonValue } from "./JsonValue.js";
 import { SessionRequest } from "./SessionRequest.js";
 
 export const ScheduleRecord: core.serialization.ObjectSchema<serializers.ScheduleRecord.Raw, HaiAgents.ScheduleRecord> =
@@ -17,6 +18,7 @@ export const ScheduleRecord: core.serialization.ObjectSchema<serializers.Schedul
         pauseNote: core.serialization.property("pause_note", core.serialization.string().nullable()),
         repeats: core.serialization.number().nullable(),
         sessionsCreated: core.serialization.property("sessions_created", core.serialization.number()),
+        probe: core.serialization.record(core.serialization.string(), JsonValue.nullable()).nullable(),
         nextRunTimes: core.serialization.property("next_run_times", core.serialization.list(core.serialization.date())),
         lastRunAt: core.serialization.property("last_run_at", core.serialization.date().nullable()),
         createdAt: core.serialization.property("created_at", core.serialization.date()),
@@ -34,6 +36,7 @@ export declare namespace ScheduleRecord {
         pause_note?: string | null;
         repeats?: number | null;
         sessions_created: number;
+        probe?: Record<string, (JsonValue.Raw | undefined) | null> | null;
         next_run_times: string[];
         last_run_at?: string | null;
         created_at: string;

@@ -4,6 +4,7 @@ import type * as HaiAgents from "../../../../../api/index.js";
 import * as core from "../../../../../core/index.js";
 import type * as serializers from "../../../../index.js";
 import { CronTiming } from "../../../../types/CronTiming.js";
+import { JsonValue } from "../../../../types/JsonValue.js";
 import { SessionRequest } from "../../../../types/SessionRequest.js";
 
 export const UpdateSchedule: core.serialization.Schema<
@@ -15,6 +16,7 @@ export const UpdateSchedule: core.serialization.Schema<
     timing: CronTiming.optional(),
     sessionRequest: core.serialization.property("session_request", SessionRequest.optional()),
     repeats: core.serialization.number().optionalNullable(),
+    probe: core.serialization.record(core.serialization.string(), JsonValue.nullable()).optionalNullable(),
 });
 
 export declare namespace UpdateSchedule {
@@ -24,5 +26,6 @@ export declare namespace UpdateSchedule {
         timing?: CronTiming.Raw | null;
         session_request?: SessionRequest.Raw | null;
         repeats?: (number | null | undefined) | null;
+        probe?: (Record<string, (JsonValue.Raw | undefined) | null> | null | undefined) | null;
     }
 }

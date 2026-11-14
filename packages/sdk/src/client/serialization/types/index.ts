@@ -109,6 +109,7 @@ export * from "./RunnerSessionData.js";
 export * from "./RunnerSessionEvent.js";
 export * from "./ScheduleRecord.js";
 export * from "./ScheduleRunRecord.js";
+export * from "./ScheduleRunRecordProbeOutcome.js";
 export * from "./ScheduleRunRecordStatus.js";
 export * from "./Session.js";
 export * from "./SessionChanges.js";

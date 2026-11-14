@@ -17,6 +17,8 @@ export interface ScheduleRecord {
     repeats: number | null;
     /** Automatic fires that created a session. Skipped fires, errors, and manual triggers are not counted. When this reaches repeats, the schedule is paused. */
     sessionsCreated: number;
+    /** Completion probe each run's browser end state is checked against. */
+    probe: Record<string, (HaiAgents.JsonValue | undefined) | null> | null;
     /** The next few fire times, empty while paused. */
     nextRunTimes: Date[];
     lastRunAt: Date | null;
