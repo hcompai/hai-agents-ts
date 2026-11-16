@@ -892,4 +892,94 @@ export class SchedulesClient {
             "/api/v2/schedules/{schedule_id}/runs",
         );
     }
+
+    /**
+     * Draft a completion probe from the schedule's runs marked as passing or failing; nothing is stored.
+     *
+     * @param {HaiAgents.DraftScheduleProbeRequest} request
+     * @param {SchedulesClient.RequestOptions} requestOptions - Request-specific configuration.
+     *
+     * @throws {@link HaiAgents.UnprocessableEntityError}
+     *
+     * @example
+     *     await client.schedules.draftScheduleProbe({
+     *         scheduleId: "schedule_id"
+     *     })
+     */
+    public draftScheduleProbe(
+        request: HaiAgents.DraftScheduleProbeRequest,
+        requestOptions?: SchedulesClient.RequestOptions,
+    ): core.HttpResponsePromise<HaiAgents.ProbeDraft> {
+        return core.HttpResponsePromise.fromPromise(this.__draftScheduleProbe(request, requestOptions));
+    }
+
+    private async __draftScheduleProbe(
+        request: HaiAgents.DraftScheduleProbeRequest,
+        requestOptions?: SchedulesClient.RequestOptions,
+    ): Promise<core.WithRawResponse<HaiAgents.ProbeDraft>> {
+        const { scheduleId } = request;
+        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
+        const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
+            _authRequest.headers,
+            this._options?.headers,
+            requestOptions?.headers,
+        );
+        const _response = await core.fetcher({
+            url: core.url.join(
+                (await core.Supplier.get(this._options.baseUrl)) ??
+                    (await core.Supplier.get(this._options.environment)) ??
+                    environments.HaiAgentsEnvironment.Eu,
+                `api/v2/schedules/${core.url.encodePathParam(scheduleId)}/probe/draft`,
+            ),
+            method: "POST",
+            headers: _headers,
+            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
+            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
+            abortSignal: requestOptions?.abortSignal,
+            fetchFn: this._options?.fetch,
+            logging: this._options.logging,
+        });
+        if (_response.ok) {
+            return {
+                data: serializers.ProbeDraft.parseOrThrow(_response.body, {
+                    unrecognizedObjectKeys: "passthrough",
+                    allowUnrecognizedUnionMembers: true,
+                    allowUnrecognizedEnumValues: true,
+                    skipValidation: true,
+                    breadcrumbsPrefix: ["response"],
+                }),
+                rawResponse: _response.rawResponse,
+            };
+        }
+
+        if (_response.error.reason === "status-code") {
+            switch (_response.error.statusCode) {
+                case 422:
+                    throw new HaiAgents.UnprocessableEntityError(
+                        serializers.ErrorResponse.parseOrThrow(_response.error.body, {
+                            unrecognizedObjectKeys: "passthrough",
+                            allowUnrecognizedUnionMembers: true,
+                            allowUnrecognizedEnumValues: true,
+                            skipValidation: true,
+                            breadcrumbsPrefix: ["response"],
+                        }),
+                        _response.rawResponse,
+                    );
+                default:
+                    throw new errors.HaiAgentsError({
+                        statusCode: _response.error.statusCode,
+                        body: _response.error.body,
+                        rawResponse: _response.rawResponse,
+                    });
+            }
+        }
+
+        return handleNonStatusCodeError(
+            _response.error,
+            _response.rawResponse,
+            "POST",
+            "/api/v2/schedules/{schedule_id}/probe/draft",
+        );
+    }
 }
