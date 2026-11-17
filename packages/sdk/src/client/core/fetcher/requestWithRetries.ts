@@ -59,22 +59,48 @@ function getRetryDelayFromHeaders(response: Response, retryAttempt: number): num
     return addSymmetricJitter(Math.min(INITIAL_RETRY_DELAY * 2 ** retryAttempt, MAX_RETRY_DELAY));
 }
 
+/**
+ * Python catches httpx.ConnectError (the request never reached the server) and RemoteProtocolError
+ * (the connection dropped mid-request); fetch rejects both with a TypeError. Node's carries the socket
+ * error's `code` on `cause` and tells the two apart; a browser's `Failed to fetch` has no cause, so any
+ * other TypeError counts as a mid-request drop. An abort (timeout or caller's signal) is a DOMException
+ * and is never re-sent.
+ */
+/** httpx.ConnectError's codes. ECONNRESET can also be a mid-request drop, so it stays in the idempotent-only set. */
+const CONNECT_ERROR_CODES = new Set(["ECONNREFUSED", "ENOTFOUND", "EAI_AGAIN"]);
+
+function isConnectError(error: TypeError): boolean {
+    const { code } = (error.cause ?? {}) as { code?: unknown };
+    return typeof code === "string" && CONNECT_ERROR_CODES.has(code);
+}
+
+/** Python's `_may_resend`: a request that never reached the server is always safe to resend. */
+function mayResend(method: string | undefined, error: TypeError): boolean {
+    return isConnectError(error) || (method !== undefined && IDEMPOTENT_METHODS.has(method.toUpperCase()));
+}
+
 export async function requestWithRetries(
     requestFn: () => Promise<Response>,
     maxRetries: number = DEFAULT_MAX_RETRIES,
     method?: string,
 ): Promise<Response> {
-    let response: Response = await requestFn();
-
-    for (let i = 0; i < maxRetries; ++i) {
-        if (isRetryable(response.status, method)) {
-            const delay = getRetryDelayFromHeaders(response, i);
-
-            await new Promise((resolve) => setTimeout(resolve, delay));
+    for (let attempt = 0; ; ++attempt) {
+        let response: Response;
+        try {
             response = await requestFn();
-        } else {
-            break;
+        } catch (error) {
+            if (attempt < maxRetries && error instanceof TypeError && mayResend(method, error)) {
+                const delay = addSymmetricJitter(Math.min(INITIAL_RETRY_DELAY * 2 ** attempt, MAX_RETRY_DELAY));
+                await new Promise((resolve) => setTimeout(resolve, delay));
+                continue;
+            }
+            throw error;
         }
+        if (attempt < maxRetries && isRetryable(response.status, method)) {
+            const delay = getRetryDelayFromHeaders(response, attempt);
+            await new Promise((resolve) => setTimeout(resolve, delay));
+            continue;
+        }
+        return response;
     }
-    return response!;
 }

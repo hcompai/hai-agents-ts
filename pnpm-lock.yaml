@@ -29,6 +29,21 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
 
+  tests/python-mirror:
+    devDependencies:
+      '@types/node':
+        specifier: ^26.6.5
+        version: 26.6.6
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: ^5.0.5
+        version: 5.1.0(@types/node@26.6.6)(vite@8.0.16(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0))
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
+
 packages:
 
   '@emnapi/core@1.10.0':

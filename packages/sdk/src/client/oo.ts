@@ -16,11 +16,11 @@ import type { SessionChanges } from "./api/index.js";
 import { asTools, type Tool } from "./tools.js";
 
 /**
- * The public SDK client. Extends the Fern-generated client with create-and-run
- * convenience methods (`runSession`, `startSession`, `session`) that delegate to
- * the hand-written polling helpers.
+ * The public SDK client, `Client` as in hai-agents-python. Extends the Fern-generated
+ * client with create-and-run convenience methods (`runSession`, `startSession`,
+ * `session`) that delegate to the hand-written polling helpers.
  */
-export class HaiAgentsClient extends FernClient {
+export class Client extends FernClient {
   constructor(options: FernClient.Options = {}) {
     // Pin the default the per-resource calls already use, so passthrough `fetch` can resolve relative paths.
     super(
@@ -57,7 +57,17 @@ export class HaiAgentsClient extends FernClient {
   }
 }
 
-export namespace HaiAgentsClient {
+export namespace Client {
   export type Options = FernClient.Options;
   export type RequestOptions = FernClient.RequestOptions;
+}
+
+/** @deprecated Use Client. Removed in hai-agents X.Y.Z. */
+export const HaiAgentsClient = Client;
+/** @deprecated Use Client. Removed in hai-agents X.Y.Z. */
+export type HaiAgentsClient = Client;
+/** @deprecated Use Client. Removed in hai-agents X.Y.Z. */
+export namespace HaiAgentsClient {
+  export type Options = Client.Options;
+  export type RequestOptions = Client.RequestOptions;
 }
