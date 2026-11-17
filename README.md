@@ -63,6 +63,8 @@ console.log(result.answer);
 
 ## Run the agent on this machine
 
+Three things each run either in H's cloud or on this machine, independently of each other: the agent itself (the brain, this section), its environments (the browser, next section) and inference (the model). The default is everything in the cloud. The brain can run here with the browser here; the brain can stay in the cloud while the browser is here; a local brain cannot use a cloud browser. Inference is hosted by H unless a local brain is pointed at a model server you host.
+
 `new Client()` runs the agent in H's cloud. `Client.local()` runs it on this machine, in the same agent runtime binary the Python SDK's `Client.local()` uses. The session you pass is the same in both cases, so a task written for one runs on the other unchanged.
 
 ```ts
@@ -80,7 +82,7 @@ const result = await client.runSession({
 await client.close();
 ```
 
-Two things differ from the cloud client. The runtime takes inline agent definitions only, not catalog names. And its environments are the ones on this machine, `host: "user_device"`, each served by a bridge that registers the `sessionId` and drives the browser; the TypeScript SDK does not ship a bridge yet, so today this entry is for products that bring their own. A cloud browser (`host: "cloud"`) cannot be provisioned from a local runtime outside H's network.
+Two things differ from the cloud client. The runtime takes inline agent definitions only, not catalog names. And its environments are the ones on this machine, `host: "user_device"`, each served by a bridge on this machine (`PlaywrightBrowserBridge` from `hai-agents/local`, ready-made on a Chrome of this machine, or `LocalBridge` with a driver from the `hai-drivers` package; the full example is in `packages/sdk/README.md`). A cloud browser (`host: "cloud"`) cannot be provisioned from a local runtime outside H's network.
 
 The runtime is a compiled binary of about 70 MB, pinned by this SDK. It is never downloaded behind your back: pass `download: true` once and it lands under `~/.hai/agent-runtime`, or put `hai-agent-runtime` on PATH. The download honours `HTTPS_PROXY`, `HTTP_PROXY` and `NO_PROXY`, as the Python SDK's does. Start one runtime per port at a time; a second process attaches to it once it is up. The runtime reads `HAI_API_KEY` for hosted inference. `Inference.selfHosted(url, model)` points it at a model server you host instead, and withholds the key from it:
 
