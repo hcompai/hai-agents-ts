@@ -1,4 +1,5 @@
 import { HaiAgentsClient as FernClient } from "./Client.js";
+import type { SessionsClient } from "./api/resources/sessions/client/Client.js";
 import { HaiAgentsEnvironment } from "./environments.js";
 import {
   SessionHandle,
@@ -15,7 +16,7 @@ import {
 import type { SessionChanges } from "./api/index.js";
 import { asTools, type Tool } from "./tools.js";
 // Type-only, erased at build, as client.py's TYPE_CHECKING import of hai_agents_local: the browser-safe main entry never loads the Node-only local entry.
-import type { LocalClientOptions, LocalRuntime } from "../local/index.js";
+import type { AutoBridges, LocalClientOptions, LocalRuntime, LocalSessionsClient } from "../local/index.js";
 
 /** Python's hai_agents_local imports anywhere; the local entry spawns processes, so only Node.js can load it. */
 const isNode = (): boolean => typeof process !== "undefined" && process.versions?.node != null;
@@ -26,6 +27,25 @@ const LOCAL_ENTRY = "hai-agents/local";
 /** The local entry (`hai-agents/local`), loaded on first use. */
 async function loadLocal(): Promise<typeof import("../local/index.js")> {
   return import(/* @vite-ignore */ LOCAL_ENTRY);
+}
+
+/** The local sessions client once loaded: each call waits for it, keeping `.withRawResponse()` on what the generated methods return. */
+function lazySessions(loading: Promise<LocalSessionsClient>): SessionsClient {
+  type Method = (...args: unknown[]) => Promise<unknown> & { withRawResponse?: () => Promise<unknown> };
+  return new Proxy({} as SessionsClient, {
+    get: (_target, name) => {
+      if (typeof name !== "string" || name === "then") {
+        return undefined;
+      }
+      return (...args: unknown[]) => {
+        const called = loading.then((sessions) => ({ result: (sessions as unknown as Record<string, Method>)[name]!(...args) }));
+        return Object.assign(
+          called.then(({ result }) => result),
+          { withRawResponse: () => called.then(({ result }) => result.withRawResponse!()) },
+        );
+      };
+    },
+  });
 }
 
 /**
@@ -44,14 +64,36 @@ export class Client extends FernClient {
     return this._hold?.runtime;
   }
 
-  constructor(options: FernClient.Options = {}) {
+  /** Start a bridge on this machine for each `user_device` environment of a session (default true; Node only); an object adds a product's options to each bridge. */
+  // ts-ahead: Python's auto_bridges is a bool; the object form carries per-environment bridge options (local/routing.ts).
+  readonly autoBridges: AutoBridges;
+  private _localSessions?: Promise<LocalSessionsClient>;
+
+  constructor(options: Client.Options = {}) {
+    // Python's auto_bridges is a Client.local() argument (Client() always bridges); a constructor option here, so a cloud client can turn its bridges off too.
+    const { autoBridges = true, ...client } = options;
     // Python resolves api_key as argument, then HAI_API_KEY, then the key `holo login` stored, and raises "No API key found..." here; TS keeps Fern's BearerAuthProvider (argument, then HAI_API_KEY at the first request): no credentials store, the browser-safe main entry cannot read files.
     // Pin the default the per-resource calls already use, so passthrough `fetch` can resolve relative paths.
     super(
-      options.baseUrl == null && options.environment == null
-        ? { ...options, environment: HaiAgentsEnvironment.Eu }
-        : options,
+      client.baseUrl == null && client.environment == null
+        ? { ...client, environment: HaiAgentsEnvironment.Eu }
+        : client,
     );
+    this.autoBridges = autoBridges;
+  }
+
+  /** The sessions client that starts a bridge on this machine for each `user_device` environment. */
+  // Python's is always the local one (hai_agents_local ships with the package); the bridge layer needs Node, so it loads on first use there, and a browser keeps the generated client.
+  public override get sessions(): SessionsClient {
+    if (this._sessions === undefined && this.autoBridges && isNode()) {
+      this._localSessions = loadLocal().then(
+        (local) => new local.LocalSessionsClient(this._options, { runtime: this.localRuntime, autoBridges: this.autoBridges }),
+      );
+      // A broken install rejects before any method is called; the tap keeps Node from reporting an unhandled rejection, and each call still rejects with it.
+      this._localSessions.catch(() => undefined);
+      this._sessions = lazySessions(this._localSessions);
+    }
+    return super.sessions;
   }
 
   /**
@@ -74,11 +116,17 @@ export class Client extends FernClient {
     return this.close();
   }
 
-  /** Stop the runtime if this process started it. A runtime also exits on its own when the process that started it does. */
+  /** Stop the sessions this client bridged; a `Client.local()` client also stops the runtime it started. A runtime also exits on its own when the process that started it does. */
   async close(): Promise<void> {
-    // Python stops the runtime only once no other client uses it (shutdown_if_idle); no idle check in TS (runtime.ts), so an owned runtime stops here. fetch has no connection pool to close.
-    if (this._hold?.owned) {
-      await this._hold.runtime.shutdown();
+    try {
+      if (this._localSessions !== undefined) {
+        await (await this._localSessions).close();
+      }
+    } finally {
+      // Python stops the runtime only once no other client uses it (shutdown_if_idle); no idle check in TS (runtime.ts), so an owned runtime stops here. fetch has no connection pool to close.
+      if (this._hold?.owned) {
+        await this._hold.runtime.shutdown();
+      }
     }
   }
 
@@ -110,7 +158,10 @@ export class Client extends FernClient {
 }
 
 export namespace Client {
-  export type Options = FernClient.Options;
+  export type Options = FernClient.Options & {
+    /** Start a bridge on this machine for each `user_device` environment of a session (default true), with a product's options when an object; `HAI_AUTO_BRIDGE=0` turns it off at runtime. */
+    autoBridges?: AutoBridges;
+  };
   export type RequestOptions = FernClient.RequestOptions;
 }
 

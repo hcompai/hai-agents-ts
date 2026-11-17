@@ -61,24 +61,24 @@ console.log(result.answer);
 
 ## Run the agent on this machine
 
+Three things each run either in H's cloud or on this machine, independently of each other: the agent itself (the brain, this section), its environments (the browser, next section) and inference (the model). The default is everything in the cloud. The brain can run here with the browser here; the brain can stay in the cloud while the browser is here; a local brain cannot use a cloud browser. Inference is hosted by H unless a local brain is pointed at a model server you host.
+
 `new Client()` runs the agent in H's cloud. `Client.local()` runs it on this machine, in the same agent runtime binary the Python SDK's `Client.local()` uses. The session you pass is the same in both cases, so a task written for one runs on the other unchanged.
 
 ```ts
 import { Client } from "hai-agents";
 
-const client = await Client.local({ download: true }); // starts, or attaches to, the agent runtime on this machine
+await using client = await Client.local({ download: true }); // starts, or attaches to, the agent runtime on this machine
 console.log(client.localRuntime?.version, client.localRuntime?.baseUrl);
-const sessionId = "..."; // the id the bridge serving this machine's browser registered
 
 const result = await client.runSession({
-  agent: { name: "qa", description: "...", environments: [{ id: "browser", kind: "web", host: "user_device", sessionId }] },
+  agent: { name: "qa", description: "...", environments: [{ id: "browser", kind: "web", host: "user_device" }] },
   messages: "Check that the login form appears",
 });
-
-await client.close();
+// `await using` closes the client at the end of the block (`Symbol.asyncDispose` is Node 20.4+; the syntax itself needs TypeScript 5.2+, or Node 24+), as the Python SDK's `with Client.local() as client:`; `await client.close()` does the same by hand.
 ```
 
-Two things differ from the cloud client. The runtime takes inline agent definitions only, not catalog names. And its environments are the ones on this machine, `host: "user_device"`, each served by a bridge that registers the `sessionId` and drives the browser; the TypeScript SDK does not ship a bridge yet, so today this entry is for products that bring their own. A cloud browser (`host: "cloud"`) cannot be provisioned from a local runtime outside H's network.
+Two things differ from the cloud client. The runtime takes inline agent definitions only, not catalog names. And its environments are the ones on this machine, `host: "user_device"`, each served by a browser this client starts here (next section). A cloud browser (`host: "cloud"`) cannot be provisioned from a local runtime outside H's network.
 
 The runtime is a compiled binary of about 70 MB, pinned by this SDK. It is never downloaded behind your back: pass `download: true` once and it lands under `~/.hai/agent-runtime`, or put `hai-agent-runtime` on PATH. The download honours `HTTPS_PROXY`, `HTTP_PROXY` and `NO_PROXY`, as the Python SDK's does. Start one runtime per port at a time; a second process attaches to it once it is up. The runtime reads `HAI_API_KEY` for hosted inference. `Inference.selfHosted(url, model)` points it at a model server you host instead, and withholds the key from it:
 
@@ -93,6 +93,71 @@ const client = await Client.local({
 ```
 
 `Client.local()` is Node.js only: the launcher lives in the `hai-agents/local` entry, which the main entry loads on demand. A runtime your process started stops when the process exits, or earlier on `client.close()`. A second process on the same port attaches to the running runtime instead of starting another.
+
+### Serve a browser on this machine
+
+A `user_device` environment is a browser your process drives. Give an agent one, `{ kind: "web", host: "user_device" }`, and `Client` starts the browser here when the session is created: a `PlaywrightBrowserBridge` on a Chrome of this machine, as the Python SDK's browser bridge, which attaches to a Chrome already listening on the remote-debugging port (9222), or launches Google Chrome on the `~/.hai/chrome-profile` profile, where sign-ins persist between runs. It needs the `hai-drivers` and `playwright-core` packages installed beside the SDK (`npm install hai-drivers playwright-core`; neither is pulled in by default). The same works for both brains: `new Client({ apiKey })` runs the agent in H's cloud with the browser here, `Client.local()` runs both here. It needs Node.js; in a browser the client has no bridges.
+
+```ts
+import { Client } from "hai-agents";
+
+const client = new Client({ baseUrl: "https://agp.eu.hcompany.ai" }); // or await Client.local()
+try {
+  const result = await client.runSession({
+    agent: {
+      name: "qa",
+      description: "...",
+      environments: [{ id: "browser", kind: "web", host: "user_device" }],
+    },
+    messages: "Check that the login form appears",
+  });
+  console.log(result.answer);
+} finally {
+  await client.close(); // cancels a session still served from here; the bridge stops with the session
+}
+```
+
+The bridge stops when the session ends, and the session is cancelled if the bridge dies, so a run never burns steps against a browser that is gone. A serving bridge keeps the process up (its long poll is always in flight), so end the run with `client.close()` or `await using`: the Python SDK's bridges run on daemon threads and its sessions are cancelled at interpreter exit, where Node's `beforeExit` reaches only the sessions whose bridges already stopped (a kill reaches none). A session created without `maxSteps` / `maxTimeS` gets 150 steps and 30 minutes, the Python SDK's runaway guards. A catalog agent is served the same way: the SDK reads its spec and routes the `user_device` environment through an override. An environment that already carries a `sessionId` is yours: nothing starts for it. `HAI_AUTO_BRIDGE=0`, or `new Client({ autoBridges: false })`, turns the whole thing off.
+
+Underneath, `PlaywrightBrowserBridge` is a `LocalBridge`, which registers the command channel with the brain, long-polls it and hands each command to a driver. Drivers come from the `hai-drivers` package, the Node.js counterpart of the Python wheel the Python SDK uses: `hai-drivers/web/playwright` drives a Playwright browser. The advanced path keeps the auto bridges and gives them a browser of yours: `autoBridges: { web }` builds the bridge of each `user_device` web environment with the options your factory returns. A Playwright `context` you launched (headless, Firefox or WebKit, a device preset) replaces the Chrome of this machine, and the SDK leaves it open; a `driver` factory builds hai-drivers' driver on it with its hooks (`tabs`, `beforeClick`, `onAction`); `onCommand` sees each command before it runs; `viewport` sizes the screenshots. A bridge on its own context serves beside the others, so several sessions run from one process, where the shared Chrome serves one session at a time (the Python SDK's rule). These three are ahead of the Python SDK, whose bridges take no options.
+
+```ts
+import { Client } from "hai-agents";
+import { PlaywrightWebDriver } from "hai-drivers/web/playwright";
+import { chromium } from "playwright-core";
+
+const viewport = { width: 1280, height: 800 };
+const browser = await chromium.launch({ headless: true });
+const context = await browser.newContext({ viewport });
+
+const client = new Client({
+  baseUrl: "https://agp.eu.hcompany.ai", // or `await Client.local({ autoBridges: { ... } })`
+  autoBridges: {
+    web: (environment) => ({
+      context, // yours: driven here, never closed here
+      viewport,
+      driver: (context) => new PlaywrightWebDriver(context, { viewport, onAction: (action) => console.log(action.type) }),
+      onCommand: (name, args) => console.log(name, args),
+    }),
+  },
+});
+try {
+  const result = await client.runSession({
+    agent: {
+      name: "qa",
+      description: "...",
+      environments: [{ id: "browser", kind: "web", host: "user_device" }],
+    },
+    messages: "Check that the login form appears",
+  });
+  console.log(result.answer);
+} finally {
+  await client.close();
+  await browser.close();
+}
+```
+
+The same options go to a bridge you start yourself, `new PlaywrightBrowserBridge({ baseUrl, apiKey, context, driver, onCommand })`, whose `sessionId` you stamp on the environment; `new LocalBridge({ baseUrl, apiKey, driver })` is the bare loop on a driver you built. A product with its own tab bookkeeping passes a `TabManagerInterface` implementation as the driver's `tabs` instead of the default `TabManager`.
 
 ## How a session works
 
