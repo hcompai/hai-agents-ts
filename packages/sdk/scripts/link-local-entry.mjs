@@ -21,5 +21,8 @@ for (const [file, from, to] of [
   if (!source.includes(from)) {
     throw new Error(`${file} does not contain ${JSON.stringify(from)}; the build changed`);
   }
+  if (file.startsWith('dist/local') && source.includes('normalizeClientOptionsWithAuth')) {
+    throw new Error(`${file} inlines a copy of the generated client; src/local must import it through ../client/index.js only`);
+  }
   writeFileSync(file, source.replaceAll(from, to));
 }
