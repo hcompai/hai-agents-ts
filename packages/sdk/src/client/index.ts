@@ -33,3 +33,8 @@ export { asTools, tool, toolDefinition } from "./tools.js";
 export type { Tool, ToolFn } from "./tools.js";
 export { WebhookVerificationError, verifyWebhook } from "./webhookVerification.js";
 export type { WebhookEvent, WebhookEventData } from "./webhookVerification.js";
+// The generated resource clients and HttpResponsePromise that the local entry subclasses and builds.
+export { AgentsClient } from "./api/resources/agents/client/Client.js";
+export { EnvironmentsClient } from "./api/resources/environments/client/Client.js";
+export { SessionsClient } from "./api/resources/sessions/client/Client.js";
+export { HttpResponsePromise } from "./core/index.js";
