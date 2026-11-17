@@ -33,7 +33,7 @@
 npm install hai-agents
 ```
 
-Node.js 18 or newer is required. Get an API key at [platform.hcompany.ai/settings/api-keys](https://platform.hcompany.ai/settings/api-keys) and export it:
+Node.js 20.4 or newer is required. Get an API key at [platform.hcompany.ai/settings/api-keys](https://platform.hcompany.ai/settings/api-keys) and export it:
 
 ```bash
 export HAI_API_KEY=hk-...
@@ -58,6 +58,41 @@ console.log(result.answer);
 ```
 
 `result` is a `SessionRunResult`: `id`, `status`, `answer`, the accumulated `events`, and `finalChanges`.
+
+## Run the agent on this machine
+
+`new Client()` runs the agent in H's cloud. `Client.local()` runs it on this machine, in the same agent runtime binary the Python SDK's `Client.local()` uses. The session you pass is the same in both cases, so a task written for one runs on the other unchanged.
+
+```ts
+import { Client } from "hai-agents";
+
+const client = await Client.local({ download: true }); // starts, or attaches to, the agent runtime on this machine
+console.log(client.localRuntime?.version, client.localRuntime?.baseUrl);
+const sessionId = "..."; // the id the bridge serving this machine's browser registered
+
+const result = await client.runSession({
+  agent: { name: "qa", description: "...", environments: [{ id: "browser", kind: "web", host: "user_device", sessionId }] },
+  messages: "Check that the login form appears",
+});
+
+await client.close();
+```
+
+Two things differ from the cloud client. The runtime takes inline agent definitions only, not catalog names. And its environments are the ones on this machine, `host: "user_device"`, each served by a bridge that registers the `sessionId` and drives the browser; the TypeScript SDK does not ship a bridge yet, so today this entry is for products that bring their own. A cloud browser (`host: "cloud"`) cannot be provisioned from a local runtime outside H's network.
+
+The runtime is a compiled binary of about 70 MB, pinned by this SDK. It is never downloaded behind your back: pass `download: true` once and it lands under `~/.hai/agent-runtime`, or put `hai-agent-runtime` on PATH. The download honours `HTTPS_PROXY`, `HTTP_PROXY` and `NO_PROXY`, as the Python SDK's does. Start one runtime per port at a time; a second process attaches to it once it is up. The runtime reads `HAI_API_KEY` for hosted inference. `Inference.selfHosted(url, model)` points it at a model server you host instead, and withholds the key from it:
+
+```ts
+import { Client } from "hai-agents";
+import { Inference } from "hai-agents/local";
+
+const client = await Client.local({
+  inference: Inference.selfHosted("http://127.0.0.1:8000/v1", "holo4-35b-a3b"),
+  port: 18795, // optional: how the runtime starts, see LocalRuntimeOptions
+});
+```
+
+`Client.local()` is Node.js only: the launcher lives in the `hai-agents/local` entry, which the main entry loads on demand. A runtime your process started stops when the process exits, or earlier on `client.close()`. A second process on the same port attaches to the running runtime instead of starting another.
 
 ## How a session works
 
