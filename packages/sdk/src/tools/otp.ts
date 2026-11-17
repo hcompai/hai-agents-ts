@@ -154,7 +154,8 @@ export function extractOtp(text: string, kind: "code" | "link" = "code", codePat
   return collapsed.match(OTP_BARE_CODE)?.[0];
 }
 
-function htmlToText(markup: string): string {
+/** Module export only: the tests call it, as Python's test calls `_html_to_text`. */
+export function htmlToText(markup: string): string {
   const entities: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', "#39": "'", nbsp: " " };
   return (
     markup

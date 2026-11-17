@@ -1,0 +1,338 @@
+{
+  "python": "../hai-agents-python",
+  "modules": [
+    {
+      "python": "src/hai_agents/client.py",
+      "ts": [
+        "packages/sdk/src/client/oo.ts"
+      ]
+    },
+    {
+      "python": "src/hai_agents/polling.py",
+      "ts": [
+        "packages/sdk/src/client/polling.ts"
+      ]
+    },
+    {
+      "python": "src/hai_agents/tools.py",
+      "ts": [
+        "packages/sdk/src/client/tools.ts"
+      ]
+    },
+    {
+      "python": "src/hai_agents/webhook_verification.py",
+      "ts": [
+        "packages/sdk/src/client/webhookVerification.ts"
+      ]
+    },
+    {
+      "python": "src/hai_agents_tools/otp.py",
+      "ts": [
+        "packages/sdk/src/tools/otp.ts"
+      ]
+    },
+    {
+      "python": "src/hai_agents_local/bridge.py",
+      "ts": [
+        "packages/sdk/src/local/bridge.ts"
+      ]
+    },
+    {
+      "python": [
+        "src/hai_agents_local/transport.py",
+        "src/hai_agents_local/errors.py"
+      ],
+      "ts": [
+        "packages/sdk/src/local/transport.ts"
+      ]
+    },
+    {
+      "python": "src/hai_agents_local/browser.py",
+      "ts": [
+        "packages/sdk/src/local/browser.ts"
+      ]
+    },
+    {
+      "python": "src/hai_agents_local/routing.py",
+      "ts": [
+        "packages/sdk/src/local/routing.ts"
+      ]
+    },
+    {
+      "python": "src/hai_agents_local/manager.py",
+      "ts": [
+        "packages/sdk/src/local/manager.ts"
+      ]
+    },
+    {
+      "python": "src/hai_agents_local/sessions.py",
+      "ts": [
+        "packages/sdk/src/local/sessions.ts"
+      ]
+    },
+    {
+      "python": "src/hai_agents_local/config.py",
+      "ts": [
+        "packages/sdk/src/local/config.ts"
+      ]
+    },
+    {
+      "python": "src/hai_agents_local/desktop.py",
+      "ts": null,
+      "reason": "decided-out",
+      "note": "no desktop driver in Node"
+    },
+    {
+      "python": "src/hai_agents_local/workstation.py",
+      "ts": null,
+      "reason": "decided-out",
+      "note": "no workstation driver in Node"
+    },
+    {
+      "python": "src/hai_agents_local/killswitch.py",
+      "ts": null,
+      "reason": "decided-out",
+      "note": "no terminal UI, no kill switch"
+    },
+    {
+      "python": "src/hai_agents_local/desktop_lock.py",
+      "ts": null,
+      "reason": "decided-out",
+      "note": "one agent per desktop: desktop only"
+    },
+    {
+      "python": "src/hai_agents_local/runtime/runtime.py",
+      "ts": [
+        "packages/sdk/src/local/runtime.ts"
+      ]
+    },
+    {
+      "python": "src/hai_agents_local/runtime/acquire.py",
+      "ts": [
+        "packages/sdk/src/local/index.ts"
+      ]
+    },
+    {
+      "python": "src/hai_agents_local/runtime/errors.py",
+      "ts": [
+        "packages/sdk/src/local/errors.ts"
+      ]
+    },
+    {
+      "python": "src/hai_agents_local/runtime/identity.py",
+      "ts": [
+        "packages/sdk/src/local/identity.ts"
+      ]
+    },
+    {
+      "python": "src/hai_agents_local/runtime/inference.py",
+      "ts": [
+        "packages/sdk/src/local/inference.ts"
+      ]
+    },
+    {
+      "python": "src/hai_agents_local/runtime/install.py",
+      "ts": [
+        "packages/sdk/src/local/install.ts",
+        "packages/sdk/src/local/zip.ts"
+      ]
+    },
+    {
+      "python": "src/hai_agents_local/runtime/manifest.py",
+      "ts": [
+        "packages/sdk/src/local/manifest.ts"
+      ]
+    },
+    {
+      "python": "src/hai_agents_local/runtime/process.py",
+      "ts": [
+        "packages/sdk/src/local/process.ts"
+      ]
+    },
+    {
+      "python": "src/hai_agents_local/runtime/state.py",
+      "ts": [
+        "packages/sdk/src/local/state.ts"
+      ]
+    }
+  ],
+  "tests": [
+    {
+      "python": "tests/test_answer_schema.py",
+      "ts": [
+        "tests/python-mirror/answer_schema.test.ts"
+      ]
+    },
+    {
+      "python": "tests/test_bump_runtime.py",
+      "ts": [
+        "tests/python-mirror/bump_runtime.test.ts"
+      ]
+    },
+    {
+      "python": "tests/test_fetch_policy.py",
+      "ts": [
+        "tests/python-mirror/fetch_policy.test.ts"
+      ]
+    },
+    {
+      "python": "tests/test_local.py",
+      "ts": [
+        "tests/python-mirror/local_bridge.test.ts",
+        "tests/python-mirror/local_sessions.test.ts"
+      ]
+    },
+    {
+      "python": "tests/test_otp.py",
+      "ts": [
+        "tests/python-mirror/otp.test.ts"
+      ]
+    },
+    {
+      "python": "tests/test_polling_helpers.py",
+      "ts": [
+        "tests/python-mirror/polling_helpers.test.ts"
+      ]
+    },
+    {
+      "python": "tests/test_release_scripts.py",
+      "ts": [
+        "tests/python-mirror/release_scripts.test.ts",
+        "tests/python-mirror/release_scripts_session_fields.test.ts"
+      ]
+    },
+    {
+      "python": "tests/test_runtime_placement.py",
+      "ts": [
+        "tests/python-mirror/runtime_placement.test.ts",
+        "tests/python-mirror/runtime_placement_bridges.test.ts"
+      ]
+    },
+    {
+      "python": "tests/test_runtime_state.py",
+      "ts": [
+        "tests/python-mirror/runtime_state.test.ts"
+      ]
+    },
+    {
+      "python": "tests/test_settle.py",
+      "ts": [
+        "tests/python-mirror/settle.test.ts"
+      ]
+    },
+    {
+      "python": "tests/test_smoke.py",
+      "ts": [
+        "tests/python-mirror/smoke.test.ts"
+      ]
+    },
+    {
+      "python": "tests/test_spec_defaults.py",
+      "ts": [
+        "tests/python-mirror/spec_defaults.test.ts"
+      ]
+    },
+    {
+      "python": "tests/test_tools_package.py",
+      "ts": [
+        "tests/python-mirror/tools_package.test.ts"
+      ]
+    },
+    {
+      "python": "tests/test_tools.py",
+      "ts": [
+        "tests/python-mirror/tools.test.ts"
+      ]
+    },
+    {
+      "python": "tests/test_webhook_verification.py",
+      "ts": [
+        "tests/python-mirror/webhook_verification.test.ts"
+      ]
+    },
+    {
+      "python": "tests/test_cli.py",
+      "ts": null,
+      "reason": "decided-out",
+      "note": "no CLI"
+    },
+    {
+      "python": "tests/test_cli_ui.py",
+      "ts": null,
+      "reason": "decided-out",
+      "note": "no CLI"
+    },
+    {
+      "python": "tests/test_cli_prompt.py",
+      "ts": null,
+      "reason": "decided-out",
+      "note": "no CLI"
+    },
+    {
+      "python": "tests/test_cli_keys.py",
+      "ts": null,
+      "reason": "decided-out",
+      "note": "no CLI"
+    },
+    {
+      "python": "tests/test_cli_drift.py",
+      "ts": null,
+      "reason": "decided-out",
+      "note": "no CLI"
+    },
+    {
+      "python": "tests/test_credentials.py",
+      "ts": null,
+      "reason": "decided-out",
+      "note": "no credentials store, the client takes apiKey only"
+    },
+    {
+      "python": "tests/test_mcp_install.py",
+      "ts": null,
+      "reason": "decided-out",
+      "note": "no MCP server install (CLI)"
+    },
+    {
+      "python": "tests/test_workstation_clis.py",
+      "ts": null,
+      "reason": "decided-out",
+      "note": "no workstation bridge"
+    },
+    {
+      "python": "tests/test_desktop_stop.py",
+      "ts": null,
+      "reason": "decided-out",
+      "note": "no desktop bridge"
+    },
+    {
+      "python": "tests/integration/test_auth_smoke.py",
+      "ts": [
+        "tests/python-mirror/integration/auth_smoke.test.ts"
+      ]
+    },
+    {
+      "python": "tests/integration/test_session_browser.py",
+      "ts": [
+        "tests/python-mirror/integration/session_browser.test.ts"
+      ]
+    },
+    {
+      "python": "tests/integration/test_session_code_env.py",
+      "ts": [
+        "tests/python-mirror/integration/session_code_env.test.ts"
+      ]
+    },
+    {
+      "python": "tests/integration/test_skills_crud.py",
+      "ts": [
+        "tests/python-mirror/integration/skills_crud.test.ts"
+      ]
+    },
+    {
+      "python": "tests/integration/test_cli.py",
+      "ts": null,
+      "reason": "decided-out",
+      "note": "no CLI"
+    }
+  ]
+}

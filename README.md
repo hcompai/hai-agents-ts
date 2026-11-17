@@ -44,9 +44,9 @@ export HAI_API_KEY=hk-...
 Launch the built-in `h/web-surfer-pro` agent, which ships with its own browser, and describe the task in plain language. `runSession` polls until the agent finishes and returns the final answer.
 
 ```ts
-import { HaiAgentsClient } from "hai-agents";
+import { Client } from "hai-agents";
 
-const client = new HaiAgentsClient();
+const client = new Client();
 
 const result = await client.runSession({
   agent: "h/web-surfer-pro",
@@ -57,7 +57,7 @@ console.log(result.status);
 console.log(result.answer);
 ```
 
-`new HaiAgentsClient()` reads `HAI_API_KEY` from the environment.
+`new Client()` reads `HAI_API_KEY` from the environment.
 
 `result` is a `SessionRunResult`: `id`, `status`, `answer`, the accumulated `events`, and `finalChanges`.
 
@@ -123,14 +123,14 @@ const second = await session.waitForCompletion();
 Pass a [Zod v4](https://zod.dev) schema as `answerSchema` and the agent's final answer resolves as a parsed, typed value. The schema is sent as the agent's answer format; the raw wire value stays at `result.finalChanges.answer`. Zod is an optional peer dependency, only needed when you use this.
 
 ```ts
-import { HaiAgentsClient } from "hai-agents";
+import { Client } from "hai-agents";
 import { z } from "zod";
 
 const Jobs = z.object({
   jobs: z.array(z.object({ title: z.string(), company: z.string() })),
 });
 
-const client = new HaiAgentsClient();
+const client = new Client();
 const result = await client.runSession({
   agent: "h/web-surfer-pro",
   messages: "Find 3 open ML engineering roles in Paris.",
@@ -149,7 +149,7 @@ A completed answer that does not match the schema throws `AnswerValidationError`
 Give the agent tools that run in your own process. Declare each tool with a JSON schema and a function; the SDK registers them on the session, runs them when the agent calls them, and posts the results back so the agent can continue.
 
 ```ts
-import { HaiAgentsClient, tool } from "hai-agents";
+import { Client, tool } from "hai-agents";
 
 const getWeather = tool({
   name: "get_weather",
@@ -162,7 +162,7 @@ const getWeather = tool({
   fn: async ({ city }) => `Sunny in ${city}, 24C`,
 });
 
-const client = new HaiAgentsClient();
+const client = new Client();
 
 const result = await client.runSession({
   agent: "h/web-surfer-pro",
@@ -180,7 +180,7 @@ Tool functions may be sync or async. A tool that throws is reported to the agent
 The SDK ships ready-made tools. `otpTool` lets the agent ask for a one-time password, verification code, or confirmation link when a login or signup step needs one. Without a handler it prompts on stdin; `imapOtpHandler` reads the code straight from a mailbox over IMAP (requires the optional dependencies `imapflow` and `mailparser`; for Gmail, use an app password).
 
 ```ts
-import { HaiAgentsClient, imapOtpHandler, otpTool } from "hai-agents";
+import { Client, imapOtpHandler, otpTool } from "hai-agents";
 
 const handler = imapOtpHandler({
   host: "imap.gmail.com",
@@ -188,7 +188,7 @@ const handler = imapOtpHandler({
   password: process.env.GMAIL_APP_PASSWORD!,
 });
 
-const client = new HaiAgentsClient();
+const client = new Client();
 const result = await client.runSession({
   agent: "h/web-surfer-pro",
   messages: "Log in to example.com and check for new notifications",
@@ -232,15 +232,15 @@ console.log(link.shareUrl);
 The client targets the EU region by default; pass `environment` to use the US region instead:
 
 ```ts
-import { HaiAgentsClient, HaiAgentsEnvironment } from "hai-agents";
+import { Client, HaiAgentsEnvironment } from "hai-agents";
 
-const client = new HaiAgentsClient({ environment: HaiAgentsEnvironment.Us });
+const client = new Client({ environment: HaiAgentsEnvironment.Us });
 ```
 
 The client also accepts a custom `baseUrl`, and an `apiKey` when you do not want to use the environment variable:
 
 ```ts
-const client = new HaiAgentsClient({ baseUrl: "https://agp.hcompany.ai", apiKey: "hk-..." });
+const client = new Client({ baseUrl: "https://agp.hcompany.ai", apiKey: "hk-..." });
 ```
 
 ## Errors
