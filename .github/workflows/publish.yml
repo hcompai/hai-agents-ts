@@ -22,8 +22,8 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 24
-      - name: Prod serves every operation the SDK calls
-        run: node scripts/release.mjs check
+      - name: Prod serves every operation the SDK calls; the pinned runtime accepts its session fields
+        run: node scripts/release.mjs check --runtime-pin packages/sdk/src/local/pin.json
 
   publish:
     needs: api-compat

@@ -32,18 +32,26 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./local": {
+      "types": "./dist/local.d.ts",
+      "import": "./dist/local.js",
+      "require": "./dist/local.cjs"
     }
   },
   "files": [
     "dist"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=20.4"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean --external ../local/index.js && tsup --entry.local src/local/index.ts --format esm,cjs --dts --external ../client/index.js && node scripts/link-local-entry.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
+  },
+  "dependencies": {
+    "undici": "^6.29.1"
   },
   "peerDependencies": {
     "zod": "^4.0.0"
@@ -60,5 +68,12 @@
     "typescript": "^6.0.3",
     "vitest": "^5.1.0",
     "zod": "^4.6.7"
+  },
+  "typesVersions": {
+    "*": {
+      "local": [
+        "./dist/local.d.ts"
+      ]
+    }
   }
 }
