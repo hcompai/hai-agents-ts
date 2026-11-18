@@ -1,5 +1,6 @@
 export type { CreateSchedule } from "./CreateSchedule.js";
 export type { DeleteScheduleRequest } from "./DeleteScheduleRequest.js";
+export type { DraftScheduleProbeRequest } from "./DraftScheduleProbeRequest.js";
 export type { GetScheduleRequest } from "./GetScheduleRequest.js";
 export type { ListScheduleRunsRequest } from "./ListScheduleRunsRequest.js";
 export type { ListSchedulesRequest } from "./ListSchedulesRequest.js";
