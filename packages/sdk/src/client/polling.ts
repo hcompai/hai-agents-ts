@@ -555,7 +555,8 @@ async function waitWithDispatch<TAnswer>(
   const events: SessionEvent[] = [];
   let nextFromIndex = fromIndex;
   let lastChanges: SessionChanges | undefined;
-  let isCaughtUp = true;
+  // The first poll never blocks: past the last event of a settled session, it would wait out the long-poll.
+  let isCaughtUp = false;
   const deadline = timeoutMs === undefined ? undefined : Date.now() + timeoutMs;
 
   for (let polls = 0; maxPolls === undefined || polls < maxPolls; polls += 1) {
@@ -709,7 +710,8 @@ async function* indexedStream(
   const shouldStop = until === "terminal" ? isTerminalSessionStatus : isSettledSessionStatus;
   const advertised = new Advertised(fromIndex === 0);
   let nextFromIndex = fromIndex;
-  let isCaughtUp = true;
+  // The first poll never blocks: past the last event of a settled session, it would wait out the long-poll.
+  let isCaughtUp = false;
   const deadline = timeoutMs === undefined ? undefined : Date.now() + timeoutMs;
 
   for (;;) {

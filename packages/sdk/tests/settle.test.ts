@@ -81,8 +81,11 @@ describe("SessionHandle cursor", () => {
     const append = (...names: string[]) => log.push(...names.map((name) => ({ type: "MessageEvent", data: { name } })));
     const client = {
       sessions: {
-        getSessionChanges: async ({ fromIndex }: { fromIndex: number }) =>
-          fromIndex < log.length ? { newEvents: log.slice(fromIndex), firstIndex: fromIndex, answer: null } : undefined,
+        getSessionChanges: async ({ fromIndex, waitForSeconds }: { fromIndex: number; waitForSeconds: number }) => {
+          if (fromIndex < log.length) return { newEvents: log.slice(fromIndex), firstIndex: fromIndex, answer: null };
+          expect(waitForSeconds, "long-polled past the end of a settled session").toBe(0);
+          return undefined;
+        },
         getSessionStatus: async () => ({ status: "idle" }),
       },
     } as unknown as HaiAgentsClient;
@@ -90,14 +93,15 @@ describe("SessionHandle cursor", () => {
     const names = (events: { data: unknown }[]) => events.map((event) => (event.data as { name: string }).name);
 
     append("turn1-a", "turn1-b");
-    expect(names((await handle.waitForCompletion({ waitForSeconds: 0 })).events)).toEqual(["turn1-a", "turn1-b"]);
+    expect(names((await handle.waitForCompletion()).events)).toEqual(["turn1-a", "turn1-b"]);
     append("turn2");
     const streamed = [];
-    for await (const event of handle.stream({ waitForSeconds: 0 })) streamed.push(event);
+    for await (const event of handle.stream()) streamed.push(event);
     expect(names(streamed)).toEqual(["turn2"]);
+    expect((await handle.waitForCompletion()).events).toEqual([]);
     append("turn3");
-    expect(names((await handle.waitForCompletion({ waitForSeconds: 0 })).events)).toEqual(["turn3"]);
-    expect(names((await handle.waitForCompletion({ waitForSeconds: 0, fromIndex: 0 })).events)).toEqual([
+    expect(names((await handle.waitForCompletion()).events)).toEqual(["turn3"]);
+    expect(names((await handle.waitForCompletion({ fromIndex: 0 })).events)).toEqual([
       "turn1-a",
       "turn1-b",
       "turn2",
