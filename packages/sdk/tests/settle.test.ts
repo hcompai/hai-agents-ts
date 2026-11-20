@@ -74,3 +74,34 @@ describe("SessionHandle waiting after a decision", () => {
     expect(read).toEqual([0, 0, 1]);
   });
 });
+
+describe("SessionHandle cursor", () => {
+  it("resumes each turn from where the last wait or stream stopped", async () => {
+    const log: { type: string; data: { name: string } }[] = [];
+    const append = (...names: string[]) => log.push(...names.map((name) => ({ type: "MessageEvent", data: { name } })));
+    const client = {
+      sessions: {
+        getSessionChanges: async ({ fromIndex }: { fromIndex: number }) =>
+          fromIndex < log.length ? { newEvents: log.slice(fromIndex), firstIndex: fromIndex, answer: null } : undefined,
+        getSessionStatus: async () => ({ status: "idle" }),
+      },
+    } as unknown as HaiAgentsClient;
+    const handle = new SessionHandle(client, "s1");
+    const names = (events: { data: unknown }[]) => events.map((event) => (event.data as { name: string }).name);
+
+    append("turn1-a", "turn1-b");
+    expect(names((await handle.waitForCompletion({ waitForSeconds: 0 })).events)).toEqual(["turn1-a", "turn1-b"]);
+    append("turn2");
+    const streamed = [];
+    for await (const event of handle.stream({ waitForSeconds: 0 })) streamed.push(event);
+    expect(names(streamed)).toEqual(["turn2"]);
+    append("turn3");
+    expect(names((await handle.waitForCompletion({ waitForSeconds: 0 })).events)).toEqual(["turn3"]);
+    expect(names((await handle.waitForCompletion({ waitForSeconds: 0, fromIndex: 0 })).events)).toEqual([
+      "turn1-a",
+      "turn1-b",
+      "turn2",
+      "turn3",
+    ]);
+  });
+});

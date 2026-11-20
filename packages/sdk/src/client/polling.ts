@@ -510,6 +510,11 @@ function cursorAfter(cursor: number, changes: SessionChanges | undefined): numbe
   return start + (changes.newEvents?.length ?? 0);
 }
 
+/** Pair each of `batch`, the events just before index `end`, with its index. */
+function indexed(batch: SessionEvent[], end: number): [number, SessionEvent][] {
+  return batch.map((event, i) => [end - batch.length + i, event]);
+}
+
 /**
  * Poll a session until it settles: a terminal status, or idle awaiting the next message.
  * Without `tools`, a session awaiting tool results also ends the wait, since nothing here will answer it.
@@ -685,15 +690,21 @@ export type StreamSessionOptions = {
  * Calls held for approval keep either stream open: answer each with `approve`/`deny`
  * on the session handle when its `ToolApprovalRequestedEvent` arrives.
  */
-export function streamSession(client: HaiAgentsClient, options: StreamSessionOptions): AsyncGenerator<SessionEvent> {
-  return streamWithDispatch(client, options, toolDispatch(options.tools));
+export async function* streamSession(
+  client: HaiAgentsClient,
+  options: StreamSessionOptions,
+): AsyncGenerator<SessionEvent> {
+  for await (const [, event] of indexedStream(client, options, toolDispatch(options.tools))) {
+    yield event;
+  }
 }
 
-async function* streamWithDispatch(
+/** `streamSession`, pairing each event with its index in the session's event log. */
+async function* indexedStream(
   client: HaiAgentsClient,
   options: StreamSessionOptions,
   dispatch: ToolDispatch | undefined,
-): AsyncGenerator<SessionEvent> {
+): AsyncGenerator<[number, SessionEvent]> {
   const { id, fromIndex = 0, waitForSeconds = 20, limit, until = "settled", timeoutMs } = options;
   const shouldStop = until === "terminal" ? isTerminalSessionStatus : isSettledSessionStatus;
   const advertised = new Advertised(fromIndex === 0);
@@ -714,8 +725,8 @@ async function* streamWithDispatch(
       waitForSeconds: isCaughtUp ? waitForSeconds : 0,
     });
     const batch = changes?.newEvents ?? [];
-    yield* batch;
     nextFromIndex = cursorAfter(nextFromIndex, changes);
+    yield* indexed(batch, nextFromIndex);
     advertised.read(batch, nextFromIndex);
     isCaughtUp = caughtUp(batch, limit);
 
@@ -738,8 +749,8 @@ async function* streamWithDispatch(
         if (drained.length === 0) {
           return;
         }
-        yield* drained;
         nextFromIndex = cursorAfter(nextFromIndex, tail);
+        yield* indexed(drained, nextFromIndex);
       }
     }
 
@@ -753,6 +764,7 @@ async function* streamWithDispatch(
 export class SessionHandle<TAnswer = SessionChanges["answer"]> {
   private readonly dispatch: ToolDispatch | undefined;
   private readonly decisions = new Decisions();
+  private nextFromIndex = 0;
 
   constructor(
     private readonly client: HaiAgentsClient,
@@ -817,15 +829,23 @@ export class SessionHandle<TAnswer = SessionChanges["answer"]> {
     this.decisions.add(callId);
   }
 
-  /** Block until the session settles (terminal or idle); holds on calls this handle decided do not end it. */
-  waitForCompletion(options?: Omit<WaitForSessionOptions<TAnswer>, "id">): Promise<SessionRunResult<TAnswer>> {
-    const request = { id: this.id, answerSchema: this.answerSchema, ...options };
-    return waitWithDispatch(this.client, request, this.dispatchFor(options?.tools), this.decisions);
+  /** Block until settled (terminal or idle), reading past the cursor; holds this handle decided do not end it. */
+  async waitForCompletion(options?: Omit<WaitForSessionOptions<TAnswer>, "id">): Promise<SessionRunResult<TAnswer>> {
+    const fromIndex = options?.fromIndex ?? this.nextFromIndex;
+    const request = { id: this.id, answerSchema: this.answerSchema, ...options, fromIndex };
+    const result = await waitWithDispatch(this.client, request, this.dispatchFor(options?.tools), this.decisions);
+    this.nextFromIndex = Math.max(this.nextFromIndex, result.nextFromIndex);
+    return result;
   }
 
-  /** Yield events until settled, running `tools` (default: the handle's); each call runs once per handle. */
-  stream(options?: Omit<StreamSessionOptions, "id">): AsyncGenerator<SessionEvent> {
-    return streamWithDispatch(this.client, { id: this.id, ...options }, this.dispatchFor(options?.tools));
+  /** Yield events from the cursor until settled; each `tools` call (default: the handle's) runs once. */
+  async *stream(options?: Omit<StreamSessionOptions, "id">): AsyncGenerator<SessionEvent> {
+    const fromIndex = options?.fromIndex ?? this.nextFromIndex;
+    const request = { id: this.id, ...options, fromIndex };
+    for await (const [index, event] of indexedStream(this.client, request, this.dispatchFor(options?.tools))) {
+      this.nextFromIndex = Math.max(this.nextFromIndex, index + 1);
+      yield event;
+    }
   }
 
   private dispatchFor(tools: readonly Tool[] | undefined): ToolDispatch | undefined {
