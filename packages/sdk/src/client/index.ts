@@ -1,6 +1,6 @@
 export * as HaiAgents from "./api/index.js";
 export type { BaseClientOptions, BaseRequestOptions } from "./BaseClient.js";
-export { HaiAgentsClient } from "./oo.js";
+export { Client, HaiAgentsClient } from "./oo.js";
 export { HaiAgentsEnvironment } from "./environments.js";
 export { HaiAgentsError, HaiAgentsTimeoutError } from "./errors/index.js";
 export * from "./exports.js";

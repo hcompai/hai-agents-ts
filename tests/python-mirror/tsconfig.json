@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "checkJs": false,
+    "ignoreDeprecations": "6.0",
+    "types": ["node", "vitest/globals"],
+    "baseUrl": ".",
+    "paths": {
+      "hai-agents": ["../../packages/sdk/src/index.ts"],
+      "hai-agents/local": ["../../packages/sdk/src/local/index.ts"],
+      "hai-agents-src/*": ["../../packages/sdk/src/*"]
+    }
+  },
+  "include": ["*.ts", "integration/**/*.ts"]
+}

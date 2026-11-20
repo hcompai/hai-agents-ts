@@ -16,7 +16,7 @@ export function tool(spec: Tool): Tool {
     throw new Error("Tool needs a non-empty name.");
   }
   if (!spec.description) {
-    throw new Error(`Tool ${JSON.stringify(spec.name)} needs a non-empty description.`);
+    throw new Error(`Tool '${spec.name}' needs a description: add a docstring or pass description=.`);
   }
   return spec;
 }
@@ -24,9 +24,10 @@ export function tool(spec: Tool): Tool {
 /** Validate a tool list, rejecting duplicate names. */
 export function asTools(tools: readonly Tool[]): Tool[] {
   const names = tools.map((t) => t.name);
-  const duplicates = [...new Set(names.filter((name, i) => names.indexOf(name) !== i))];
+  const duplicates = [...new Set(names.filter((name, i) => names.indexOf(name) !== i))].sort();
   if (duplicates.length > 0) {
-    throw new Error(`Duplicate tool names: ${duplicates.join(", ")}.`);
+    // Python's `sorted(duplicates)` prints as a list repr: ['a', 'b'].
+    throw new Error(`Duplicate tool names: [${duplicates.map((name) => `'${name}'`).join(", ")}].`);
   }
   return tools.map(tool);
 }
