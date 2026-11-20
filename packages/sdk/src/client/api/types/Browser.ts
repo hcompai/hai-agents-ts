@@ -10,8 +10,8 @@ export interface Browser {
     id: string;
     /** Where the browser runs: 'cloud' on H Company infrastructure, or 'user_device' on your own machine. */
     host?: HaiAgents.BrowserHost;
-    /** Initial URL to open. */
-    startUrl?: string;
+    /** Initial URL to open. An absolute http or https URL. */
+    startUrl?: string | null;
     /** Run the browser without a visible window. */
     headless?: boolean;
     /** Connect to an existing browser session by id instead of starting a new one. */

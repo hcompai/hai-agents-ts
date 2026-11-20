@@ -17,8 +17,8 @@ export interface PatchEnvironment {
     ifMatch?: string | null;
     /** Where the browser runs: 'cloud' on H Company infrastructure, or 'user_device' on your own machine. */
     host?: HaiAgents.PatchEnvironmentHost;
-    /** Initial URL to open. */
-    startUrl?: string;
+    /** Initial URL to open. An absolute http or https URL. */
+    startUrl?: string | null;
     /** Run the browser without a visible window. */
     headless?: boolean;
     sessionId?: string | null;

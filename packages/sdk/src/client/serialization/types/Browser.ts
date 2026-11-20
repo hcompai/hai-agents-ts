@@ -11,7 +11,7 @@ export const Browser: core.serialization.ObjectSchema<serializers.Browser.Raw, H
     core.serialization.object({
         id: core.serialization.string(),
         host: BrowserHost.optional(),
-        startUrl: core.serialization.property("start_url", core.serialization.string().optional()),
+        startUrl: core.serialization.property("start_url", core.serialization.string().optionalNullable()),
         headless: core.serialization.boolean().optional(),
         sessionId: core.serialization.property("session_id", core.serialization.string().optionalNullable()),
         mode: BrowserMode.optional(),
@@ -37,7 +37,7 @@ export declare namespace Browser {
     export interface Raw {
         id: string;
         host?: BrowserHost.Raw | null;
-        start_url?: string | null;
+        start_url?: (string | null | undefined) | null;
         headless?: boolean | null;
         session_id?: (string | null | undefined) | null;
         mode?: BrowserMode.Raw | null;

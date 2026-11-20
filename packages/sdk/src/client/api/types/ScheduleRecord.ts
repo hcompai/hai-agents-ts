@@ -15,7 +15,7 @@ export interface ScheduleRecord {
     pauseNote: string | null;
     /** How many sessions to create before the schedule becomes inactive. Null means it runs until paused or deleted. */
     repeats: number | null;
-    /** Automatic fires that created a session. Skipped fires, errors, and manual triggers are not counted. When this reaches repeats, the schedule is paused. */
+    /** Fires that created a session: automatic fires, and manual triggers of an active schedule, which replace its next occurrence. Skipped fires, errors, and manual triggers of a paused schedule are not counted. When this reaches repeats, the schedule is paused. */
     sessionsCreated: number;
     /** Completion probe each run's browser end state is checked against. */
     probe: Record<string, (HaiAgents.JsonValue | undefined) | null> | null;
