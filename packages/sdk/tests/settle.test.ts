@@ -109,6 +109,25 @@ describe("SessionHandle cursor", () => {
       "turn3",
     ]);
   });
+
+  it("resumes after a timed-out wait", async () => {
+    const log = [{ type: "MessageEvent", data: { name: "read-before-timeout" } }];
+    let status = "running";
+    const client = {
+      sessions: {
+        getSessionChanges: async ({ fromIndex }: { fromIndex: number }) =>
+          fromIndex < log.length ? { newEvents: log.slice(fromIndex), firstIndex: fromIndex, answer: null } : undefined,
+        getSessionStatus: async () => ({ status }),
+      },
+    } as unknown as HaiAgentsClient;
+    const handle = new SessionHandle(client, "s1");
+
+    await expect(handle.waitForCompletion({ maxPolls: 1 })).rejects.toBeInstanceOf(SessionTimeoutError);
+    log.push({ type: "MessageEvent", data: { name: "after-timeout" } });
+    status = "idle";
+    const { events } = await handle.waitForCompletion();
+    expect(events.map((event) => (event.data as { name: string }).name)).toEqual(["after-timeout"]);
+  });
 });
 
 describe("runSession timeout", () => {

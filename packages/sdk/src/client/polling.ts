@@ -846,9 +846,16 @@ export class SessionHandle<TAnswer = SessionChanges["answer"]> {
   async waitForCompletion(options?: Omit<WaitForSessionOptions<TAnswer>, "id">): Promise<SessionRunResult<TAnswer>> {
     const fromIndex = options?.fromIndex ?? this.nextFromIndex;
     const request = { id: this.id, answerSchema: this.answerSchema, ...options, fromIndex };
-    const result = await waitWithDispatch(this.client, request, this.dispatchFor(options?.tools), this.decisions);
-    this.nextFromIndex = Math.max(this.nextFromIndex, result.nextFromIndex);
-    return result;
+    try {
+      const result = await waitWithDispatch(this.client, request, this.dispatchFor(options?.tools), this.decisions);
+      this.nextFromIndex = Math.max(this.nextFromIndex, result.nextFromIndex);
+      return result;
+    } catch (error) {
+      if (error instanceof SessionTimeoutError) {
+        this.nextFromIndex = Math.max(this.nextFromIndex, error.nextFromIndex);
+      }
+      throw error;
+    }
   }
 
   /** Yield events from the cursor until settled; each `tools` call (default: the handle's) runs once. */
