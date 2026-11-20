@@ -13,7 +13,7 @@ export const PatchEnvironment: core.serialization.Schema<
     Omit<HaiAgents.PatchEnvironment, "id" | "message" | "ifMatch">
 > = core.serialization.object({
     host: PatchEnvironmentHost.optional(),
-    startUrl: core.serialization.property("start_url", core.serialization.string().optional()),
+    startUrl: core.serialization.property("start_url", core.serialization.string().optionalNullable()),
     headless: core.serialization.boolean().optional(),
     sessionId: core.serialization.property("session_id", core.serialization.string().optionalNullable()),
     mode: PatchEnvironmentMode.optional(),
@@ -41,7 +41,7 @@ export const PatchEnvironment: core.serialization.Schema<
 export declare namespace PatchEnvironment {
     export interface Raw {
         host?: PatchEnvironmentHost.Raw | null;
-        start_url?: string | null;
+        start_url?: (string | null | undefined) | null;
         headless?: boolean | null;
         session_id?: (string | null | undefined) | null;
         mode?: PatchEnvironmentMode.Raw | null;

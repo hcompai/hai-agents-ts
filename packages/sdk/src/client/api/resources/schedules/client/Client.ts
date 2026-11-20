@@ -689,7 +689,11 @@ export class SchedulesClient {
     }
 
     /**
-     * Fire the schedule once now (works while paused); the regular cadence is unaffected.
+     * Fire the schedule once now (works while paused).
+     *
+     * On an active schedule, a run that creates a session takes the place of the next scheduled run:
+     * the next run moves one occurrence later and the run counts toward repeats. A skipped or failed
+     * run, or a run of a paused schedule, leaves the schedule's timing and repeats unchanged.
      *
      * @param {HaiAgents.TriggerScheduleRequest} request
      * @param {SchedulesClient.RequestOptions} requestOptions - Request-specific configuration.
