@@ -77,6 +77,17 @@ export class AnswerValidationError extends HaiAgentsError {
   }
 }
 
+/** The wait ran out before the session settled; the session may still be running. */
+export class SessionTimeoutError extends HaiAgentsTimeoutError {
+  constructor(
+    public readonly sessionId: string,
+    public readonly nextFromIndex: number,
+    budget: string,
+  ) {
+    super(`Session ${sessionId} did not settle ${budget}`);
+  }
+}
+
 async function answerJsonSchema(schema: AnswerSchema<unknown>): Promise<Record<string, unknown>> {
   const zod = (await import("zod").catch(() => undefined)) as
     | { toJSONSchema?: (s: unknown) => Record<string, unknown> }
@@ -561,7 +572,7 @@ async function waitWithDispatch<TAnswer>(
 
   for (let polls = 0; maxPolls === undefined || polls < maxPolls; polls += 1) {
     if (deadline !== undefined && Date.now() >= deadline) {
-      throw new HaiAgentsTimeoutError(`Session ${id} did not settle within ${timeoutMs}ms`);
+      throw new SessionTimeoutError(id, nextFromIndex, `within ${timeoutMs}ms`);
     }
 
     let batch: SessionEvent[] = [];
@@ -590,7 +601,7 @@ async function waitWithDispatch<TAnswer>(
       if (includeEvents) {
         for (;;) {
           if (deadline !== undefined && Date.now() >= deadline) {
-            throw new HaiAgentsTimeoutError(`Session ${id} did not settle within ${timeoutMs}ms`);
+            throw new SessionTimeoutError(id, nextFromIndex, `within ${timeoutMs}ms`);
           }
           const tail = await client.sessions.getSessionChanges({
             id,
@@ -636,7 +647,7 @@ async function waitWithDispatch<TAnswer>(
     }
   }
 
-  throw new HaiAgentsTimeoutError(`Session ${id} did not settle before maxPolls=${maxPolls}`);
+  throw new SessionTimeoutError(id, nextFromIndex, `before maxPolls=${maxPolls}`);
 }
 
 export async function runSession<TAnswer = SessionChanges["answer"]>(
@@ -716,7 +727,7 @@ async function* indexedStream(
 
   for (;;) {
     if (deadline !== undefined && Date.now() >= deadline) {
-      throw new HaiAgentsTimeoutError(`Session ${id} did not settle within ${timeoutMs}ms`);
+      throw new SessionTimeoutError(id, nextFromIndex, `within ${timeoutMs}ms`);
     }
 
     const changes = await client.sessions.getSessionChanges({
@@ -738,7 +749,7 @@ async function* indexedStream(
       // cursor. Keep honoring the wall-clock budget so a large tail cannot outlive `timeoutMs`.
       for (;;) {
         if (deadline !== undefined && Date.now() >= deadline) {
-          throw new HaiAgentsTimeoutError(`Session ${id} did not settle within ${timeoutMs}ms`);
+          throw new SessionTimeoutError(id, nextFromIndex, `within ${timeoutMs}ms`);
         }
         const tail = await client.sessions.getSessionChanges({
           id,
@@ -835,9 +846,16 @@ export class SessionHandle<TAnswer = SessionChanges["answer"]> {
   async waitForCompletion(options?: Omit<WaitForSessionOptions<TAnswer>, "id">): Promise<SessionRunResult<TAnswer>> {
     const fromIndex = options?.fromIndex ?? this.nextFromIndex;
     const request = { id: this.id, answerSchema: this.answerSchema, ...options, fromIndex };
-    const result = await waitWithDispatch(this.client, request, this.dispatchFor(options?.tools), this.decisions);
-    this.nextFromIndex = Math.max(this.nextFromIndex, result.nextFromIndex);
-    return result;
+    try {
+      const result = await waitWithDispatch(this.client, request, this.dispatchFor(options?.tools), this.decisions);
+      this.nextFromIndex = Math.max(this.nextFromIndex, result.nextFromIndex);
+      return result;
+    } catch (error) {
+      if (error instanceof SessionTimeoutError) {
+        this.nextFromIndex = Math.max(this.nextFromIndex, error.nextFromIndex);
+      }
+      throw error;
+    }
   }
 
   /** Yield events from the cursor until settled; each `tools` call (default: the handle's) runs once. */
