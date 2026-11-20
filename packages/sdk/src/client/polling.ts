@@ -364,14 +364,29 @@ function holdsForApproval(status: SessionStatus): boolean {
   );
 }
 
-/** Held calls not yet approved or denied; forgets the decided ids the status no longer lists. */
-function undecidedApprovals(status: SessionStatus, decided: Set<string>): ToolApprovalRequest[] {
-  const held = status.pendingApprovals ?? [];
-  const listed = new Set(held.map((request) => request.toolReq.id));
-  for (const id of decided) {
-    if (!listed.has(id)) decided.delete(id);
+/** Held calls a handle approved or denied, each tied to the step count it was held at. */
+class Decisions {
+  private held = new Map<string | null | undefined, number | undefined>();
+  private decided = new Map<string, number | undefined>();
+
+  add(callId: string): void {
+    this.decided.set(callId, this.held.get(callId));
   }
-  return held.filter(({ toolReq }) => toolReq.id == null || !decided.has(toolReq.id));
+
+  /** Held calls not yet decided; a decision lapses once its call leaves the list or a later step holds it. */
+  undecided(status: SessionStatus): ToolApprovalRequest[] {
+    const held = status.pendingApprovals ?? [];
+    const steps = status.steps;
+    const listed = new Set(held.map((request) => request.toolReq.id));
+    for (const [callId, at] of this.decided) {
+      if (!listed.has(callId) || (at !== undefined && steps !== undefined && at !== steps)) {
+        this.decided.delete(callId);
+      }
+    }
+    const undecided = held.filter(({ toolReq }) => toolReq.id == null || !this.decided.has(toolReq.id));
+    this.held = new Map(undecided.map((request) => [request.toolReq.id, steps]));
+    return undecided;
+  }
 }
 
 /** Whether a wait stops on `status`; a hold on decided calls lasts until the agent picks the decisions up. */
@@ -515,7 +530,7 @@ async function waitWithDispatch<TAnswer>(
   client: HaiAgentsClient,
   options: WaitForSessionOptions<TAnswer>,
   dispatch: ToolDispatch | undefined,
-  decided: Set<string> = new Set(),
+  decisions: Decisions = new Decisions(),
 ): Promise<SessionRunResult<TAnswer>> {
   const {
     id,
@@ -564,7 +579,7 @@ async function waitWithDispatch<TAnswer>(
 
     const statusResponse = await client.sessions.getSessionStatus({ id });
     const status = statusResponse.status;
-    const undecided = undecidedApprovals(statusResponse, decided);
+    const undecided = decisions.undecided(statusResponse);
     if (endsWait(statusResponse, dispatch, undecided)) {
       if (includeEvents) {
         for (;;) {
@@ -737,7 +752,7 @@ async function* streamWithDispatch(
 /** A created session bound to its client: object-oriented sugar over the polling helpers. */
 export class SessionHandle<TAnswer = SessionChanges["answer"]> {
   private readonly dispatch: ToolDispatch | undefined;
-  private readonly decided = new Set<string>();
+  private readonly decisions = new Decisions();
 
   constructor(
     private readonly client: HaiAgentsClient,
@@ -788,7 +803,7 @@ export class SessionHandle<TAnswer = SessionChanges["answer"]> {
       call_id: callId,
       action: "approve",
     });
-    this.decided.add(callId);
+    this.decisions.add(callId);
   }
 
   /** Refuse a call listed in `pendingApprovals`; the model reads `message`. */
@@ -799,13 +814,13 @@ export class SessionHandle<TAnswer = SessionChanges["answer"]> {
       action: "deny",
       ...(message === undefined ? {} : { message }),
     });
-    this.decided.add(callId);
+    this.decisions.add(callId);
   }
 
   /** Block until the session settles (terminal or idle); holds on calls this handle decided do not end it. */
   waitForCompletion(options?: Omit<WaitForSessionOptions<TAnswer>, "id">): Promise<SessionRunResult<TAnswer>> {
     const request = { id: this.id, answerSchema: this.answerSchema, ...options };
-    return waitWithDispatch(this.client, request, this.dispatchFor(options?.tools), this.decided);
+    return waitWithDispatch(this.client, request, this.dispatchFor(options?.tools), this.decisions);
   }
 
   /** Yield events until settled, running `tools` (default: the handle's); each call runs once per handle. */
