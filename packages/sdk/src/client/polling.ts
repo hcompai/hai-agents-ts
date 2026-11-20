@@ -10,6 +10,7 @@ import type {
   SessionStatus,
   SessionChanges,
   SessionEvent,
+  ToolApprovalRequest,
   TrajectoryStatus,
 } from "./api/index.js";
 import { asTools, toolDefinition, type Tool } from "./tools.js";
@@ -363,6 +364,44 @@ function holdsForApproval(status: SessionStatus): boolean {
   );
 }
 
+/** Held calls a handle approved or denied, each tied to the step count it was held at. */
+class Decisions {
+  private held = new Map<string | null | undefined, number | undefined>();
+  private decided = new Map<string, number | undefined>();
+
+  add(callId: string): void {
+    this.decided.set(callId, this.held.get(callId));
+  }
+
+  /** Held calls not yet decided; a decision lapses once its call leaves the list or a later step holds it. */
+  undecided(status: SessionStatus): ToolApprovalRequest[] {
+    const held = status.pendingApprovals ?? [];
+    const steps = status.steps;
+    const listed = new Set(held.map((request) => request.toolReq.id));
+    for (const [callId, at] of this.decided) {
+      if (!listed.has(callId) || (at !== undefined && steps !== undefined && at !== steps)) {
+        this.decided.delete(callId);
+      }
+    }
+    const undecided = held.filter(({ toolReq }) => toolReq.id == null || !this.decided.has(toolReq.id));
+    this.held = new Map(undecided.map((request) => [request.toolReq.id, steps]));
+    return undecided;
+  }
+}
+
+/** Whether a wait stops on `status`; a hold on decided calls lasts until the agent picks the decisions up. */
+function endsWait(
+  status: SessionStatus,
+  dispatch: ToolDispatch | undefined,
+  undecided: readonly ToolApprovalRequest[],
+): boolean {
+  if (holdsForApproval(status)) return undecided.length > 0;
+  return (
+    isSettledSessionStatus(status.status) ||
+    ((status.status as string) === "awaiting_tool_results" && dispatch === undefined)
+  );
+}
+
 // The terminal answer lives in /changes; fetch it once if streaming didn't surface it.
 // On failure statuses the error fields land after the last streamed poll, so always refetch.
 async function finalChanges(
@@ -491,6 +530,7 @@ async function waitWithDispatch<TAnswer>(
   client: HaiAgentsClient,
   options: WaitForSessionOptions<TAnswer>,
   dispatch: ToolDispatch | undefined,
+  decisions: Decisions = new Decisions(),
 ): Promise<SessionRunResult<TAnswer>> {
   const {
     id,
@@ -539,11 +579,8 @@ async function waitWithDispatch<TAnswer>(
 
     const statusResponse = await client.sessions.getSessionStatus({ id });
     const status = statusResponse.status;
-    if (
-      isSettledSessionStatus(status) ||
-      ((status as string) === "awaiting_tool_results" && dispatch === undefined) ||
-      holdsForApproval(statusResponse)
-    ) {
+    const undecided = decisions.undecided(statusResponse);
+    if (endsWait(statusResponse, dispatch, undecided)) {
       if (includeEvents) {
         for (;;) {
           if (deadline !== undefined && Date.now() >= deadline) {
@@ -577,7 +614,7 @@ async function waitWithDispatch<TAnswer>(
         outcome: statusResponse.outcome ?? changes?.outcome,
         error: statusResponse.error ?? changes?.error,
         errorCode: statusResponse.errorCode ?? changes?.errorCode,
-        pendingApprovals: statusResponse.pendingApprovals ?? [],
+        pendingApprovals: undecided,
       };
     }
 
@@ -715,6 +752,7 @@ async function* streamWithDispatch(
 /** A created session bound to its client: object-oriented sugar over the polling helpers. */
 export class SessionHandle<TAnswer = SessionChanges["answer"]> {
   private readonly dispatch: ToolDispatch | undefined;
+  private readonly decisions = new Decisions();
 
   constructor(
     private readonly client: HaiAgentsClient,
@@ -759,28 +797,30 @@ export class SessionHandle<TAnswer = SessionChanges["answer"]> {
   }
 
   /** Run a call listed in `pendingApprovals`. */
-  approve(callId: string): Promise<void> {
-    return postSettlement(this.client, this.id, "tool_approvals", {
+  async approve(callId: string): Promise<void> {
+    await postSettlement(this.client, this.id, "tool_approvals", {
       type: "tool_approval_response",
       call_id: callId,
       action: "approve",
     });
+    this.decisions.add(callId);
   }
 
   /** Refuse a call listed in `pendingApprovals`; the model reads `message`. */
-  deny(callId: string, message?: string): Promise<void> {
-    return postSettlement(this.client, this.id, "tool_approvals", {
+  async deny(callId: string, message?: string): Promise<void> {
+    await postSettlement(this.client, this.id, "tool_approvals", {
       type: "tool_approval_response",
       call_id: callId,
       action: "deny",
       ...(message === undefined ? {} : { message }),
     });
+    this.decisions.add(callId);
   }
 
-  /** Block until the session settles (terminal or idle); resolves with the result and final answer. */
+  /** Block until the session settles (terminal or idle); holds on calls this handle decided do not end it. */
   waitForCompletion(options?: Omit<WaitForSessionOptions<TAnswer>, "id">): Promise<SessionRunResult<TAnswer>> {
     const request = { id: this.id, answerSchema: this.answerSchema, ...options };
-    return waitWithDispatch(this.client, request, this.dispatchFor(options?.tools));
+    return waitWithDispatch(this.client, request, this.dispatchFor(options?.tools), this.decisions);
   }
 
   /** Yield events until settled, running `tools` (default: the handle's); each call runs once per handle. */

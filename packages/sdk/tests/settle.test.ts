@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
 import type { HaiAgentsClient } from "../src/client/Client.js";
-import { waitForSession } from "../src/client/polling.js";
+import { SessionHandle, waitForSession } from "../src/client/polling.js";
 
 // Polling stops when a session settles: terminal, or idle awaiting the next message.
 
@@ -46,5 +46,31 @@ describe("waitForSession settling on idle", () => {
       answerSchema: schema,
     });
     expect(result.answer).toBeUndefined();
+  });
+});
+
+describe("SessionHandle waiting after a decision", () => {
+  it("skips only the hold it just decided", async () => {
+    const steps = [0, 0, 1];
+    const read: number[] = [];
+    const client = {
+      fetch: async () => ({ status: 202 }),
+      sessions: {
+        getSessionChanges: async () => undefined,
+        getSessionStatus: async () => {
+          read.push(steps.shift()!);
+          return {
+            status: "awaiting_tool_results",
+            steps: read.at(-1),
+            pendingApprovals: [{ toolReq: { id: "call_1", toolName: "shell" }, requirements: [] }],
+          };
+        },
+      },
+    } as unknown as HaiAgentsClient;
+    const handle = new SessionHandle(client, "s1");
+    await handle.waitForCompletion({ waitForSeconds: 0 });
+    await handle.approve("call_1");
+    await handle.waitForCompletion({ waitForSeconds: 0 });
+    expect(read).toEqual([0, 0, 1]);
   });
 });
