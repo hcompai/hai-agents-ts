@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
 import type { HaiAgentsClient } from "../src/client/Client.js";
-import { SessionHandle, waitForSession } from "../src/client/polling.js";
+import { SessionHandle, runSession, waitForSession } from "../src/client/polling.js";
+import { HaiAgentsTimeoutError, SessionTimeoutError } from "../src/index.js";
 
 // Polling stops when a session settles: terminal, or idle awaiting the next message.
 
@@ -107,5 +108,22 @@ describe("SessionHandle cursor", () => {
       "turn2",
       "turn3",
     ]);
+  });
+});
+
+describe("runSession timeout", () => {
+  it("names the still-running session", async () => {
+    const client = {
+      sessions: {
+        createSession: async () => ({ id: "s1" }),
+        getSessionChanges: async () => undefined,
+        getSessionStatus: async () => ({ status: "running" }),
+      },
+    } as unknown as HaiAgentsClient;
+    const error = await runSession(client, { agent: "h/web-surfer-pro", messages: "hi", timeoutMs: 0 }).catch((e) => e);
+    expect(error).toBeInstanceOf(SessionTimeoutError);
+    expect(error).toBeInstanceOf(HaiAgentsTimeoutError);
+    expect(error.sessionId).toBe("s1");
+    expect(error.nextFromIndex).toBe(0);
   });
 });

@@ -10,6 +10,7 @@ export {
   AnswerValidationError,
   MAX_REQUEST_BYTES,
   SETTLED_SESSION_STATUSES,
+  SessionTimeoutError,
   TERMINAL_SESSION_STATUSES,
   assertRequestUnderLimit,
   attachToolDefinitions,
