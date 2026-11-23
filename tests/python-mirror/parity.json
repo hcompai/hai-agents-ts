@@ -13,43 +13,40 @@
       "python": "src/hai_agents/client.py",
       "ts": [
         "packages/sdk/src/client/oo.ts"
-      ],
-      "landsWith": "the platform's client sync"
+      ]
     },
     {
       "python": "src/hai_agents/polling.py",
       "ts": [
         "packages/sdk/src/client/polling.ts"
-      ],
-      "landsWith": "the platform's client sync"
+      ]
     },
     {
       "python": "src/hai_agents/tools.py",
       "ts": [
         "packages/sdk/src/client/tools.ts"
-      ],
-      "landsWith": "the platform's client sync"
+      ]
     },
     {
       "python": "src/hai_agents/webhook_verification.py",
       "ts": [
         "packages/sdk/src/client/webhookVerification.ts"
-      ],
-      "landsWith": "the platform's client sync"
+      ]
     },
     {
       "python": "src/hai_agents/core/api_error.py",
       "ts": [
         "packages/sdk/src/client/errors/HaiAgentsError.ts"
-      ],
-      "landsWith": "the platform's client sync"
+      ]
     },
     {
       "python": "src/hai_agents/core/http_client.py",
       "ts": [
-        "packages/sdk/src/client/core/fetcher/requestWithRetries.ts"
-      ],
-      "landsWith": "the platform's client sync"
+        "packages/sdk/src/client/core/fetcher/requestWithRetries.ts",
+        "packages/sdk/src/client/core/fetcher/Fetcher.ts",
+        "packages/sdk/src/client/core/fetcher/createRequestUrl.ts",
+        "packages/sdk/src/client/core/fetcher/getRequestBody.ts"
+      ]
     },
     {
       "python": "src/hai_agents_tools/otp.py",
@@ -201,8 +198,7 @@
       "ts": [
         "tests/python-mirror/answer_schema.test.ts",
         "tests/python-mirror/answer_schema_overlay.test.ts"
-      ],
-      "landsWith": "the platform's client sync"
+      ]
     },
     {
       "python": "tests/test_bump_runtime.py",
@@ -215,8 +211,7 @@
       "ts": [
         "tests/python-mirror/fetch_policy.test.ts",
         "tests/python-mirror/fetch_policy_overlay.test.ts"
-      ],
-      "landsWith": "the platform's client sync"
+      ]
     },
     {
       "python": "tests/test_local.py",
@@ -286,16 +281,14 @@
       "ts": [
         "tests/python-mirror/tools.test.ts",
         "tests/python-mirror/tools_overlay.test.ts"
-      ],
-      "landsWith": "the platform's client sync"
+      ]
     },
     {
       "python": "tests/test_webhook_verification.py",
       "ts": [
         "tests/python-mirror/webhook_verification.test.ts",
         "tests/python-mirror/webhook_verification_overlay.test.ts"
-      ],
-      "landsWith": "the platform's client sync"
+      ]
     },
     {
       "python": "tests/test_cli.py",

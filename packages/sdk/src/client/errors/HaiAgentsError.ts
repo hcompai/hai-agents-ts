@@ -20,7 +20,7 @@ export class HaiAgentsError extends Error {
         rawResponse?: core.RawResponse;
         cause?: unknown;
     }) {
-        super(buildMessage({ message, statusCode, body }));
+        super(buildMessage({ message, statusCode, body, rawResponse }));
         Object.setPrototypeOf(this, new.target.prototype);
         if (Error.captureStackTrace) {
             Error.captureStackTrace(this, this.constructor);
@@ -69,31 +69,29 @@ function text(value: unknown): string | undefined {
     return undefined;
 }
 
+/**
+ * Python's `ApiError.__str__`: the server's detail with the status, else the headers, status and
+ * body. A client-side error (no status, no body) keeps its own message.
+ */
 function buildMessage({
     message,
     statusCode,
     body,
+    rawResponse,
 }: {
     message: string | undefined;
     statusCode: number | undefined;
     body: unknown | undefined;
+    rawResponse: core.RawResponse | undefined;
 }): string {
-    const lines: string[] = [];
     const detail = serverDetail(body);
-    if (message != null) {
-        lines.push(message);
+    if (detail != null) {
+        return `${detail} (status_code: ${statusCode ?? "null"})`;
     }
-    if (detail != null && detail !== message) {
-        lines.push(detail);
+    if (statusCode == null && body == null) {
+        return message ?? "";
     }
-
-    if (statusCode != null) {
-        lines.push(`Status code: ${statusCode.toString()}`);
-    }
-
-    if (body != null && detail == null) {
-        lines.push(`Body: ${toJson(body, undefined, 2)}`);
-    }
-
-    return lines.join("\n");
+    const headers = rawResponse != null ? toJson(Object.fromEntries(rawResponse.headers)) : "null";
+    const bodyText = body == null ? "null" : typeof body === "string" ? body : toJson(body);
+    return `headers: ${headers}, status_code: ${statusCode ?? "null"}, body: ${bodyText}`;
 }

@@ -107,7 +107,7 @@ export function verifyWebhook(
     }
     const event = parsed as WebhookEvent;
     if (typeof event?.type !== "string" || typeof event?.id !== "string" || typeof event?.data !== "object" || event.data === null) {
-        throw new WebhookVerificationError("unexpected payload shape");
+        throw new WebhookVerificationError("unparsable payload: missing type, id or data");
     }
     return event;
 }
