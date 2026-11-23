@@ -122,7 +122,7 @@ describe("SessionHandle cursor", () => {
     ]);
   });
 
-  it("resumes after a timed-out wait", async () => {
+  it("returns on retry the events a timed-out wait read", async () => {
     const log = [{ type: "MessageEvent", data: { name: "read-before-timeout" } }];
     let status = "running";
     const client = {
@@ -138,7 +138,7 @@ describe("SessionHandle cursor", () => {
     log.push({ type: "MessageEvent", data: { name: "after-timeout" } });
     status = "idle";
     const { events } = await handle.waitForCompletion();
-    expect(events.map((event) => (event.data as { name: string }).name)).toEqual(["after-timeout"]);
+    expect(events.map((event) => (event.data as { name: string }).name)).toEqual(["read-before-timeout", "after-timeout"]);
   });
 });
 
@@ -155,6 +155,5 @@ describe("runSession timeout", () => {
     expect(error).toBeInstanceOf(SessionTimeoutError);
     expect(error).toBeInstanceOf(HaiAgentsTimeoutError);
     expect(error.sessionId).toBe("s1");
-    expect(error.nextFromIndex).toBe(0);
   });
 });
