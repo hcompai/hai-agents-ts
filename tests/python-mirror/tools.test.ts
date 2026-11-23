@@ -1,34 +1,16 @@
-/** Custom tool schema derivation and the dispatch loop, offline. */
+/**
+ * Custom tool schema derivation and the dispatch loop, offline. The fakes are in tools_fakes.ts, shared with
+ * pending/tools_overlay.test.ts: the tests of what the platform's overlays carry (tools.ts' texts, polling.ts'
+ * `postToolResults`), which wait for the platform's client sync.
+ */
 import { expect, it } from "vitest";
 
 import { z } from "zod";
 
-import { HaiAgentsError, attachToolDefinitions, runSession, tool, toolDefinition, waitForSession } from "hai-agents";
-import { postToolResults } from "hai-agents-src/client/polling";
-// Internal in the TS SDK (Python's tools.py exposes the same check on the decorator).
-import { asTools } from "hai-agents-src/client/tools";
+import { attachToolDefinitions, runSession, tool, toolDefinition, waitForSession } from "hai-agents";
 
-import { raises, raisesAsync } from "./helpers";
-
-const get_weather = tool({
-  name: "get_weather",
-  description: "Get the current weather for a city.",
-  inputSchema: { type: "object", properties: { city: { type: "string" }, unit: { type: "string", default: "celsius" } }, required: ["city"] },
-  fn: ({ city, unit = "celsius" }) => `Sunny in ${city} (${unit})`,
-});
-
-it("tool without description raises", () => {
-  raises(
-    () =>
-      tool({
-        name: "nameless",
-        inputSchema: { type: "object", properties: { x: { type: "integer" } } },
-        fn: ({ x }: { x: unknown }) => x,
-      } as never),
-    Error,
-    /needs a description/,
-  );
-});
+import { raisesAsync } from "./helpers";
+import { _FakeHttpx, _FakeSessions, _awaitingChanges, _pending, clientWith, get_weather } from "./tools_fakes";
 
 // Adapted from test_tools.py::test_tool_decorator_derives_schema. The Python decorator derives the
 // JSON schema from the function's type hints; the TS tool() takes the schema explicitly and `Tool`
@@ -77,74 +59,6 @@ it("attach definitions inline agent carries tools", () => {
   expect("overrides" in params).toBe(false);
 });
 
-interface RecordedRequest {
-  path: string;
-  method: string;
-  json: unknown;
-  request_options: unknown;
-}
-
-/** The client's passthrough `fetch`, recording every tool-result post and answering from a status queue. */
-class _FakeHttpx {
-  requests: RecordedRequest[] = [];
-  private statuses: number[];
-
-  constructor(statuses?: number[]) {
-    this.statuses = [...(statuses ?? [])];
-  }
-
-  fetch = async (input: string | URL | Request, init?: RequestInit, requestOptions?: unknown): Promise<Response> => {
-    this.requests.push({
-      path: String(input),
-      method: init?.method ?? "GET",
-      json: init?.body ? JSON.parse(String(init.body)) : null,
-      request_options: requestOptions,
-    });
-    const status = this.statuses.length ? this.statuses.shift()! : 202;
-    return new Response("", { status });
-  };
-}
-
-type Poll = [unknown, string];
-
-class _FakeSessions {
-  private polls: Poll[];
-  createdWith: Record<string, any> | null = null;
-
-  constructor(polls: Poll[]) {
-    this.polls = [...polls];
-  }
-
-  createSession(request: { idempotencyKey?: string | null; body: Record<string, unknown> }) {
-    this.createdWith = request.body;
-    return { id: "sess_1" };
-  }
-
-  getSessionChanges(_request: object) {
-    return this.polls.length ? this.polls[0][0] : null;
-  }
-
-  getSessionStatus(_request: object) {
-    const [, status] = this.polls.shift()!;
-    return { status, outcome: null, error: null, errorCode: null };
-  }
-}
-
-/** A pending tool call exactly as the serde layer hands it to the loop: a ToolRequest of {toolName, args, id}. */
-function _pending(id: string, toolName: string, args: Record<string, unknown> | null = null) {
-  return { id, toolName, args: args ?? {} };
-}
-
-function _awaitingChanges(...calls: ReturnType<typeof _pending>[]) {
-  const event = {
-    type: "ActiveStateChangeEvent",
-    data: { state: "awaiting_tool_results", pendingToolCalls: [...calls] },
-  };
-  return { newEvents: [event], answer: null };
-}
-
-const clientWith = (sessions: unknown, httpx: _FakeHttpx) => ({ sessions, fetch: httpx.fetch }) as never;
-
 it("wait without tools stops when session awaits tool results", async () => {
   const sessions = new _FakeSessions([[_awaitingChanges(_pending("c1", "get_weather")), "awaiting_tool_results"]]);
 
@@ -171,21 +85,6 @@ it("run session dispatches pending calls and posts results", async () => {
     result: "Sunny in Paris (celsius)",
   });
   expect(result.status).toBe("completed");
-});
-
-it("post accepts 409 without retrying", async () => {
-  const httpx = new _FakeHttpx([409]);
-  const client = { fetch: httpx.fetch } as never;
-  await postToolResults(client, "sess_1", [{ kind: "tool_result", tool_req: { tool_name: "t", args: {}, id: "c1" }, result: "" }]);
-  expect(httpx.requests.length).toBe(1);
-  expect(httpx.requests[0].request_options).toEqual({ maxRetries: 0 });
-});
-
-it("post retries transient errors", async () => {
-  const httpx = new _FakeHttpx([500, 202]);
-  const client = { fetch: httpx.fetch } as never;
-  await postToolResults(client, "sess_1", [{ kind: "tool_result", tool_req: { tool_name: "t", args: {}, id: "c1" }, result: "" }]);
-  expect(httpx.requests.length).toBe(2);
 });
 
 it("dispatch reports tool exceptions as errors", async () => {
@@ -303,50 +202,6 @@ it("no dispatch when status left awaiting", async () => {
   expect(httpx.requests).toEqual([]);
 });
 
-// Python has the code path but no test (hai_agents/tools.py:85-87); candidate to upstream.
-it("as tools rejects duplicate names", () => {
-  raises(() => asTools([get_weather, get_weather]), Error, /Duplicate tool names: \['get_weather'\]\./);
-});
-
-// Python has the code path but no loop-level test (hai_agents/polling.py `_post_tool_results`, tested on
-// the private helper only, see the Dropped table); candidate to upstream.
-it("run session posts several results as one batch and answers an unknown tool with an error", async () => {
-  const broken = tool({
-    name: "broken",
-    description: "always fails",
-    inputSchema: { type: "object", properties: {} },
-    fn: () => {
-      throw new Error("boom");
-    },
-  });
-  const pending = [_pending("c1", "get_weather", { city: "Paris" }), _pending("c2", "broken"), _pending("c3", "ghost")];
-  const sessions = new _FakeSessions([
-    [_awaitingChanges(...pending), "awaiting_tool_results"],
-    [_awaitingChanges(...pending), "awaiting_tool_results"],
-    [null, "completed"],
-  ]);
-  const httpx = new _FakeHttpx();
-  const client = clientWith(sessions, httpx);
-
-  const result = await runSession(client, { agent: "h/researcher", tools: [get_weather, broken] });
-
-  expect(result.status).toBe("completed");
-  expect(httpx.requests.length).toBe(1);
-  expect(httpx.requests[0].json).toEqual({
-    type: "batch",
-    results: [
-      { kind: "tool_result", tool_req: { tool_name: "get_weather", args: { city: "Paris" }, id: "c1" }, result: "Sunny in Paris (celsius)" },
-      { kind: "error_event", error: "Error: boom", origin: "client", tool_req: { tool_name: "broken", args: {}, id: "c2" } },
-      {
-        kind: "error_event",
-        error: "Tool 'ghost' is not registered with this client.",
-        origin: "client",
-        tool_req: { tool_name: "ghost", args: {}, id: "c3" },
-      },
-    ],
-  });
-});
-
 // Python has the code path but no loop-level test (hai_agents/polling.py accepts a 409 on the post:
 // the session already moved on); candidate to upstream.
 it("run session tolerates 409 from tool results when the session already finished", async () => {
@@ -359,20 +214,6 @@ it("run session tolerates 409 from tool results when the session already finishe
   const result = await runSession(client, { agent: "h/researcher", tools: [get_weather] });
 
   expect(result.status).toBe("completed");
-});
-
-// Python has the code path but no loop-level test (hai_agents/polling.py's _raise_unless_posted
-// raises ApiError on any other post failure); candidate to upstream.
-it("run session raises on a non 409 post failure", async () => {
-  const sessions = new _FakeSessions([
-    [_awaitingChanges(_pending("c1", "get_weather", { city: "Paris" })), "awaiting_tool_results"],
-    [null, "completed"],
-  ]);
-  const client = clientWith(sessions, new _FakeHttpx([400]));
-
-  // hai_agents.core.api_error.ApiError, whose __str__ is the headers, the status and the body
-  const error = await raisesAsync(() => runSession(client, { agent: "h/researcher", tools: [get_weather] }), HaiAgentsError, /status_code: 400/);
-  expect(error.statusCode).toBe(400);
 });
 
 // Python has the guard (hai_agents/polling.py:578) but no test; candidate to upstream.

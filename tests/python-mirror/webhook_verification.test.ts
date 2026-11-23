@@ -124,11 +124,6 @@ it("unparsable payload after valid mac", () => {
   raises(() => verifyWebhook(raw, _sign(SECRET, TIMESTAMP, raw), TIMESTAMP, SECRET), WebhookVerificationError, /unparsable payload/);
 });
 
-it("envelope missing fields is unparsable", () => {
-  const raw = Buffer.from(JSON.stringify({ type: "session.status_updated" }));
-  raises(() => verifyWebhook(raw, _sign(SECRET, TIMESTAMP, raw), TIMESTAMP, SECRET), WebhookVerificationError, /unparsable payload/);
-});
-
 it("unknown event type still verifies", () => {
   const payload = { ...PAYLOAD, type: "session.something_new" };
   const raw = Buffer.from(JSON.stringify(payload));

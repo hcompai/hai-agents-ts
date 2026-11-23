@@ -8,25 +8,6 @@ Decisions, and the additions TS carries ahead of Python (ts-ahead); PORT.md's Le
 
 | Pair | Side | Name | Reason | Note |
 | --- | --- | --- | --- | --- |
-| `src/hai_agents/client.py` | Python | `credentials_path` | decided-out | no credentials store; the client takes apiKey only |
-| `src/hai_agents/client.py` | Python (private) | `_stored_api_key` | decided-out | no credentials store; the client takes apiKey only |
-| `src/hai_agents/client.py` | Python | `default_api_key` | decided-out | no credentials store; the client takes apiKey only |
-| `src/hai_agents/client.py` | Python (private) | `_default_api_key` | decided-out | no credentials store; the client takes apiKey only |
-| `src/hai_agents/client.py` | Python (private) | `_LocalRuntimeAccess` | ts-idiom | the runtime hold is a field on Client (_hold) |
-| `src/hai_agents/client.py` | Python | `API_KEY_VAR` | ts-idiom | lives in local/inference.ts, next to the runtime env it shapes; oo.ts is platform-owned |
-| `src/hai_agents/client.py` | Python (private) | `_P` | ts-idiom | a ParamSpec for the sync/async wrappers; one client here |
-| `src/hai_agents/client.py` | TS only | `HaiAgentsClient` | ts-idiom | deprecated alias of Client, kept for callers of the former name |
-| `src/hai_agents/polling.py` | Python (private) | `_request_bytes` | ts-idiom | inlined in the loop; polling.ts is overlay-owned (agent_platform) |
-| `src/hai_agents/polling.py` | Python (private) | `_await_result` | node-forced | sync call of an async tool from a running loop; one loop here |
-| `src/hai_agents/polling.py` | Python (private) | `_run_awaitable` | node-forced | sync call of an async tool from a running loop; one loop here |
-| `src/hai_agents/polling.py` | Python (private) | `_tool_results_body` | ts-idiom | inlined in the loop; polling.ts is overlay-owned (agent_platform) |
-| `src/hai_agents/polling.py` | Python (private) | `_approval_body` | ts-idiom | inlined in the loop; polling.ts is overlay-owned (agent_platform) |
-| `src/hai_agents/polling.py` | Python (private) | `_replayed` | ts-idiom | inlined in the loop; polling.ts is overlay-owned (agent_platform) |
-| `src/hai_agents/polling.py` | Python (private) | `_settled_cleanly` | ts-idiom | inlined in the loop; polling.ts is overlay-owned (agent_platform) |
-| `src/hai_agents/polling.py` | TS only | `toCreateRequest` | ts-idiom | builds the wire request from camelCase params; Python passes kwargs |
-| `src/hai_agents/polling.py` | TS only | `fileFromBlob` | node-forced | a browser has Blobs, not paths; fileFromPath is the Python one |
-| `src/hai_agents/tools.py` | Python (private) | `_schema_from_signature` | python-only-feature | the JSON schema comes from type hints; TS has no runtime types, tool() takes inputSchema |
-| `src/hai_agents/tools.py` | TS only | `toolDefinition` | ts-idiom | the wire definition of a Tool object; Python's Tool carries it as a method |
 | `src/hai_agents_tools/otp.py` | Python (private) | `_validated_otp` | ts-idiom | inlined in otpTool's handler; one async path |
 | `src/hai_agents_tools/otp.py` | Python (private) | `_await_validated_otp` | ts-idiom | inlined in otpTool's handler; one async path |
 | `src/hai_agents_tools/otp.py` | Python (private) | `_message_text` | ts-idiom | mailparser hands the text and html parts; Python walks the email.message |
@@ -35,31 +16,6 @@ Decisions, and the additions TS carries ahead of Python (ts-ahead); PORT.md's Le
 
 | Pair | Side | Name | Reason | Note |
 | --- | --- | --- | --- | --- |
-| `src/hai_agents/client.py` | Python | `No API key found. Pass api_key, set *, or run `holo login`.` | decided-out | no credentials store, no CLI login |
-| `src/hai_agents/polling.py` | Python | `answer_schema must be a pydantic.BaseModel subclass, got *.` | ts-idiom | PORT.md Changed on purpose: zod v4 schema |
-| `src/hai_agents/polling.py` | Python | `answer_schema conflicts with overrides['agent.answer_format']; pass only one.` | ts-idiom | names the camelCase option the TS user typed; one inline-agent form (plain objects) where Python has dict and model |
-| `src/hai_agents/polling.py` | Python | `answer_schema conflicts with agent['answer_format']; pass only one.` | ts-idiom | names the camelCase option the TS user typed; one inline-agent form (plain objects) where Python has dict and model |
-| `src/hai_agents/polling.py` | Python | `answer_schema conflicts with agent.answer_format; pass only one.` | ts-idiom | names the camelCase option the TS user typed; one inline-agent form (plain objects) where Python has dict and model |
-| `src/hai_agents/polling.py` | Python | `answer_schema requires an agent reference, got *.` | ts-idiom | names the camelCase option the TS user typed |
-| `src/hai_agents/polling.py` | Python | `tools require include_events=True: pending calls arrive on the event stream.` | ts-idiom | names the camelCase option the TS user typed |
-| `src/hai_agents/polling.py` | Python | `Session * did not settle within *s` | node-forced | Node times in milliseconds |
-| `src/hai_agents/polling.py` | Python | `Session * did not settle before max_polls=*` | ts-idiom | PORT.md Changed on purpose: maxPolls= |
-| `src/hai_agents/polling.py` | TS only | `answerSchema must be a zod v4 schema, got *.` | ts-idiom | PORT.md Changed on purpose: zod v4 schema |
-| `src/hai_agents/polling.py` | TS only | `answerSchema requires zod >= 4 (provides toJSONSchema); install it alongside the SDK.` | ts-idiom | zod is an optional peer |
-| `src/hai_agents/polling.py` | TS only | `answerSchema conflicts with overrides['agent.answer_format']; pass only one.` | ts-idiom | names the camelCase option the TS user typed |
-| `src/hai_agents/polling.py` | TS only | `answerSchema conflicts with agent.answerFormat; pass only one.` | ts-idiom | names the camelCase option the TS user typed |
-| `src/hai_agents/polling.py` | TS only | `answerSchema requires an agent reference, got *.` | ts-idiom | names the camelCase option the TS user typed |
-| `src/hai_agents/polling.py` | TS only | `fileFromBlob needs a name for a Blob that is not a File` | node-forced | Blob API |
-| `src/hai_agents/polling.py` | TS only | `fileFromPath needs Node.js 20.16 or newer; use fileFromBlob in a browser` | node-forced | process.getBuiltinModule keeps the main entry browser-safe |
-| `src/hai_agents/polling.py` | TS only | `tools require includeEvents=true: pending calls arrive on the event stream.` | ts-idiom | names the camelCase option the TS user typed |
-| `src/hai_agents/polling.py` | TS only | `Session * did not settle within *ms` | node-forced | Node times in milliseconds |
-| `src/hai_agents/polling.py` | TS only | `Session * did not settle before maxPolls=*` | ts-idiom | PORT.md Changed on purpose: maxPolls= |
-| `src/hai_agents/tools.py` | Python | `Tool * cannot use *args/*kwargs; declare explicit parameters.` | python-only-feature | signature introspection |
-| `src/hai_agents/tools.py` | Python | `Duplicate tool names: *.` | ts-idiom | the same text, Python's list repr ['a', 'b'] built with a nested template literal (tools.ts, overlay-owned), which the regexes read up to the inner backtick |
-| `src/hai_agents/tools.py` | TS only | `Tool needs a non-empty name.` | ts-idiom | Python takes the name from the function; TS has no function name to fall back on |
-| `src/hai_agents/tools.py` | TS only | `Duplicate tool names: [*'` | ts-idiom | the same text, Python's list repr ['a', 'b'] built with a nested template literal (tools.ts, overlay-owned), which the regexes read up to the inner backtick |
-| `src/hai_agents/webhook_verification.py` | TS only | `verifyWebhook needs Node.js 20.16 or newer` | node-forced | process.getBuiltinModule keeps the main entry browser-safe |
-| `src/hai_agents/webhook_verification.py` | TS only | `unparsable payload: missing type, id or data` | ts-idiom | the shape check pydantic does inside the same `unparsable payload` branch |
 | `src/hai_agents_tools/otp.py` | TS only | `No interactive stdin available; pass a handler to otpTool().` | node-forced | Python's input() raises EOFError itself |
 | `src/hai_agents_tools/otp.py` | TS only | `The interactive OTP prompt needs Node.js 20.16 or newer; pass a handler to otpTool().` | node-forced | process.getBuiltinModule keeps the main entry browser-safe |
 | `src/hai_agents_tools/otp.py` | TS only | `imapOtpHandler requires the optional dependency *: npm install *` | ts-idiom | imapflow and mailparser are optional peers; imaplib is Python's stdlib |
@@ -117,9 +73,3 @@ Decisions, and the additions TS carries ahead of Python (ts-ahead); PORT.md's Le
 | `tests/test_tools.py` | Python | `tool decorator derives schema` → `tool with explicit schema keeps the shape the agent sees` | python-only-feature | PORT.md Adapted: the schema comes from type hints; tool() takes inputSchema |
 | `tests/test_tools.py` | Python | `tool decorator with args returns tool and applies overrides` → `tool with a zod schema returns tool and applies overrides` | ts-idiom | PORT.md Adapted: the pydantic input= model becomes z.toJSONSchema |
 | `tests/test_tools.py` | Python | `async tool dispatch inside running loop` | node-forced | PORT.md: Node has one event loop and no sync-call-inside-a-running-loop case |
-
-### Additions (TS ahead of Python) on record
-
-| Pair | Side | Name | Reason | Note |
-| --- | --- | --- | --- | --- |
-| `src/hai_agents/client.py` | TS only | `Client.Options.autoBridges as an object` | ts-ahead | `true \| false \| { web?: (environment) => WebBridgeOptions }`; Python's auto_bridges is a bool. Python follow-up: per-environment bridge options on Client.local() / Client() |

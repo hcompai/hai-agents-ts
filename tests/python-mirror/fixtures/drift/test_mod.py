@@ -16,3 +16,11 @@ def test_dropped_thing():
 
 def test_skipped_thing():
     pass
+
+
+def test_live_thing():
+    pass
+
+
+def test_gone_thing():
+    pass

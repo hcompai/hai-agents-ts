@@ -1,34 +1,61 @@
 {
   "python": "../hai-agents-python",
+  "pin": "b7e682c4b0798cfc742b897b5dbc7052939c0f50",
+  "scope": [
+    "src/hai_agents_cli",
+    "src/hai_agents_common",
+    "src/hai_agents_local",
+    "src/hai_agents_tools",
+    "tests"
+  ],
   "modules": [
     {
       "python": "src/hai_agents/client.py",
       "ts": [
         "packages/sdk/src/client/oo.ts"
-      ]
+      ],
+      "landsWith": "the platform's client sync"
     },
     {
       "python": "src/hai_agents/polling.py",
       "ts": [
         "packages/sdk/src/client/polling.ts"
-      ]
+      ],
+      "landsWith": "the platform's client sync"
     },
     {
       "python": "src/hai_agents/tools.py",
       "ts": [
         "packages/sdk/src/client/tools.ts"
-      ]
+      ],
+      "landsWith": "the platform's client sync"
     },
     {
       "python": "src/hai_agents/webhook_verification.py",
       "ts": [
         "packages/sdk/src/client/webhookVerification.ts"
-      ]
+      ],
+      "landsWith": "the platform's client sync"
+    },
+    {
+      "python": "src/hai_agents/core/api_error.py",
+      "ts": [
+        "packages/sdk/src/client/errors/HaiAgentsError.ts"
+      ],
+      "landsWith": "the platform's client sync"
+    },
+    {
+      "python": "src/hai_agents/core/http_client.py",
+      "ts": [
+        "packages/sdk/src/client/core/fetcher/requestWithRetries.ts"
+      ],
+      "landsWith": "the platform's client sync"
     },
     {
       "python": "src/hai_agents_tools/otp.py",
       "ts": [
-        "packages/sdk/src/tools/otp.ts"
+        "packages/sdk/src/tools/otp.ts",
+        "packages/sdk/src/html.ts"
       ]
     },
     {
@@ -101,6 +128,18 @@
       "note": "one agent per desktop: desktop only"
     },
     {
+      "python": "src/hai_agents_cli/",
+      "ts": null,
+      "reason": "decided-out",
+      "note": "no CLI"
+    },
+    {
+      "python": "src/hai_agents_common/",
+      "ts": null,
+      "reason": "decided-out",
+      "note": "the CLI's credentials store and JSON coercion"
+    },
+    {
       "python": "src/hai_agents_local/runtime/runtime.py",
       "ts": [
         "packages/sdk/src/local/runtime.ts"
@@ -160,8 +199,10 @@
     {
       "python": "tests/test_answer_schema.py",
       "ts": [
-        "tests/python-mirror/answer_schema.test.ts"
-      ]
+        "tests/python-mirror/answer_schema.test.ts",
+        "tests/python-mirror/answer_schema_overlay.test.ts"
+      ],
+      "landsWith": "the platform's client sync"
     },
     {
       "python": "tests/test_bump_runtime.py",
@@ -172,8 +213,10 @@
     {
       "python": "tests/test_fetch_policy.py",
       "ts": [
-        "tests/python-mirror/fetch_policy.test.ts"
-      ]
+        "tests/python-mirror/fetch_policy.test.ts",
+        "tests/python-mirror/fetch_policy_overlay.test.ts"
+      ],
+      "landsWith": "the platform's client sync"
     },
     {
       "python": "tests/test_local.py",
@@ -241,14 +284,18 @@
     {
       "python": "tests/test_tools.py",
       "ts": [
-        "tests/python-mirror/tools.test.ts"
-      ]
+        "tests/python-mirror/tools.test.ts",
+        "tests/python-mirror/tools_overlay.test.ts"
+      ],
+      "landsWith": "the platform's client sync"
     },
     {
       "python": "tests/test_webhook_verification.py",
       "ts": [
-        "tests/python-mirror/webhook_verification.test.ts"
-      ]
+        "tests/python-mirror/webhook_verification.test.ts",
+        "tests/python-mirror/webhook_verification_overlay.test.ts"
+      ],
+      "landsWith": "the platform's client sync"
     },
     {
       "python": "tests/test_cli.py",

@@ -3,6 +3,7 @@
 LIMIT = 3
 TIMEOUT_S = 2.0
 NAME = "fixture"
+URL = "https://x.example/y"  # a comment after a literal that holds //
 _PRIVATE = 1
 
 

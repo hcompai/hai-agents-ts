@@ -14,7 +14,7 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { onTestFinished } from "vitest";
 
-import { Client } from "hai-agents";
+import { Client } from "../client";
 
 // load_dotenv(ROOT / ".env", override=False): the repository root, as conftest.py's parents[2]
 try {

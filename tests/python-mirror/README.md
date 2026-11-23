@@ -32,6 +32,7 @@ pnpm drift                # Python -> TS drift report (PORT.md: Ledger); --check
 ```
 
 `pending/` holds the tests whose subject a later branch of the stack brings (the launcher's on `python-mirror`, the
-bridges' until `ts-local`): vitest and the typecheck skip it, drift still compares it, and `pnpm drift --check` stays
-red until the branch that brings the subject moves them into place with `git mv`. `packages/sdk/tests/pending/` does
-the same for the TS-only tests.
+bridges' until `ts-local`) or the platform's client sync brings (`*_overlay.test.ts`: what its hand-written overlays
+under `packages/sdk/src/client` carry): vitest and the typecheck skip it, drift still compares it and counts it under
+Pending, and `pnpm drift --check` stays red until the branch that brings the subject moves them into place with
+`git mv`. `packages/sdk/tests/pending/` does the same for the TS-only tests.

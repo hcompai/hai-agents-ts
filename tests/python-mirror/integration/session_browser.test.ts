@@ -14,7 +14,9 @@
  */
 import { describe, expect, it } from "vitest";
 
-import type { Client, HaiAgents } from "hai-agents";
+import type { HaiAgents } from "hai-agents";
+
+import type { Client } from "../client";
 
 import { sleep } from "../helpers";
 import { client, createdSessions, runId, skipReason } from "./fixtures";

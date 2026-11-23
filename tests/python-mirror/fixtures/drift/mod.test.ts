@@ -8,3 +8,7 @@ it("renamed thing in ts", () => {});
 it("extra thing", () => {});
 it.skip("skipped thing", () => {});
 it.todo("todo thing");
+describe.skipIf(!process.env.LIVE)("live", () => {
+  it("live thing", () => {});
+});
+it.skipIf(true)("gone thing", () => {});

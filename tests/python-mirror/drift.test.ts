@@ -11,7 +11,10 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const fixtures = path.join(here, "fixtures", "drift");
 const parity = {
   python: ".",
-  modules: [{ python: "mod.py", ts: ["mod.ts"] }],
+  modules: [
+    { python: "mod.py", ts: ["mod.ts"] },
+    { python: "cli/", ts: null, reason: "decided-out", note: "a whole directory" },
+  ],
   tests: [
     { python: "test_mod.py", ts: ["mod.test.ts"] },
     { python: "test_mod.py", ts: null, reason: "decided-out", note: "a file with no mirror" },
@@ -35,8 +38,10 @@ describe("the fixture pair", () => {
     expect(names(findings, "ts-name")).toEqual(["extra"]); // Options is a type, helper is not exported
   });
 
-  it("compares constants by value", () => {
-    expect(findings.find((f) => f.kind === "const")).toEqual({ kind: "const", name: "NAME", detail: 'python "fixture", ts "other"' });
+  it("compares constants by value, a literal read before its trailing comment", () => {
+    expect(findings.filter((f) => f.kind === "const")).toEqual([{ kind: "const", name: "NAME", detail: 'python "fixture", ts "other"' }]);
+    expect(py.names.find((n) => n.name === "URL")?.value).toBe("https://x.example/y"); // the `//` of the URL is not a comment
+    expect(ts.names.find((n) => n.name === "URL")?.value).toBe("https://x.example/y");
   });
 
   it("compares error texts with placeholders and quotes normalised, both ways", () => {
@@ -45,11 +50,12 @@ describe("the fixture pair", () => {
     expect(names(findings, "ts-error")).toEqual(["vanished, said ts"]);
   });
 
-  it("compares test names, it.each rows included, lists the TS-only ones, and reads a skipped or todo test as not ported", () => {
+  it("compares test names, it.each rows included, lists the TS-only ones, and reads a skipped, todo or skipIf(true) test as not ported", () => {
     const ts = parseTs(readFileSync(path.join(fixtures, "mod.test.ts"), "utf-8"));
-    expect(ts.tests).toEqual(["one thing", "rows thing", "renamed thing in ts", "extra thing"]);
+    expect(ts.tests).toEqual(["one thing", "rows thing", "renamed thing in ts", "extra thing", "live thing"]);
+    expect([...ts.conditional]).toEqual(["live thing"]); // under describe.skipIf: runs on a condition
     const tests = comparePair(parsePython(readFileSync(path.join(fixtures, "test_mod.py"), "utf-8")), ts, "tests");
-    expect(names(tests.findings, "test")).toEqual(["renamed thing", "dropped thing", "skipped thing"]);
+    expect(names(tests.findings, "test")).toEqual(["renamed thing", "dropped thing", "skipped thing", "gone thing"]);
     expect(tests.tsOnly).toEqual(["renamed thing in ts", "extra thing"]);
   });
 });
@@ -57,21 +63,40 @@ describe("the fixture pair", () => {
 describe("the exceptions file", () => {
   it("excepts, adapts, and reports what is stale", () => {
     const result = run({ root: fixtures, pythonRoot: fixtures, parity, exceptions });
-    const [mod, tests, dropped] = result.rows;
+    const [mod, , tests, dropped] = result.rows; // the `cli/` row sits between
     expect(mod.drift.map((f) => `${f.kind} ${f.name}`)).toEqual(["const NAME", "ts-name extra", "error gone, said python", "ts-error vanished, said ts"]);
-    expect(tests.drift).toEqual([{ kind: "test", name: "skipped thing" }]); // it.skip is not ported
+    expect(tests.drift).toEqual([{ kind: "test", name: "skipped thing" }, { kind: "test", name: "gone thing" }]); // it.skip and it.skipIf(true) are not ported
     expect(tests.tsOnly).toEqual(["extra thing"]); // the adapted test left the list
     expect(tests.stale).toEqual(['test "never existed"']);
     expect(dropped.dropped).toBe(true);
     const { text, failed } = report(result, fixtures);
     expect(failed).toBe(true);
-    expect(text).toContain("| `test_mod.py` | `mod.test.ts` | 5 | 2 | 1 | 1 | **1** | 1 |");
-    expect(text).toContain("## DRIFT (5)");
+    // 7 Python tests: 2 ported, 0 pending, 1 under skipIf, 1 adapted, 1 dropped, 2 DRIFT; 1 TS-only.
+    expect(text).toContain("| `test_mod.py` | `mod.test.ts` | 7 | 2 | 0 | 1 | 1 | 1 | **2** | 1 |");
+    expect(text).toContain("## DRIFT (6)");
+  });
+
+  it("refuses a Python checkout that is not at the pinned commit, and names the checkout command", () => {
+    const pinned = { ...parity, pin: "0000000000000000000000000000000000000000" };
+    expect(() => run({ root: fixtures, pythonRoot: fixtures, parity: pinned, exceptions })).toThrow(/parity\.json pins 0000000000000000000000000000000000000000\. Check it out there: git -C .* checkout 0000000000000000000000000000000000000000/);
+  });
+
+  it("refuses a Python file in scope that parity.json does not list, mapped or with a reason", () => {
+    const scoped = { ...parity, scope: ["."] }; // cli/app.py is covered by the `cli/` entry
+    expect(() => run({ root: fixtures, pythonRoot: fixtures, parity: scoped, exceptions })).not.toThrow();
+    const partial = { ...scoped, tests: [], modules: [parity.modules[0]] };
+    expect(() => run({ root: fixtures, pythonRoot: fixtures, parity: partial, exceptions })).toThrow(/no entry[\s\S]*cli\/app\.py\n  test_mod\.py/);
+  });
+
+  it("escapes backslashes and pipes in the record's cells", () => {
+    const odd = [{ pair: "mod.py", kind: "name", name: "_PRIVATE", reason: "ts-idiom", note: "a\\b|c" }];
+    const result = run({ root: fixtures, pythonRoot: fixtures, parity, exceptions: odd });
+    expect(record(result)).toContain("| `mod.py` | Python (private) | `_PRIVATE` | ts-idiom | a\\\\b\\|c |");
   });
 
   it("keeps the per-file counts and the open DRIFT in the ledger, and the record apart", () => {
     const result = run({ root: fixtures, pythonRoot: fixtures, parity, exceptions });
-    const row = "| `test_mod.py` | `mod.test.ts` | 5 | 2 | 1 | 1 | **1** | 1 |";
+    const row = "| `test_mod.py` | `mod.test.ts` | 7 | 2 | 0 | 1 | 1 | 1 | **2** | 1 |";
     expect(counts(result)).toContain(row);
     expect(counts(result)).not.toContain("### Names on record");
     expect(record(result)).toContain("### Names on record");
@@ -79,7 +104,7 @@ describe("the exceptions file", () => {
     expect(record(result)).not.toContain(row);
     expect(ledger(result)).toContain(row);
     expect(ledger(result)).toContain("[PARITY.md](PARITY.md)");
-    expect(ledger(result)).toContain("### DRIFT (5)\n\n- `mod.py` const `NAME`");
+    expect(ledger(result)).toContain("### DRIFT (6)\n\n- `mod.py` const `NAME`");
     expect(ledger(result)).not.toContain("### Names on record");
   });
 
@@ -111,22 +136,36 @@ describe("the exceptions file", () => {
     const later = { pair: "test_mod.py", kind: "test", name: "brought later", reason: "deferred", landsWith: "absent.ts" };
     const result = run({ root: fixtures, pythonRoot: fixtures, parity: pending, exceptions: [...exceptions, later] });
     const [mod, tests] = result.rows;
-    expect(mod.gap).toEqual({ files: ["absent.ts"], exceptions: 1 });
+    expect(mod.gap).toEqual({ files: ["absent.ts"], exceptions: 1, landsWith: undefined });
     expect(mod.stale).toEqual([]); // _PRIVATE waits with its module
-    expect(tests.gap).toEqual({ files: ["waiting.test.ts"], tests: 1 });
-    expect(tests.drift).toEqual([]); // pending/waiting.test.ts ports the test mod.test.ts skips
+    expect(tests.gap).toEqual({ files: ["waiting.test.ts"], tests: 1, landsWith: undefined });
+    expect(tests.drift).toEqual([{ kind: "test", name: "gone thing" }]); // pending/waiting.test.ts ports the test mod.test.ts skips
     expect(tests.stale).toEqual(['test "never existed"']); // compared all the same; "brought later" waits for absent.ts
     expect(pendingList(result)).toEqual([
-      "- `mod.py` → `absent.ts`: not in place, not compared (Python names: 8, exceptions waiting: 1)",
-      "- `test_mod.py` → `waiting.test.ts`: in pending/, compared (TS tests: 1)",
+      "- `mod.py` → `absent.ts`: not in place, not compared (Python names: 9, exceptions waiting: 1)",
+      "- `test_mod.py` → `waiting.test.ts`: in pending/, compared (Python tests ported there: 1)",
       '- `test_mod.py` test "brought later": lands with `absent.ts`',
     ]);
     expect(counts(result)).toContain("| `mod.py` | `absent.ts` (pending) | pending | pending | pending |");
-    expect(counts(result)).toContain("| `test_mod.py` | `mod.test.ts`, `waiting.test.ts` (pending) | 5 | 3 | 1 | 1 | 0 | 1 |");
+    // The test pending/waiting.test.ts ports is counted under Pending, not Ported.
+    expect(counts(result)).toContain("| `test_mod.py` | `mod.test.ts`, `waiting.test.ts` (pending) | 7 | 2 | 1 | 1 | 1 | 1 | **1** | 1 |");
     expect(ledger(result)).toContain("### Pending (3)\n\n- `mod.py` → `absent.ts`");
     const { text, failed } = report(result, fixtures);
     expect(text).toContain("## Pending (3)");
     expect(failed).toBe(true); // --check stays red while a pair is pending
+  });
+
+  it("reads a module pair that waits for the platform's sync (landsWith a note) as pending, in place but not compared", () => {
+    const unsynced = { ...parity, modules: [{ python: "mod.py", ts: ["mod.ts"], landsWith: "the platform's client sync" }] };
+    const result = run({ root: fixtures, pythonRoot: fixtures, parity: unsynced, exceptions });
+    const [mod] = result.rows;
+    expect(mod.drift).toEqual([]);
+    expect(mod.gap).toEqual({ files: ["mod.ts"], exceptions: 1, landsWith: "the platform's client sync" });
+    expect(pendingList(result)[0]).toBe(
+      "- `mod.py` → `mod.ts`: in place, the generator's output, not compared (Python names: 9, exceptions waiting: 1); lands with the platform's client sync",
+    );
+    expect(counts(result)).toContain("| `mod.py` | `mod.ts` (pending) | pending | pending | pending |");
+    expect(report(result, fixtures).failed).toBe(true);
   });
 
   it("writes between the PORT.md markers only", () => {

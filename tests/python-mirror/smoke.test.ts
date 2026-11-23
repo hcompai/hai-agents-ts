@@ -1,7 +1,9 @@
 /** Offline smoke checks: the package imports, clients construct, models parse. */
 import { expect, it } from "vitest";
 
-import { Client, serialization } from "hai-agents";
+import { serialization } from "hai-agents";
+
+import { Client } from "./client";
 
 it("clients construct and expose resources", () => {
   const client = new Client({ apiKey: "hk-smoke", baseUrl: "http://x" });

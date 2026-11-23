@@ -2,6 +2,7 @@
 export const LIMIT = 3;
 export const TIMEOUT_MS = 2_000;
 export const NAME = "other";
+export const URL = "https://x.example/y"; // the same literal, compared by value
 export type Options = { x?: unknown };
 export class Thing {}
 export function doThing(x: unknown): void {

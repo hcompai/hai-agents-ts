@@ -3,13 +3,13 @@
 Every file here started as a literal transcription of its Python counterpart, then imports, class names
 and method names were rewired to the real SDK API. Everything that is not a straight port is listed below.
 
-## Where the two SDKs stand (read 2026-11-17)
+## Where the two SDKs stand
 
 Written for the stack as it ships: hai `node-web-driver` (the `hai-drivers` npm package), `python-mirror` (this
 suite, the drift check and this ledger: the spec of the two branches above it), `ts-local-launcher` (`hai-agents/local`:
 the runtime launcher), `ts-local` (`LocalBridge` + `CommandExchange`, the ready-made browser bridge, auto bridges), and
-tester-h `tester-h-on-agents-api` (a product on top of both, outside the SDKs). The "In TS" column names the
-branch that brings each piece until it is on `main`.
+a product built on both, outside the SDKs. The "In TS" column names the branch that brings each piece until it is on
+`main`.
 
 Two words to keep apart, because the Python package name `hai_agents_local` covers both. A **local runtime**
 (the Python README's "Local agents": `Client.local()`, `holo --local`; TS `Client.local()` from `hai-agents`) runs the agent loop on
@@ -58,13 +58,13 @@ wheel and the `hai-drivers` npm package (`hai_drivers/node`).
 | `hai_agents_local/killswitch.py`, `desktop_lock.py` | The double-Esc kill switch, one agent per desktop | no: web only, no terminal UI |
 | `hai_drivers` wheel (hai repo): `web` interface + Playwright and Selenium drivers, `desktop`, `code_sandbox`, `mobile` | What a bridge hands each command to | `hai-drivers` npm (hai `node-web-driver`): `hai-drivers/web` (interface, `WebDriverBase`) and `hai-drivers/web/playwright` (`PlaywrightWebDriver`); web only |
 
-Both clients are generated from the same spec: the platform's sync landed on `main` (4cfc3b3, SDK 1.5.1), regenerating
-the TS client from the export that produced the Python client, with `tool_approvals` and the environment / skill
-revisions. `sdk-sync` (never pushed) is `main` plus the platform's hand-written overlays (`polling.ts`, `tools.ts`,
-`webhookVerification.ts`, `oo.ts`, the two error classes, `requestWithRetries.ts`; see Overlay-owned sources) until the
-platform PR merges; this branch sits on it.
+Both clients are generated from the same spec: the platform's sync landed on `main` (SDK 1.5.1), regenerating the TS
+client from the export that produced the Python client, with `tool_approvals` and the environment / skill revisions.
+The platform's hand-written overlays (`polling.ts`, `tools.ts`, `webhookVerification.ts`, `oo.ts`, the two error
+classes, `requestWithRetries.ts`; see Overlay-owned sources) reach this repo through its next client sync; this branch
+changes nothing under `src/client`.
 
-### Decisions (2026-11-17)
+### Decisions
 
 AGENTS.md sets the rule: mirror hai-agents-python, with two allowed exceptions, each commented on the spot. Every
 difference this file and `parity-exceptions.json` record falls under one of these kinds:
@@ -74,13 +74,12 @@ difference this file and `parity-exceptions.json` record falls under one of thes
   typed (`apiKey`, `maxPolls`), a private helper inlined.
 - `decided-out`: out of scope by design (AGENTS.md, Boundaries): desktop, mobile, workstation, the CLI and its
   credentials store, the kill switch.
-- `deferred`: not in this batch. Either a paired change, the platform PR that ships with the `ts-local` PR (none open
-  after PR 2b; the recipe one was done), or a later PR: the startup lock's siblings, re-acquire, idle shutdown and the
-  spawn registry (decided 2026-11-10).
+- `deferred`: not in this batch. Either a paired change (a platform PR that ships with the `ts-local` PR) or a later
+  PR: the startup lock's siblings, re-acquire, idle shutdown and the spawn registry.
 - `python-only-feature`: a primitive TS cannot have: type hints for a tool's schema, `*args` introspection.
-- `ts-ahead`: TS goes first by decision ("drift driven by TS", 2026-11-17), with a Python follow-up recorded; the
+- `ts-ahead`: TS goes first by decision, with a Python follow-up recorded; the
   regexes cannot see an option field or a method, so these are `kind: "addition"` entries, never DRIFT, never stale,
-  listed in PARITY.md. The batch of 2026-11-17, each stated in the file header: `PlaywrightBrowserBridgeOptions.context`
+  listed in PARITY.md. The first batch, each stated in the file header: `PlaywrightBrowserBridgeOptions.context`
   and `.driver` (browser.ts: a product serves a Playwright context it owns with a driver it hooks; Selenium cannot take
   one), `autoBridges: true | false | { web?: (environment) => WebBridgeOptions }` (oo.ts, index.ts, sessions.ts,
   routing.ts `bridgeOptions`: a product's per-environment options on the auto path; Python's `auto_bridges` is a
@@ -96,10 +95,13 @@ A platform ask (a change to an overlay, `src/client`) goes to agent_platform, no
 
 ## Ledger (generated)
 
-`pnpm drift` (`tests/python-mirror/drift.mjs`) reads the Python sources in place and compares each module and test file
-of `parity.json` with its TS mirror: names, constants, error texts, test names. Every difference is on record in
+`pnpm drift` (`tests/python-mirror/drift.mjs`) reads the Python sources in place, at the commit `parity.json` pins (the
+run stops if the checkout is elsewhere), and compares each module and test file of `parity.json` with its TS mirror:
+names, constants, error texts, test names. Every `.py` file under the Python directories `parity.json` lists as its
+`scope` must have an entry, mapped or with a reason, or the run stops. Every difference is on record in
 `parity-exceptions.json` with one of the six reasons of the Decisions subsection, or it is DRIFT and `pnpm drift --check`
-fails. Between the markers is its output (`pnpm drift --write`): the per-file counts, what is pending and the open DRIFT list. Every difference
+fails. In the test table a Python test ported by a file in `pending/` counts under Pending and one that runs on a
+condition (`describe.skipIf`, the live suite) under skipIf, not under Ported. Between the markers is its output (`pnpm drift --write`): the per-file counts, what is pending and the open DRIFT list. Every difference
 on record, with its reason, is in the generated [PARITY.md](PARITY.md). The prose around the markers is hand-written.
 
 The scope is the whole of both SDKs on every branch of the stack: `python-mirror` is the spec, and its `parity.json`,
@@ -107,22 +109,28 @@ The scope is the whole of both SDKs on every branch of the stack: `python-mirror
 later branch brings waits in `pending/` (`tests/python-mirror/pending/`; `packages/sdk/tests/pending/` for the TS-only
 ones), outside the typecheck and the run, and that branch `git mv`s it into place; an exception about code a later
 branch adds to a file already in place names a file of that branch in `landsWith`. drift compares a pending test file
-all the same and lists what is not in place under Pending, and `--check` fails while anything is pending. So it is red
-by design on `python-mirror`: the `hai_agents_local/runtime/` modules and their tests wait for `ts-local-launcher`, and
-the bridge, transport, browser, routing, manager, sessions and config modules, `test_local.py` and the two bridge
-tests of `test_runtime_placement.py` wait for `ts-local`. On `ts-local-launcher` only the `ts-local` part remains; on
-`ts-local` the check is green. Each branch regenerates this section, so its diff shows the gaps it closes.
+all the same and lists what is not in place under Pending, and `--check` fails while anything is pending. A module pair
+whose TS file is in place but still the generator's output, the overlays not synced yet, says so in its own `landsWith`
+(a note, not a path) and is listed as pending, not compared. So it is red by design on `python-mirror`: the
+overlay-owned `src/client` pairs and the tests of what the overlays carry (`*_overlay.test.ts`) wait for the platform's
+client sync, the `hai_agents_local/runtime/` modules and their tests wait for `ts-local-launcher`, and the bridge,
+transport, browser, routing, manager, sessions and config modules, `test_local.py` and the two bridge tests of
+`test_runtime_placement.py` wait for `ts-local`. `ts-local-launcher` carries the generator's overlay output, so the
+`src/client` pairs and the overlay tests are compared and run there and only the `ts-local` part remains; on `ts-local`
+the check is green. Each branch regenerates this section, so its diff shows the gaps it closes.
 
 <!-- drift:begin -->
 Generated by `pnpm drift --write`; edit parity.json / parity-exceptions.json, not this section.
 
 | Python module | TS mirror | Names | Constants | Errors |
 | --- | --- | --- | --- | --- |
-| `hai_agents/client.py` | `client/oo.ts` | 8 excepted | 0 excepted | 1 excepted |
-| `hai_agents/polling.py` | `client/polling.ts` | 9 excepted | 0 excepted | 18 excepted |
-| `hai_agents/tools.py` | `client/tools.ts` | 2 excepted | 0 excepted | 4 excepted |
-| `hai_agents/webhook_verification.py` | `client/webhookVerification.ts` | 0 excepted | 0 excepted | 2 excepted |
-| `hai_agents_tools/otp.py` | `tools/otp.ts` | 3 excepted | 0 excepted | 3 excepted |
+| `hai_agents/client.py` | `client/oo.ts` (pending) | pending | pending | pending |
+| `hai_agents/polling.py` | `client/polling.ts` (pending) | pending | pending | pending |
+| `hai_agents/tools.py` | `client/tools.ts` (pending) | pending | pending | pending |
+| `hai_agents/webhook_verification.py` | `client/webhookVerification.ts` (pending) | pending | pending | pending |
+| `hai_agents/core/api_error.py` | `client/errors/HaiAgentsError.ts` (pending) | pending | pending | pending |
+| `hai_agents/core/http_client.py` | `client/core/fetcher/requestWithRetries.ts` (pending) | pending | pending | pending |
+| `hai_agents_tools/otp.py` | `tools/otp.ts`, `html.ts` | 3 excepted | 0 excepted | 3 excepted |
 | `hai_agents_local/bridge.py` | `local/bridge.ts` (pending) | pending | pending | pending |
 | `hai_agents_local/transport.py + hai_agents_local/errors.py` | `local/transport.ts` (pending) | pending | pending | pending |
 | `hai_agents_local/browser.py` | `local/browser.ts` (pending) | pending | pending | pending |
@@ -134,6 +142,8 @@ Generated by `pnpm drift --write`; edit parity.json / parity-exceptions.json, no
 | `hai_agents_local/workstation.py` | none (decided-out: no workstation driver in Node) |  |  |  |
 | `hai_agents_local/killswitch.py` | none (decided-out: no terminal UI, no kill switch) |  |  |  |
 | `hai_agents_local/desktop_lock.py` | none (decided-out: one agent per desktop: desktop only) |  |  |  |
+| `hai_agents_cli/` | none (decided-out: no CLI) |  |  |  |
+| `hai_agents_common/` | none (decided-out: the CLI's credentials store and JSON coercion) |  |  |  |
 | `hai_agents_local/runtime/runtime.py` | `local/runtime.ts` (pending) | pending | pending | pending |
 | `hai_agents_local/runtime/acquire.py` | `local/index.ts` (pending) | pending | pending | pending |
 | `hai_agents_local/runtime/errors.py` | `local/errors.ts` (pending) | pending | pending | pending |
@@ -144,42 +154,48 @@ Generated by `pnpm drift --write`; edit parity.json / parity-exceptions.json, no
 | `hai_agents_local/runtime/process.py` | `local/process.ts` (pending) | pending | pending | pending |
 | `hai_agents_local/runtime/state.py` | `local/state.ts` (pending) | pending | pending | pending |
 
-| Python test file | TS mirror | `def test_` | Ported | Adapted | Dropped | DRIFT | TS-only |
-| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| `tests/test_answer_schema.py` | `answer_schema.test.ts` | 18 | 16 | 1 | 1 | 0 | 0 |
-| `tests/test_bump_runtime.py` | `bump_runtime.test.ts` (pending) | 1 | 1 | 0 | 0 | 0 | 0 |
-| `tests/test_fetch_policy.py` | `fetch_policy.test.ts` | 7 | 7 | 0 | 0 | 0 | 1 |
-| `tests/test_local.py` | `local_bridge.test.ts` (pending), `local_sessions.test.ts` (pending) | 89 | 54 | 1 | 34 | 0 | 0 |
-| `tests/test_otp.py` | `otp.test.ts` | 22 | 22 | 0 | 0 | 0 | 0 |
-| `tests/test_polling_helpers.py` | `polling_helpers.test.ts` | 9 | 9 | 0 | 0 | 0 | 0 |
-| `tests/test_release_scripts.py` | `release_scripts.test.ts`, `release_scripts_session_fields.test.ts` (pending) | 5 | 5 | 0 | 0 | 0 | 0 |
-| `tests/test_runtime_placement.py` | `runtime_placement.test.ts` (pending), `runtime_placement_bridges.test.ts` (pending) | 17 | 9 | 0 | 8 | 0 | 0 |
-| `tests/test_runtime_state.py` | `runtime_state.test.ts` (pending) | 2 | 2 | 0 | 0 | 0 | 0 |
-| `tests/test_settle.py` | `settle.test.ts` | 3 | 3 | 0 | 0 | 0 | 0 |
-| `tests/test_smoke.py` | `smoke.test.ts` | 2 | 2 | 0 | 0 | 0 | 0 |
-| `tests/test_spec_defaults.py` | `spec_defaults.test.ts` | 3 | 3 | 0 | 0 | 0 | 0 |
-| `tests/test_tools_package.py` | `tools_package.test.ts` | 4 | 3 | 0 | 1 | 0 | 0 |
-| `tests/test_tools.py` | `tools.test.ts` | 15 | 12 | 2 | 1 | 0 | 5 |
-| `tests/test_webhook_verification.py` | `webhook_verification.test.ts` | 15 | 15 | 0 | 0 | 0 | 0 |
-| `tests/test_cli.py` | none (decided-out: no CLI) | 34 | 0 | 0 | 34 | 0 | 0 |
-| `tests/test_cli_ui.py` | none (decided-out: no CLI) | 11 | 0 | 0 | 11 | 0 | 0 |
-| `tests/test_cli_prompt.py` | none (decided-out: no CLI) | 4 | 0 | 0 | 4 | 0 | 0 |
-| `tests/test_cli_keys.py` | none (decided-out: no CLI) | 2 | 0 | 0 | 2 | 0 | 0 |
-| `tests/test_cli_drift.py` | none (decided-out: no CLI) | 5 | 0 | 0 | 5 | 0 | 0 |
-| `tests/test_credentials.py` | none (decided-out: no credentials store, the client takes apiKey only) | 17 | 0 | 0 | 17 | 0 | 0 |
-| `tests/test_mcp_install.py` | none (decided-out: no MCP server install (CLI)) | 15 | 0 | 0 | 15 | 0 | 0 |
-| `tests/test_workstation_clis.py` | none (decided-out: no workstation bridge) | 2 | 0 | 0 | 2 | 0 | 0 |
-| `tests/test_desktop_stop.py` | none (decided-out: no desktop bridge) | 1 | 0 | 0 | 1 | 0 | 0 |
-| `tests/integration/test_auth_smoke.py` | `integration/auth_smoke.test.ts` | 1 | 1 | 0 | 0 | 0 | 0 |
-| `tests/integration/test_session_browser.py` | `integration/session_browser.test.ts` | 1 | 1 | 0 | 0 | 0 | 0 |
-| `tests/integration/test_session_code_env.py` | `integration/session_code_env.test.ts` | 1 | 1 | 0 | 0 | 0 | 0 |
-| `tests/integration/test_skills_crud.py` | `integration/skills_crud.test.ts` | 2 | 2 | 0 | 0 | 0 | 0 |
-| `tests/integration/test_cli.py` | none (decided-out: no CLI) | 2 | 0 | 0 | 2 | 0 | 0 |
+| Python test file | TS mirror | `def test_` | Ported | Pending | skipIf | Adapted | Dropped | DRIFT | TS-only |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `tests/test_answer_schema.py` | `answer_schema.test.ts`, `answer_schema_overlay.test.ts` (pending) | 18 | 16 | 0 | 0 | 1 | 1 | 0 | 0 |
+| `tests/test_bump_runtime.py` | `bump_runtime.test.ts` (pending) | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |
+| `tests/test_fetch_policy.py` | `fetch_policy.test.ts`, `fetch_policy_overlay.test.ts` (pending) | 7 | 3 | 4 | 0 | 0 | 0 | 0 | 1 |
+| `tests/test_local.py` | `local_bridge.test.ts` (pending), `local_sessions.test.ts` (pending) | 89 | 0 | 54 | 0 | 1 | 34 | 0 | 0 |
+| `tests/test_otp.py` | `otp.test.ts` | 22 | 22 | 0 | 0 | 0 | 0 | 0 | 0 |
+| `tests/test_polling_helpers.py` | `polling_helpers.test.ts` | 9 | 9 | 0 | 0 | 0 | 0 | 0 | 0 |
+| `tests/test_release_scripts.py` | `release_scripts.test.ts`, `release_scripts_session_fields.test.ts` (pending) | 5 | 4 | 1 | 0 | 0 | 0 | 0 | 0 |
+| `tests/test_runtime_placement.py` | `runtime_placement.test.ts` (pending), `runtime_placement_bridges.test.ts` (pending) | 17 | 0 | 9 | 0 | 0 | 8 | 0 | 0 |
+| `tests/test_runtime_state.py` | `runtime_state.test.ts` (pending) | 2 | 0 | 2 | 0 | 0 | 0 | 0 | 0 |
+| `tests/test_settle.py` | `settle.test.ts` | 3 | 3 | 0 | 0 | 0 | 0 | 0 | 0 |
+| `tests/test_smoke.py` | `smoke.test.ts` | 2 | 2 | 0 | 0 | 0 | 0 | 0 | 0 |
+| `tests/test_spec_defaults.py` | `spec_defaults.test.ts` | 3 | 3 | 0 | 0 | 0 | 0 | 0 | 0 |
+| `tests/test_tools_package.py` | `tools_package.test.ts` | 4 | 3 | 0 | 0 | 0 | 1 | 0 | 0 |
+| `tests/test_tools.py` | `tools.test.ts`, `tools_overlay.test.ts` (pending) | 15 | 9 | 3 | 0 | 2 | 1 | 0 | 5 |
+| `tests/test_webhook_verification.py` | `webhook_verification.test.ts`, `webhook_verification_overlay.test.ts` (pending) | 15 | 14 | 1 | 0 | 0 | 0 | 0 | 0 |
+| `tests/test_cli.py` | none (decided-out: no CLI) | 34 | 0 | 0 | 0 | 0 | 34 | 0 | 0 |
+| `tests/test_cli_ui.py` | none (decided-out: no CLI) | 11 | 0 | 0 | 0 | 0 | 11 | 0 | 0 |
+| `tests/test_cli_prompt.py` | none (decided-out: no CLI) | 4 | 0 | 0 | 0 | 0 | 4 | 0 | 0 |
+| `tests/test_cli_keys.py` | none (decided-out: no CLI) | 2 | 0 | 0 | 0 | 0 | 2 | 0 | 0 |
+| `tests/test_cli_drift.py` | none (decided-out: no CLI) | 5 | 0 | 0 | 0 | 0 | 5 | 0 | 0 |
+| `tests/test_credentials.py` | none (decided-out: no credentials store, the client takes apiKey only) | 17 | 0 | 0 | 0 | 0 | 17 | 0 | 0 |
+| `tests/test_mcp_install.py` | none (decided-out: no MCP server install (CLI)) | 15 | 0 | 0 | 0 | 0 | 15 | 0 | 0 |
+| `tests/test_workstation_clis.py` | none (decided-out: no workstation bridge) | 2 | 0 | 0 | 0 | 0 | 2 | 0 | 0 |
+| `tests/test_desktop_stop.py` | none (decided-out: no desktop bridge) | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 |
+| `tests/integration/test_auth_smoke.py` | `integration/auth_smoke.test.ts` | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 |
+| `tests/integration/test_session_browser.py` | `integration/session_browser.test.ts` | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 |
+| `tests/integration/test_session_code_env.py` | `integration/session_code_env.test.ts` | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 |
+| `tests/integration/test_skills_crud.py` | `integration/skills_crud.test.ts` | 2 | 0 | 0 | 2 | 0 | 0 | 0 | 0 |
+| `tests/integration/test_cli.py` | none (decided-out: no CLI) | 2 | 0 | 0 | 0 | 0 | 2 | 0 | 0 |
 
 Every difference on record, with its reason, is in [PARITY.md](PARITY.md), generated with this section.
 
-### Pending (22)
+### Pending (32)
 
+- `src/hai_agents/client.py` → `packages/sdk/src/client/oo.ts`: in place, the generator's output, not compared (Python names: 9, exceptions waiting: 10); lands with the platform's client sync
+- `src/hai_agents/polling.py` → `packages/sdk/src/client/polling.ts`: in place, the generator's output, not compared (Python names: 52, exceptions waiting: 27); lands with the platform's client sync
+- `src/hai_agents/tools.py` → `packages/sdk/src/client/tools.ts`: in place, the generator's output, not compared (Python names: 6, exceptions waiting: 6); lands with the platform's client sync
+- `src/hai_agents/webhook_verification.py` → `packages/sdk/src/client/webhookVerification.ts`: in place, the generator's output, not compared (Python names: 7, exceptions waiting: 2); lands with the platform's client sync
+- `src/hai_agents/core/api_error.py` → `packages/sdk/src/client/errors/HaiAgentsError.ts`: in place, the generator's output, not compared (Python names: 4, exceptions waiting: 0); lands with the platform's client sync
+- `src/hai_agents/core/http_client.py` → `packages/sdk/src/client/core/fetcher/requestWithRetries.ts`: in place, the generator's output, not compared (Python names: 22, exceptions waiting: 0); lands with the platform's client sync
 - `src/hai_agents_local/bridge.py` → `packages/sdk/src/local/bridge.ts`: not in place, not compared (Python names: 13, exceptions waiting: 6)
 - `src/hai_agents_local/transport.py + src/hai_agents_local/errors.py` → `packages/sdk/src/local/transport.ts`: not in place, not compared (Python names: 19, exceptions waiting: 7)
 - `src/hai_agents_local/browser.py` → `packages/sdk/src/local/browser.ts`: not in place, not compared (Python names: 7, exceptions waiting: 13)
@@ -196,11 +212,15 @@ Every difference on record, with its reason, is in [PARITY.md](PARITY.md), gener
 - `src/hai_agents_local/runtime/manifest.py` → `packages/sdk/src/local/manifest.ts`: not in place, not compared (Python names: 9, exceptions waiting: 6)
 - `src/hai_agents_local/runtime/process.py` → `packages/sdk/src/local/process.ts`: not in place, not compared (Python names: 15, exceptions waiting: 8)
 - `src/hai_agents_local/runtime/state.py` → `packages/sdk/src/local/state.ts`: not in place, not compared (Python names: 13, exceptions waiting: 3)
-- `tests/test_bump_runtime.py` → `tests/python-mirror/bump_runtime.test.ts`: in pending/, compared (TS tests: 1)
-- `tests/test_local.py` → `tests/python-mirror/local_bridge.test.ts`, `tests/python-mirror/local_sessions.test.ts`: in pending/, compared (TS tests: 55)
-- `tests/test_release_scripts.py` → `tests/python-mirror/release_scripts_session_fields.test.ts`: in pending/, compared (TS tests: 1)
-- `tests/test_runtime_placement.py` → `tests/python-mirror/runtime_placement.test.ts`, `tests/python-mirror/runtime_placement_bridges.test.ts`: in pending/, compared (TS tests: 9)
-- `tests/test_runtime_state.py` → `tests/python-mirror/runtime_state.test.ts`: in pending/, compared (TS tests: 2)
+- `tests/test_answer_schema.py` → `tests/python-mirror/answer_schema_overlay.test.ts`: in pending/, compared (Python tests ported there: 0); lands with the platform's client sync
+- `tests/test_bump_runtime.py` → `tests/python-mirror/bump_runtime.test.ts`: in pending/, compared (Python tests ported there: 1)
+- `tests/test_fetch_policy.py` → `tests/python-mirror/fetch_policy_overlay.test.ts`: in pending/, compared (Python tests ported there: 4); lands with the platform's client sync
+- `tests/test_local.py` → `tests/python-mirror/local_bridge.test.ts`, `tests/python-mirror/local_sessions.test.ts`: in pending/, compared (Python tests ported there: 54)
+- `tests/test_release_scripts.py` → `tests/python-mirror/release_scripts_session_fields.test.ts`: in pending/, compared (Python tests ported there: 1)
+- `tests/test_runtime_placement.py` → `tests/python-mirror/runtime_placement.test.ts`, `tests/python-mirror/runtime_placement_bridges.test.ts`: in pending/, compared (Python tests ported there: 9)
+- `tests/test_runtime_state.py` → `tests/python-mirror/runtime_state.test.ts`: in pending/, compared (Python tests ported there: 2)
+- `tests/test_tools.py` → `tests/python-mirror/tools_overlay.test.ts`: in pending/, compared (Python tests ported there: 3); lands with the platform's client sync
+- `tests/test_webhook_verification.py` → `tests/python-mirror/webhook_verification_overlay.test.ts`: in pending/, compared (Python tests ported there: 1); lands with the platform's client sync
 - `src/hai_agents/client.py` ts-error "Client.local() needs Node.js: the local runtime runs on this machine": lands with `packages/sdk/src/local/index.ts`
 
 ### DRIFT (0)
@@ -287,37 +307,41 @@ errors, the schema title fallback, the hand-restored union tags).
 
 ## Overlay-owned sources
 
-`packages/sdk/src/client/` is regenerated by `agent_platform/sdk-codegen/ts/generate.sh`, which copies
-`polling.ts`, `tools.ts`, `webhookVerification.ts`, `oo.ts` (`client.ts.static`), `errors/HaiAgentsError.ts`,
-`errors/HaiAgentsTimeoutError.ts` and `core/fetcher/requestWithRetries.ts` from `*.static` overlays there.
-`python-mirror` changes nothing under `src/client`. `ts-local-launcher` and `ts-local` each carry the platform's
-`oo.ts`: the `Client.local()` version on the launcher (the overlay at agent_platform 6dc4ce0a plus f25c5c79's
-`[Symbol.asyncDispose]` and 43cd8021's API-key resolution comment), the auto-bridges version here (byte-identical to
-`client.ts.static` at agent_platform 9b7c0311: `autoBridges` as `AutoBridges`, a failed load of the local entry
-surfacing at the first `sessions` call), with the `index.ts` export lines its `generate.sh` writes; that script
-exits when `packages/sdk/src/local/index.ts` is missing, so the platform PR is paired with the `ts-local` PR.
-`src/local/sessions.ts` subclasses the generated `SessionsClient` and
-builds `HttpResponsePromise`s, which the main entry does not re-export, and the local entry may import the client only
-through `../client/index.js` (`scripts/link-local-entry.mjs`: a second copy breaks `instanceof` and the typings); until
-the platform PR lands (its `generate.sh` appends those exports to `index.ts`), `src/local/generated.ts` reads the classes off a client whose `fetch` never
-leaves the process and types them through `HaiAgentsClient`. The behaviour its tests pin (a dropped idempotent request re-sent,
-tool-result posts retrying transient statuses, the zod guard on `answerSchema`, Python's error texts) lives in
-those overlays, on the agent_platform branch `sdk-ts-overlay-python-parity`, and reaches this repo through the
-platform PR; the `ts-local` PR opens paired with it. The launcher's `oo.ts` is the overlay at 6dc4ce0a plus
-f25c5c79's `asyncDispose` and 43cd8021's comment, without 28fd8670's auto bridges, which arrive with this branch.
+`packages/sdk/src/client/` is regenerated by the platform's generator (agent_platform `sdk-codegen/ts/generate.sh`), which
+copies `polling.ts`, `tools.ts`, `webhookVerification.ts`, `oo.ts` (`client.ts.static`), `errors/HaiAgentsError.ts`,
+`errors/HaiAgentsTimeoutError.ts` and `core/fetcher/requestWithRetries.ts` from `*.static` overlays there. A change to
+one of them is a platform ask, not a commit here.
+
+`python-mirror` changes nothing under `src/client`. The behaviour its tests pin (a dropped idempotent request re-sent,
+tool-result posts retrying transient statuses, the zod guard on `answerSchema`, Python's error texts, `Client` as the
+client's name) lives in those overlays and reaches this repo through the platform's client sync, so those tests wait in
+`pending/` (`*_overlay.test.ts`; `packages/sdk/tests/pending/clientAlias.test.ts` for the TS-only one), the mirror
+reads the client's name through `client.ts`, and the `src/client` pairs are listed as pending in the Ledger
+(`landsWith` in `parity.json`) until the sync lands.
+
+`ts-local-launcher` and `ts-local` each carry copies of the generator's output for the overlay-owned files: `oo.ts`
+with `Client.local()` (the launcher) and with the auto bridges (`ts-local`; `autoBridges` as `AutoBridges`, a failed
+load of the local entry surfacing at the first `sessions` call), with the `index.ts` export lines its `generate.sh`
+writes. Those copies are the generator's output, not hand-written code: they disappear with the sync, which the
+`ts-local` PR is paired with (that script exits when `packages/sdk/src/local/index.ts` is missing). `src/local/sessions.ts`
+subclasses the generated `SessionsClient` and builds `HttpResponsePromise`s, which the main entry does not re-export, and
+the local entry may import the client only through `../client/index.js` (`scripts/link-local-entry.mjs`: a second copy
+breaks `instanceof` and the typings); until the sync lands (its `generate.sh` appends those exports to `index.ts`),
+`src/local/generated.ts` reads the classes off a client whose `fetch` never leaves the process and types them through
+`HaiAgentsClient`.
 
 ## Python commit tracked
 
-hai-agents-python `b7e682c` (release 1.5.1, 2026-11-17). What moved since 1055153 (2026-11-09), the commit the
+hai-agents-python `b7e682c` (release 1.5.1), the commit `parity.json` pins. What moved since 1055153, the commit the
 first port tracked, and where each change stands here:
 
 | Python change | Here |
 | --- | --- |
-| `openapi.json` syncs 6d8e45f, 317fa51, 1055153: tool approvals, environment and skill revisions | Landed on `main` with the platform's sync (4cfc3b3); `test_spec_defaults.py` 6ccae5a (`ToolApprovalResponseEvent`) ported here |
-| `openapi.json` syncs befe7ee, 6eac539, 07eb688 (1.5.0, 1.5.1) | TS `main` is at 1.5.1 too (4cfc3b3) |
-| `polling.py` 6ccae5a: `pending_approvals`, `approve` / `deny` | In the overlay `polling.ts.static` (agent_platform `sdk-ts-overlay-python-parity`); on `sdk-sync` here, arrives with the platform PR |
+| `openapi.json` syncs 6d8e45f, 317fa51, 1055153: tool approvals, environment and skill revisions | Landed on `main` with the platform's sync; `test_spec_defaults.py` 6ccae5a (`ToolApprovalResponseEvent`) ported here |
+| `openapi.json` syncs befe7ee, 6eac539, 07eb688 (1.5.0, 1.5.1) | TS `main` has the same spec |
+| `polling.py` 6ccae5a: `pending_approvals`, `approve` / `deny` | In the platform's overlay `polling.ts.static`; arrives with its client sync |
 | `routing.py`, `desktop.py`, `workstation.py` e42271f, def07b1: desktops routed on mode, shell safety (policy, sandbox, CLI approvals) | Decided out: web only |
-| `pin.json` 0b4ec40, 1f15df9, cb5fc3e: runtime 0.1.25, 0.1.28, 0.1.29 | `ts-local-launcher` pins 0.1.29 (same digests) |
+| `pin.json` 0b4ec40, 1f15df9, cb5fc3e: runtime 0.1.25, 0.1.28, 0.1.29 | `ts-local-launcher` pins what Python's `main` pins (same digests) |
 | `install.py` def07b1: `install_artifact(name)` generalised for the workstation driver download; the insecure-URL error text loses the binary name | Error text ported; the generalisation is not (no workstation driver in TS) |
 | `bridge.py`, `transport.py` 358f8fc: the platform's reason in local bridge errors | Ported on `ts-local` (`bridge.ts`, `transport.ts`) |
 | `test_local.py` 4662a82 (desktop is always this machine), `test_cli.py` e68bb77 | Bridges and CLI: dropped rows above |
