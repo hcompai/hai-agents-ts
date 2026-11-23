@@ -16,7 +16,8 @@ export function tool(spec: Tool): Tool {
     throw new Error("Tool needs a non-empty name.");
   }
   if (!spec.description) {
-    throw new Error(`Tool '${spec.name}' needs a description: add a docstring or pass description=.`);
+    // Python's text ends with `add a docstring or pass description=`; TS has neither.
+    throw new Error(`Tool '${spec.name}' needs a non-empty description.`);
   }
   return spec;
 }

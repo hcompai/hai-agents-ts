@@ -28,7 +28,6 @@ afterEach(async () => {
 
 // Python runs it against its sync and async clients; TS has one. Python's agent carries a desktop environment: a web one here.
 it("local client without auto bridges leaves execution to the product", async () => {
-  mp.setenv("HAI_AUTO_BRIDGE", "1");
   const served: ManagedBridge[] = [];
   mp.setattr(_defaultManager, "ensure", async (bridges: readonly ManagedBridge[]) => {
     served.push(...bridges);
@@ -54,7 +53,6 @@ it("local client without auto bridges leaves execution to the product", async ()
 
 // A web environment for Python's workstation one, start() for run(). Python flags verify_runtime on the bridge; here the runtime's proof-checking fetch goes in.
 it("bridge never serves an unproven runtime", async () => {
-  mp.delenv("HAI_AUTO_BRIDGE", { raising: false });
   runtimeServer.proofToken = "squatter-token";
   const runtime = { apiKey: "local-token", baseUrl: `http://127.0.0.1:${runtimeServer.port}`, fetch: provenFetch("local-token") } as unknown as LocalRuntime;
   const agent = { environments: [{ id: "laptop", kind: "web", host: "user_device" }] };

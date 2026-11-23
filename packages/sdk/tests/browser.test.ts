@@ -13,6 +13,10 @@ const fakes = vi.hoisted(() => ({
   closed: [] as string[],
   /** The contexts the fake driver was built on. */
   contexts: [] as unknown[],
+  /** The options of the last launchPersistentContext. */
+  launchOptions: undefined as Record<string, unknown> | undefined,
+  /** Set, the fake launch waits on it. */
+  launchGate: null as Promise<void> | null,
 }));
 
 const fakeHaiDrivers = () => ({
@@ -34,7 +38,11 @@ vi.mock("playwright-core", () => ({
       newContext: async () => ({ pages: () => [], newPage: async () => ({}), close: async () => undefined }),
       close: async () => fakes.closed.push("cdp"),
     }),
-    launchPersistentContext: async (userDataDir: string) => ({ pages: () => [{}], close: async () => fakes.closed.push(`launched:${userDataDir}`) }),
+    launchPersistentContext: async (userDataDir: string, options: Record<string, unknown>) => {
+      fakes.launchOptions = options;
+      await fakes.launchGate;
+      return { pages: () => [{}], close: async () => fakes.closed.push(`launched:${userDataDir}`) };
+    },
   },
 }));
 
@@ -97,6 +105,8 @@ beforeEach(() => {
   fakes.dispatched.length = 0;
   fakes.closed.length = 0;
   fakes.contexts.length = 0;
+  fakes.launchOptions = undefined;
+  fakes.launchGate = null;
 });
 
 /** A caller-owned Playwright context, as the bridge sees it. */
@@ -123,7 +133,43 @@ describe("PlaywrightBrowserBridge", () => {
     expect(channel.results[0]).toMatchObject({ error: null, command_uid: "u1" });
     expect(logs[0]).toMatch(/^launching Chrome \(profile: .*chrome-profile\)$/);
     expect(fakes.closed).toEqual([expect.stringMatching(/^launched:.*chrome-profile$/)]);
+    // The renderer sandbox stays on (Playwright would add --no-sandbox): the agent drives this Chrome to any site.
+    expect(fakes.launchOptions).toMatchObject({ channel: "chrome", headless: false, chromiumSandbox: true });
     expect(PlaywrightBrowserBridge.environment).toEqual({ kind: "web", host: "user_device" });
+  });
+
+  it("releases a Chrome launched while stop() was requested, and reports not ready", async () => {
+    vi.doMock("hai-drivers/web/playwright", fakeHaiDrivers);
+    let open = () => {};
+    fakes.launchGate = new Promise<void>((resolve) => {
+      open = resolve;
+    });
+    const bridge = new PlaywrightBrowserBridge({ baseUrl: channel.baseUrl, apiKey: "hk-test", debuggingPort: 1 });
+    const starting = bridge.start();
+    while (fakes.launchOptions === undefined) await new Promise((r) => setTimeout(r, 5)); // Chrome is launching
+    const stopping = bridge.stop();
+    open();
+    await starting;
+    await stopping;
+    expect(bridge.ready).toBe(false);
+    expect(fakes.closed).toEqual([expect.stringMatching(/^launched:/)]);
+  });
+
+  it("ends its loop when the context it serves closes, so the manager cancels the session", async () => {
+    let onClose: (() => void) | undefined;
+    const context = {
+      pages: () => [{}],
+      close: async () => undefined,
+      on: (event: string, listener: () => void) => {
+        if (event === "close") onClose = listener;
+      },
+    } as unknown as import("playwright-core").BrowserContext;
+    const bridge = new PlaywrightBrowserBridge({ baseUrl: channel.baseUrl, apiKey: "hk-test", context, driver: () => ({ dispatch: async () => null }) });
+    await bridge.start();
+    expect(onClose).toBeDefined();
+    onClose!();
+    await expect(bridge.done).rejects.toThrow("browser closed");
+    await bridge.stop();
   });
 
   // ts-ahead: browser.py cannot take a Playwright context (Selenium), nor a driver factory.

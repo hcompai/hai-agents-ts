@@ -98,7 +98,7 @@ export class SessionTimeoutError extends HaiAgentsTimeoutError {
 
 async function answerJsonSchema(schema: AnswerSchema<unknown>): Promise<Record<string, unknown>> {
   if (!isZodSchema(schema)) {
-    throw new TypeError(`answerSchema must be a zod v4 schema, got ${String(schema)}.`);
+    throw new TypeError(`answerSchema must be a zod v4 schema, got ${typeof schema}.`);
   }
   const zod = (await import("zod").catch(() => undefined)) as
     | { toJSONSchema?: (s: unknown) => Record<string, unknown> }

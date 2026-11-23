@@ -204,8 +204,12 @@ export class CommandExchange {
     if (resp.status === 429) {
       throw await rateLimited(resp);
     }
-    if (resp.status === 409 || resp.status === 404) {
-      return; // 409: another delivery of the same command already landed; 404: the platform no longer knows the command
+    if (resp.status === 404) {
+      this.#onLog(`platform no longer knows command ${command.id}; dropping its result`);
+      return;
+    }
+    if (resp.status === 409) {
+      return; // another delivery of the same command already landed
     }
     await raiseIfGone(resp, command.id);
     await raiseForStatus(resp, "POST", url);

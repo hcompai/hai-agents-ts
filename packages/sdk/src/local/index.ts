@@ -17,19 +17,14 @@
 
 import { Client } from "../client/index.js";
 import type { Inference } from "./inference.js";
-import type { AutoBridges } from "./routing.js";
 import { LocalRuntime, type LocalRuntimeOptions } from "./runtime.js";
+import { LocalSessionsClient } from "./sessions.js";
+// The main entry types this entry through types.ts (no Node or Playwright type in it); `LocalRuntimeSurface` is the class's public surface.
+import type { LocalClientOptions, LocalEntry, LocalRuntime as LocalRuntimeSurface } from "./types.js";
 
 /** The runtime configuration the SDK requires: the same agent routes AGP serves, with inline agents. */
 export const SHARED_RECIPE = "shared";
 export const RECIPE_ENV = "HAI_AGENT_RUNTIME_RECIPE";
-
-export type LocalClientOptions = LocalRuntimeOptions & {
-  /** A runtime you already hold, from `LocalRuntime.ensureStarted` or `LocalRuntime.attach`; no launch option may then be set. */
-  runtime?: LocalRuntime;
-  /** Start a bridge on this machine for each `user_device` environment of a session (default true), with a product's options when an object; `HAI_AUTO_BRIDGE=0` turns it off at runtime. */
-  autoBridges?: AutoBridges;
-};
 
 /** `Client.local()` once this entry is loaded, as client.py's: the runtime, then the client bound to it. */
 export async function local<T extends Client>(options: LocalClientOptions, ClientClass: new (options?: Client.Options) => T): Promise<T> {
@@ -49,7 +44,7 @@ export async function local<T extends Client>(options: LocalClientOptions, Clien
 }
 
 /** The runtime a local client talks to, and whether this process owns (and so stops) it, as acquire.py's acquire_runtime. */
-async function acquireRuntime(runtime: LocalRuntime | undefined, launch: LocalRuntimeOptions): Promise<[LocalRuntime, boolean]> {
+async function acquireRuntime(runtime: LocalRuntimeSurface | undefined, launch: LocalRuntimeOptions): Promise<[LocalRuntimeSurface, boolean]> {
   if (runtime) {
     if (Object.values(launch).some((value) => value !== undefined)) {
       throw new Error("an attached runtime owns its inference and launch configuration");
@@ -62,7 +57,7 @@ async function acquireRuntime(runtime: LocalRuntime | undefined, launch: LocalRu
 }
 
 /** The runtime to use and whether this process owns it, as acquire.py's _claim. */
-function claim(runtime: LocalRuntime, inference: Inference | undefined): [LocalRuntime, boolean] {
+function claim(runtime: LocalRuntimeSurface, inference: Inference | undefined): [LocalRuntimeSurface, boolean] {
   if (inference !== undefined && !runtime.owned && runtime.serves === undefined) {
     throw new Error("a runtime of unknown inference already listens there; stop it or set HAI_AGENT_RUNTIME_PORT to another port");
   }
@@ -92,15 +87,11 @@ export {
   type Resolved,
   type WebBridgeOptions,
 } from "./routing.js";
-export {
-  DEFAULT_LOCAL_MAX_STEPS,
-  DEFAULT_LOCAL_MAX_TIME_S,
-  LocalSessionsClient,
-  REMOTE_CANCEL_TIMEOUT_S,
-  type LocalSessionsOptions,
-} from "./sessions.js";
+export { DEFAULT_LOCAL_MAX_STEPS, DEFAULT_LOCAL_MAX_TIME_S, REMOTE_CANCEL_TIMEOUT_S, type LocalSessionsOptions } from "./sessions.js";
+export { LocalSessionsClient };
+export type { BrowserContextLike, LocalClientOptions } from "./types.js";
 export { BridgeManager, TimeoutError, ensureBridges, servingBridges, stopBridges, type ManagedBridge } from "./manager.js";
-export { AUTO_BRIDGE_ENV_VAR, BASE_URL_ENV_VAR, DEFAULT_BASE_URL, autoBridgesEnabled, defaultBaseUrl } from "./config.js";
+export { BASE_URL_ENV_VAR, DEFAULT_BASE_URL, defaultBaseUrl } from "./config.js";
 export { PlaywrightBrowserBridge, CHROME_PROFILE_DIR, DEFAULT_DEBUG_PORT, type PlaywrightBrowserBridgeOptions } from "./browser.js";
 export {
   AuthError,
@@ -117,6 +108,9 @@ export {
   type TransportOptions,
 } from "./transport.js";
 export { LocalRuntime, type LocalRuntimeOptions, defaultPort } from "./runtime.js";
+
+// What the main entry calls on this entry once loaded; a drift here fails to compile instead of at the first call.
+({ LocalSessionsClient, local }) satisfies LocalEntry;
 export { Inference } from "./inference.js";
 export { installedBinary } from "./install.js";
 export { PINNED_RUNTIME_VERSION, platformKey } from "./manifest.js";

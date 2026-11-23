@@ -20,6 +20,10 @@ import { DOWNLOAD_SHA256_ENV, DOWNLOAD_URL_ENV, installRuntime, installedBinary,
 import { BINARY_NAME, PINNED_RUNTIME_VERSION } from "./manifest.js";
 import { type Health, HEALTH_POLL_INTERVAL_MS, LOOPBACK_HOST, PROBE_TIMEOUT_MS, SPAWN_TIMEOUT_MS, type Spawned, probeHealth, responds, spawnRuntime, terminate, waitHealthy } from "./process.js";
 import { DEFAULT_PORT, expandHome, inferenceFilePath, pidFilePath, readPid, readStateFile, resolveCacheDir, runtimeLogPath, tokenFilePath, unlinkIfContent, writeOwnerOnly } from "./state.js";
+// The options and the public surface live in types.ts, which the main entry's typings import: no Node type in them.
+import type { LocalRuntime as LocalRuntimeSurface, LocalRuntimeOptions } from "./types.js";
+
+export type { LocalRuntimeOptions };
 
 export const BINARY_PATH_ENV = "HAI_AGENT_LOCAL_BINARY_PATH";
 export const BINARY_VERSION_ENV = "HAI_AGENT_LOCAL_BINARY_VERSION";
@@ -30,35 +34,6 @@ const INFERENCE_PORTS = 1_000;
 
 // "[::1]" too: the WHATWG URL hostname keeps the brackets, where Python's urlsplit strips them.
 const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "::1", "[::1]"]);
-
-export type LocalRuntimeOptions = {
-  /** Fail unless the runtime reports this recipe; `Client.local()` asks for `SHARED_RECIPE`. */
-  requiredRecipe?: string;
-  /** Run this hai-agent-runtime executable instead of resolving one. */
-  binaryPath?: string;
-  /** Run this argv instead of a binary, e.g. a HAI checkout's `["python", "-m", "hai_agent_runtime"]`. */
-  command?: string[];
-  /** Runtime version to use from the managed install; defaults to the version this SDK pins. */
-  version?: string;
-  /** Where managed installs, state files and logs live; defaults to `~/.hai/agent-runtime`. */
-  cacheDir?: string;
-  /** Loopback port; defaults to 18795 for hosted inference and a stable derived port otherwise. */
-  port?: number;
-  /** Extra environment for the runtime process. */
-  env?: Record<string, string>;
-  /** Pass this process's environment to the runtime (default true). */
-  inheritEnv?: boolean;
-  /** Download the pinned release when no binary is installed (default false: nothing is fetched behind your back; Python's `download` defaults to True). */
-  download?: boolean;
-  /** How long to wait for a spawned runtime to become healthy (default 45 s). */
-  timeoutMs?: number;
-  /** Hosted inference by default; `Inference.selfHosted(url, model)` withholds the H key from the runtime. */
-  inference?: Inference;
-  /** The H API key the runtime uses for hosted inference; defaults to `HAI_API_KEY`. */
-  apiKey?: string;
-  /** Progress messages (resolve, download, spawn, attach). Warnings always go to `console.warn`. */
-  log?: (message: string) => void;
-};
 
 type Fields = {
   baseUrl: string;
@@ -73,7 +48,7 @@ type Fields = {
   stateFiles?: { token?: string; pid?: string; inference?: string };
 };
 
-export class LocalRuntime {
+export class LocalRuntime implements LocalRuntimeSurface {
   /** `http://127.0.0.1:<port>`. */
   readonly baseUrl: string;
   /** Bearer token for the runtime's API. */

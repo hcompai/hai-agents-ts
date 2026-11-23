@@ -117,7 +117,7 @@ try {
 }
 ```
 
-The bridge stops when the session ends, and the session is cancelled if the bridge dies, so a run never burns steps against a browser that is gone. A serving bridge keeps the process up (its long poll is always in flight), so end the run with `client.close()` or `await using`: the Python SDK's bridges run on daemon threads and its sessions are cancelled at interpreter exit, where Node's `beforeExit` reaches only the sessions whose bridges already stopped (a kill reaches none). A session created without `maxSteps` / `maxTimeS` gets 150 steps and 30 minutes, the Python SDK's runaway guards. A catalog agent is served the same way: the SDK reads its spec and routes the `user_device` environment through an override. An environment that already carries a `sessionId` is yours: nothing starts for it. `HAI_AUTO_BRIDGE=0`, or `new Client({ autoBridges: false })`, turns the whole thing off.
+The bridge stops when the session ends, and the session is cancelled if the bridge dies or its browser closes, so a run never burns steps against a browser that is gone. A serving bridge keeps the process up (its long poll is always in flight), so end the run with `client.close()` or `await using`: the Python SDK's bridges run on daemon threads and its sessions are cancelled at interpreter exit, where Node's `beforeExit` reaches only the sessions whose bridges already stopped (a kill reaches none). A session created without `maxSteps` / `maxTimeS` gets 150 steps and 30 minutes, the Python SDK's runaway guards. A catalog agent is served the same way: the SDK reads its spec and routes the `user_device` environment through an override. An environment that already carries a `sessionId` is yours: nothing starts for it. `new Client({ autoBridges: false })` turns the whole thing off.
 
 Underneath, `PlaywrightBrowserBridge` is a `LocalBridge`, which registers the command channel with the brain, long-polls it and hands each command to a driver. Drivers come from the `hai-drivers` package, the Node.js counterpart of the Python wheel the Python SDK uses: `hai-drivers/web/playwright` drives a Playwright browser. The advanced path keeps the auto bridges and gives them a browser of yours: `autoBridges: { web }` builds the bridge of each `user_device` web environment with the options your factory returns. A Playwright `context` you launched (headless, Firefox or WebKit, a device preset) replaces the Chrome of this machine, and the SDK leaves it open; a `driver` factory builds hai-drivers' driver on it with its hooks (`tabs`, `beforeClick`, `onAction`); `onCommand` sees each command before it runs; `viewport` sizes the screenshots. A bridge on its own context serves beside the others, so several sessions run from one process, where the shared Chrome serves one session at a time (the Python SDK's rule). These three are ahead of the Python SDK, whose bridges take no options.
 
@@ -137,7 +137,7 @@ const client = new Client({
       context, // yours: driven here, never closed here
       viewport,
       driver: (context) => new PlaywrightWebDriver(context, { viewport, onAction: (action) => console.log(action.type) }),
-      onCommand: (name, args) => console.log(name, args),
+      onCommand: (name) => console.log(name), // the args carry what the agent types; log them only where that is wanted
     }),
   },
 });

@@ -46,7 +46,7 @@
     "node": ">=20.4"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts --clean --external ../local/index.js && tsup --entry.local src/local/index.ts --format esm,cjs --dts --external ../client/index.js && node scripts/link-local-entry.mjs",
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean && tsup --entry.local src/local/index.ts --format esm,cjs --dts --external ../client/index.js && node scripts/link-local-entry.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },

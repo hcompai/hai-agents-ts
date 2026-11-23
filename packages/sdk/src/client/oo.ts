@@ -1,5 +1,6 @@
 import { HaiAgentsClient as FernClient } from "./Client.js";
-import type { SessionsClient } from "./api/resources/sessions/client/Client.js";
+import { SessionsClient } from "./api/resources/sessions/client/Client.js";
+import { HttpResponsePromise } from "./core/index.js";
 import { HaiAgentsEnvironment } from "./environments.js";
 import {
   SessionHandle,
@@ -13,10 +14,18 @@ import {
   type RunSessionOptions,
   type SessionRunResult,
 } from "./polling.js";
-import type { SessionChanges } from "./api/index.js";
+import type {
+  CancelSessionRequest,
+  CreateSessionRequest,
+  GetSessionStatusRequest,
+  SendSessionMessagesRequest,
+  Session,
+  SessionChanges,
+  SessionStatus,
+} from "./api/index.js";
 import { asTools, type Tool } from "./tools.js";
-// Type-only, erased at build, as client.py's TYPE_CHECKING import of hai_agents_local: the browser-safe main entry never loads the Node-only local entry.
-import type { AutoBridges, LocalClientOptions, LocalRuntime, LocalSessionsClient } from "../local/index.js";
+// Type-only, erased at build, as client.py's TYPE_CHECKING import of hai_agents_local: the browser-safe main entry never loads the Node-only local entry. From local/types.ts, which imports neither Node nor Playwright, so this entry's typings stay free of both.
+import type { AutoBridges, LocalClientOptions, LocalEntry, LocalRuntime, LocalSessions } from "../local/types.js";
 
 /** Python's hai_agents_local imports anywhere; the local entry spawns processes, so only Node.js can load it. */
 const isNode = (): boolean => typeof process !== "undefined" && process.versions?.node != null;
@@ -25,27 +34,54 @@ const isNode = (): boolean => typeof process !== "undefined" && process.versions
 const LOCAL_ENTRY = "hai-agents/local";
 
 /** The local entry (`hai-agents/local`), loaded on first use. */
-async function loadLocal(): Promise<typeof import("../local/index.js")> {
+async function loadLocal(): Promise<LocalEntry> {
   return import(/* @vite-ignore */ LOCAL_ENTRY);
 }
 
-/** The local sessions client once loaded: each call waits for it, keeping `.withRawResponse()` on what the generated methods return. */
-function lazySessions(loading: Promise<LocalSessionsClient>): SessionsClient {
-  type Method = (...args: unknown[]) => Promise<unknown> & { withRawResponse?: () => Promise<unknown> };
-  return new Proxy({} as SessionsClient, {
-    get: (_target, name) => {
-      if (typeof name !== "string" || name === "then") {
-        return undefined;
-      }
-      return (...args: unknown[]) => {
-        const called = loading.then((sessions) => ({ result: (sessions as unknown as Record<string, Method>)[name]!(...args) }));
-        return Object.assign(
-          called.then(({ result }) => result),
-          { withRawResponse: () => called.then(({ result }) => result.withRawResponse!()) },
-        );
-      };
-    },
-  });
+/** Node's ESM loader, its CJS loader and a bundler's runtime name a specifier they cannot resolve with these codes. */
+function isModuleNotFound(error: unknown): boolean {
+  const code = (error as { code?: unknown } | null)?.code;
+  return code === "ERR_MODULE_NOT_FOUND" || code === "MODULE_NOT_FOUND";
+}
+
+let warnedNoLocalEntry = false;
+
+/**
+ * `client.sessions` under Node: the generated client, with the four methods `LocalSessionsClient`
+ * overrides delegated to it once the local entry has loaded. Python's `sessions` is the local
+ * client itself (hai_agents_local ships with the package); the load is async here, so a subclass
+ * stands in, and keeps `instanceof SessionsClient` and a stub assigned to a method working as on
+ * the generated client.
+ */
+class LazyLocalSessionsClient extends SessionsClient {
+  constructor(
+    options: SessionsClient.Options,
+    /** The loaded client; undefined where the local entry cannot be resolved, so the generated method serves. */
+    private readonly _local: Promise<LocalSessions | undefined>,
+  ) {
+    super(options);
+  }
+
+  override createSession(request: CreateSessionRequest, requestOptions?: SessionsClient.RequestOptions): HttpResponsePromise<Session> {
+    return this.#viaLocal((local) => local.createSession(request, requestOptions), () => super.createSession(request, requestOptions));
+  }
+
+  override cancelSession(request: CancelSessionRequest, requestOptions?: SessionsClient.RequestOptions): HttpResponsePromise<void> {
+    return this.#viaLocal((local) => local.cancelSession(request, requestOptions), () => super.cancelSession(request, requestOptions));
+  }
+
+  override getSessionStatus(request: GetSessionStatusRequest, requestOptions?: SessionsClient.RequestOptions): HttpResponsePromise<SessionStatus> {
+    return this.#viaLocal((local) => local.getSessionStatus(request, requestOptions), () => super.getSessionStatus(request, requestOptions));
+  }
+
+  override sendSessionMessages(request: SendSessionMessagesRequest, requestOptions?: SessionsClient.RequestOptions): HttpResponsePromise<void> {
+    return this.#viaLocal((local) => local.sendSessionMessages(request, requestOptions), () => super.sendSessionMessages(request, requestOptions));
+  }
+
+  /** Each call waits for the load. The `HttpResponsePromise` unwraps lazily, so a failure the caller takes through `.withRawResponse()` is not also an unhandled rejection. */
+  #viaLocal<T>(local: (sessions: LocalSessions) => HttpResponsePromise<T>, generated: () => HttpResponsePromise<T>): HttpResponsePromise<T> {
+    return HttpResponsePromise.fromPromise(this._local.then((sessions) => (sessions === undefined ? generated() : local(sessions)).withRawResponse()));
+  }
 }
 
 /**
@@ -67,7 +103,7 @@ export class Client extends FernClient {
   /** Start a bridge on this machine for each `user_device` environment of a session (default true; Node only); an object adds a product's options to each bridge. */
   // ts-ahead: Python's auto_bridges is a bool; the object form carries per-environment bridge options (local/routing.ts).
   readonly autoBridges: AutoBridges;
-  private _localSessions?: Promise<LocalSessionsClient>;
+  private _localSessions?: Promise<LocalSessions | undefined>;
 
   constructor(options: Client.Options = {}) {
     // Python's auto_bridges is a Client.local() argument (Client() always bridges); a constructor option here, so a cloud client can turn its bridges off too.
@@ -88,10 +124,21 @@ export class Client extends FernClient {
     if (this._sessions === undefined && this.autoBridges && isNode()) {
       this._localSessions = loadLocal().then(
         (local) => new local.LocalSessionsClient(this._options, { runtime: this.localRuntime, autoBridges: this.autoBridges }),
+        (error) => {
+          // A bundler that inlined the SDK leaves no package to resolve the entry from: the generated client serves, without bridges, and says so once.
+          if (!isModuleNotFound(error)) {
+            throw error;
+          }
+          if (!warnedNoLocalEntry) {
+            warnedNoLocalEntry = true;
+            console.warn(`hai-agents: cannot load '${LOCAL_ENTRY}' from this bundle, so no bridge starts on this machine for user_device environments; pass autoBridges: false to the client to silence this warning`);
+          }
+          return undefined;
+        },
       );
       // A broken install rejects before any method is called; the tap keeps Node from reporting an unhandled rejection, and each call still rejects with it.
       this._localSessions.catch(() => undefined);
-      this._sessions = lazySessions(this._localSessions);
+      this._sessions = new LazyLocalSessionsClient(this._options, this._localSessions);
     }
     return super.sessions;
   }
@@ -111,7 +158,7 @@ export class Client extends FernClient {
   }
 
   /** `await using client = await Client.local()`: Python's `with Client.local() as client:` (`__exit__` is `close()`); the async disposable is the TS idiom. */
-  // Node 20.4+ has `Symbol.asyncDispose` (its typing comes with @types/node); before it, `await using` cannot run either.
+  // Node 20.4+ has `Symbol.asyncDispose` (its typing comes with @types/node); before it, `await using` cannot run either. The built typings reference the `esnext.disposable` lib for consumers without @types/node (scripts/link-local-entry.mjs).
   [Symbol.asyncDispose](): Promise<void> {
     return this.close();
   }
@@ -119,8 +166,10 @@ export class Client extends FernClient {
   /** Stop the sessions this client bridged; a `Client.local()` client also stops the runtime it started. A runtime also exits on its own when the process that started it does. */
   async close(): Promise<void> {
     try {
-      if (this._localSessions !== undefined) {
-        await (await this._localSessions).close();
+      // Nothing local to close where the local entry could not be resolved (the generated client served).
+      const local = this._localSessions === undefined ? undefined : await this._localSessions;
+      if (local !== undefined) {
+        await local.close();
       }
     } finally {
       // Python stops the runtime only once no other client uses it (shutdown_if_idle); no idle check in TS (runtime.ts), so an owned runtime stops here. fetch has no connection pool to close.
@@ -165,11 +214,11 @@ export namespace Client {
   export type RequestOptions = FernClient.RequestOptions;
 }
 
-/** @deprecated Use Client. Removed in hai-agents X.Y.Z. */
+/** @deprecated Use Client. */
 export const HaiAgentsClient = Client;
-/** @deprecated Use Client. Removed in hai-agents X.Y.Z. */
+/** @deprecated Use Client. */
 export type HaiAgentsClient = Client;
-/** @deprecated Use Client. Removed in hai-agents X.Y.Z. */
+/** @deprecated Use Client. */
 export namespace HaiAgentsClient {
   export type Options = Client.Options;
   export type RequestOptions = Client.RequestOptions;

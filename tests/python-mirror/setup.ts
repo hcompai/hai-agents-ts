@@ -5,11 +5,16 @@
  */
 import { afterEach, beforeEach } from "vitest";
 
+import { _defaultManager } from "hai-agents-src/local/manager";
+
 import { cleanupTmpPaths, mp } from "./helpers";
 
 beforeEach(() => {
-  // AUTO_BRIDGE_ENV_VAR of hai-agents/local (src/local/config.ts) by its literal name: setup.ts runs on every branch of the stack, before the bridge layer exists.
-  mp.setenv("HAI_AUTO_BRIDGE", "0");
+  // _no_auto_bridges: Python turns the client's auto_bridges off; TS has no HAI_AUTO_BRIDGE and no class switch, so a
+  // test that would start a bridge without faking the manager fails here instead of launching a browser.
+  mp.setattr(_defaultManager, "ensure", async () => {
+    throw new Error("a test started a bridge without faking the manager (setup.ts)");
+  });
 });
 
 afterEach(() => {

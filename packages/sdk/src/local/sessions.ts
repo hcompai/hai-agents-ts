@@ -14,11 +14,13 @@ import { createHmac } from "node:crypto";
 
 import { type HaiAgents, HaiAgentsClient as BaseClient, HaiAgentsEnvironment, HaiAgentsError, isTerminalSessionStatus, logging } from "../client/index.js";
 import type { PlaywrightBrowserBridge } from "./browser.js";
-import { autoBridgesEnabled } from "./config.js";
 import { AgentsClient, type ClientOptions, EnvironmentsClient, HttpResponsePromise, type RequestOptions, type Sessions, SessionsClient, type WithRaw } from "./generated.js";
 import { TimeoutError, ensureBridges, servingBridges, stopBridges } from "./manager.js";
 import { type AutoBridgeOptions, type AutoBridges, type Reference, type Resolved, localizeAgent, references, splitRevision } from "./routing.js";
-import type { LocalRuntime } from "./runtime.js";
+// The runtime's public surface and the options live in types.ts, which the main entry's typings import: no Node type in them.
+import type { LocalRuntime, LocalSessionsOptions } from "./types.js";
+
+export type { LocalSessionsOptions };
 
 type Session = HaiAgents.Session;
 type SessionRequest = HaiAgents.SessionRequest;
@@ -92,8 +94,11 @@ function _warnIfOverridesTargetUserDevice(body: SessionRequest): void {
   }
 }
 
+// How many ended sessions keep their stopped bridges for a follow-up message; Python's dict grows unbounded.
+const STOPPED_SESSIONS_KEPT = 64;
+
 function _wantsBridges(autoBridges: AutoBridges, body: SessionRequest): boolean {
-  return autoBridges !== false && body.agent != null && autoBridgesEnabled();
+  return autoBridges !== false && body.agent != null;
 }
 
 /** The product's bridge options when `autoBridges` carries some (ts-ahead, routing.ts). */
@@ -157,6 +162,7 @@ export async function _localize(
   if (runtime === undefined) {
     apiKey = await _resolveToken(options);
     baseUrl = await _baseUrl(options);
+    fetch = options.fetch; // the caller's fetch (a proxy, instrumentation) reaches the bridges too; Python's httpx client has no such option
   } else {
     apiKey = runtime.apiKey;
     baseUrl = runtime.baseUrl;
@@ -244,7 +250,7 @@ async function _cancelRemoteSession(options: ClientOptions, runtime: LocalRuntim
   const client =
     runtime !== undefined
       ? new BaseClient({ baseUrl: runtime.baseUrl, apiKey: runtime.apiKey, fetch: runtime.fetch })
-      : new BaseClient({ baseUrl: await _baseUrl(options), apiKey: await _resolveToken(options), timeoutInSeconds: REMOTE_CANCEL_TIMEOUT_S });
+      : new BaseClient({ baseUrl: await _baseUrl(options), apiKey: await _resolveToken(options), fetch: options.fetch, timeoutInSeconds: REMOTE_CANCEL_TIMEOUT_S });
   await client.sessions.cancelSession({ id: sessionId });
 }
 
@@ -327,20 +333,13 @@ class _CloseFailures {
   }
 }
 
-export interface LocalSessionsOptions {
-  /** The runtime the sessions run on, for a client from `Client.local()`; none for H's cloud. */
-  runtime?: LocalRuntime;
-  /** Start a bridge here for each user_device environment (default true), with a product's options when an object; `HAI_AUTO_BRIDGE=0` turns it off at runtime. */
-  autoBridges?: AutoBridges;
-}
-
 export class LocalSessionsClient extends SessionsClient {
   private readonly _runtime: LocalRuntime | undefined;
   private readonly _autoBridges: AutoBridges;
   private _ownedBridges = new Map<string, string[]>();
   private _served = new Map<string, PlaywrightBrowserBridge[]>();
   // Sessions whose bridges stopped because they ended or were cancelled; a message restarts the session, so it
-  // serves them again.
+  // serves them again. Capped on a long-lived client; the oldest go first.
   private _stopped = new Map<string, PlaywrightBrowserBridge[]>();
 
   constructor(options: ClientOptions, { runtime, autoBridges = true }: LocalSessionsOptions = {}) {
@@ -376,6 +375,9 @@ export class LocalSessionsClient extends SessionsClient {
     if (served !== undefined) {
       this._served.delete(sessionId);
       this._stopped.set(sessionId, served);
+      while (this._stopped.size > STOPPED_SESSIONS_KEPT) {
+        this._stopped.delete(this._stopped.keys().next().value!);
+      }
     }
   }
 
@@ -384,12 +386,13 @@ export class LocalSessionsClient extends SessionsClient {
     return (sessionId) => _cancelRemoteSession(this._options, this._runtime, sessionId);
   }
 
-  /** Forget sessions whose bridges all stopped, since each such stop already ended or cancelled its session. */
-  private _liveSessions(): string[] {
+  /** Forget sessions whose bridges all stopped, since each such stop already ended or cancelled its session; the manager drops their runners too. */
+  private async _liveSessions(): Promise<string[]> {
     for (const [sessionId, bridgeIds] of [...this._ownedBridges]) {
       if (servingBridges(bridgeIds).length === 0) {
         this._ownedBridges.delete(sessionId);
         _deregisterExitCancel(sessionId);
+        await stopBridges(bridgeIds); // dead already: this only frees the manager's entries
       }
     }
     return [...this._ownedBridges.keys()];
@@ -452,7 +455,7 @@ export class LocalSessionsClient extends SessionsClient {
   /** Cancel the sessions this client bridges that are still served. */
   async close(): Promise<void> {
     const failures = new _CloseFailures();
-    for (const sessionId of this._liveSessions()) {
+    for (const sessionId of await this._liveSessions()) {
       await failures.cancelling(() => this.cancelSession({ id: sessionId }));
     }
     failures.raiseAny();

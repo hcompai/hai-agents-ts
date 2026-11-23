@@ -66,8 +66,11 @@ function getRetryDelayFromHeaders(response: Response, retryAttempt: number): num
  * other TypeError counts as a mid-request drop. An abort (timeout or caller's signal) is a DOMException
  * and is never re-sent.
  */
-/** httpx.ConnectError's codes. ECONNRESET can also be a mid-request drop, so it stays in the idempotent-only set. */
-const CONNECT_ERROR_CODES = new Set(["ECONNREFUSED", "ENOTFOUND", "EAI_AGAIN"]);
+/**
+ * httpx.ConnectError's codes: refused, unresolved, unreachable, or timed out before connecting (undici's
+ * UND_ERR_CONNECT_TIMEOUT). ECONNRESET can also be a mid-request drop, so it stays in the idempotent-only set.
+ */
+const CONNECT_ERROR_CODES = new Set(["ECONNREFUSED", "ENOTFOUND", "EAI_AGAIN", "ENETUNREACH", "EHOSTUNREACH", "UND_ERR_CONNECT_TIMEOUT"]);
 
 function isConnectError(error: TypeError): boolean {
     const { code } = (error.cause ?? {}) as { code?: unknown };
@@ -75,6 +78,7 @@ function isConnectError(error: TypeError): boolean {
 }
 
 /** Python's `_may_resend`: a request that never reached the server is always safe to resend. */
+// Python only catches ConnectError and RemoteProtocolError; fetch gives any other failure (a bare `Failed to fetch`, a malformed URL) the same TypeError, so on an idempotent method it is re-sent too.
 function mayResend(method: string | undefined, error: TypeError): boolean {
     return isConnectError(error) || (method !== undefined && IDEMPOTENT_METHODS.has(method.toUpperCase()));
 }

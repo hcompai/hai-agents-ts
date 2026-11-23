@@ -19,6 +19,7 @@ import { join } from "node:path";
 import type { BrowserContext, chromium } from "playwright-core";
 import { LocalBridge } from "./bridge.js";
 import type { CommandDriver, LocalBridgeOptions } from "./bridge.js";
+import type { BrowserContextLike, WebBridgeOptions } from "./types.js";
 
 export const DEFAULT_DEBUG_PORT = 9222;
 export const CHROME_PROFILE_DIR = join(homedir(), ".hai", "chrome-profile");
@@ -30,19 +31,13 @@ type Viewport = { width: number; height: number };
 type PlaywrightCore = { chromium: typeof chromium };
 // `hai-drivers` is not in the npm registry yet, so it cannot be a declared peer and its types are not imported: this is the slice the bridge uses.
 type HaiDriversWebPlaywright = {
-  PlaywrightWebDriver: new (context: BrowserContext, options: { viewport: Viewport }) => CommandDriver;
+  PlaywrightWebDriver: new (context: BrowserContextLike, options: { viewport: Viewport }) => CommandDriver;
 };
 
-export interface PlaywrightBrowserBridgeOptions extends Omit<LocalBridgeOptions, "driver"> {
+/** The product's options (types.ts, which the main entry's typings import, so `context` is typed structurally there) plus the walk's transport and ids. */
+export interface PlaywrightBrowserBridgeOptions extends WebBridgeOptions, Pick<LocalBridgeOptions, "apiKey" | "baseUrl" | "fetch" | "sessionId"> {
   /** The environment's catalog `id`, for the manager's messages; defaults to the kind. */
   environmentId?: string;
-  /** A Chrome listening here is attached to; otherwise one is launched. Not read with `context`. */
-  debuggingPort?: number;
-  viewport?: Viewport;
-  /** A Playwright context the caller owns (ts-ahead): served instead of a Chrome of this machine, and left open by `stop()`. */
-  context?: BrowserContext;
-  /** Builds the driver on the context (ts-ahead), replacing the plain `PlaywrightWebDriver`; called once the channel is open, as `createDriver`. */
-  driver?: (context: BrowserContext) => CommandDriver | Promise<CommandDriver>;
 }
 
 /** Serves web environments with Playwright on a Chrome of this machine. */
@@ -64,7 +59,7 @@ export class PlaywrightBrowserBridge {
   /** Set by the sessions layer; the manager fires it once when the loop dies after startup. */
   onCrash: (() => void | Promise<void>) | null = null;
   readonly #viewport: Viewport;
-  readonly #context: BrowserContext | null;
+  readonly #context: BrowserContextLike | null;
   readonly #driver: PlaywrightBrowserBridgeOptions["driver"] | null;
   readonly #onLog: (message: string) => void;
   readonly #bridge: LocalBridge;
@@ -91,6 +86,10 @@ export class PlaywrightBrowserBridge {
     } catch (error) {
       await this.#release();
       throw error;
+    }
+    if (!this.#bridge.ready) {
+      await this.#release(); // stopped mid-startup: a Chrome launched meanwhile goes too
+      return;
     }
     void this.#bridge.done.catch(() => undefined).finally(() => this.#release()); // Python's `_serve` finally: the driver goes with the loop
   }
@@ -123,6 +122,8 @@ export class PlaywrightBrowserBridge {
     if (context.pages().length === 0) {
       await context.newPage(); // the driver takes the first page as its tab; Python's Selenium attaches to the current one
     }
+    // A browser that is gone ends the loop as a crash, so the manager cancels the session instead of letting every command fail until maxSteps.
+    context.on?.("close", () => this.#bridge.fail(new Error("browser closed")));
     return build(context);
   }
 
@@ -143,7 +144,8 @@ export class PlaywrightBrowserBridge {
     mkdirSync(CHROME_PROFILE_DIR, { recursive: true });
     this.#onLog(`launching Chrome (profile: ${CHROME_PROFILE_DIR})`);
     // `channel: "chrome"` is Python's search of the fixed Chrome install locations; Playwright finds the binary and waits for it.
-    const context = await chromium.launchPersistentContext(CHROME_PROFILE_DIR, { channel: "chrome", headless: false, viewport: this.#viewport });
+    // chromiumSandbox: Playwright adds --no-sandbox otherwise; the agent drives this Chrome to any site, so the renderer sandbox stays on, as Python's Chrome keeps it.
+    const context = await chromium.launchPersistentContext(CHROME_PROFILE_DIR, { channel: "chrome", headless: false, viewport: this.#viewport, chromiumSandbox: true });
     this.#browser = context;
     return context;
   }

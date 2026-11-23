@@ -44,6 +44,8 @@ export interface ManagedBridge {
 export class BridgeManager {
   /** Runs each bridge on a daemon thread, at most one per environment kind. */
   private readonly _runners = new Map<string, _Runner>();
+  /** Python's `self._lock`: the check, the displacement and the registration of a runner happen one caller at a time. */
+  #claiming: Promise<unknown> = Promise.resolve();
 
   /** Start any bridges not already running; returns the session ids of newly started ones. */
   async ensure(bridges: readonly ManagedBridge[]): Promise<string[]> {
@@ -73,39 +75,20 @@ export class BridgeManager {
 
   private async _ensureOne(bridge: ManagedBridge): Promise<boolean> {
     // Python runs bridge.preflight() here, the macOS input permission prompt: desktop only, nothing to check for a browser.
-    let displaced: _Runner[] = [];
-    let runner = this._runners.get(bridge.sessionId);
-    const started = runner === undefined || !runner.alive;
-    if (started) {
-      displaced = this._displaceKind(bridge);
-      runner = new _Runner(bridge);
-      this._runners.set(bridge.sessionId, runner);
-    }
-    for (const other of displaced) {
-      try {
-        await other.stop();
-      } catch (error) {
-        if (!(error instanceof TimeoutError)) {
-          throw error;
-        }
-        console.error("Displaced bridge did not stop in time", error);
-      } finally {
-        await other.notifyLost();
-      }
-    }
+    const { runner, started } = await this.#claim(bridge);
     try {
-      if (!(await runner!.readyWithin(READY_TIMEOUT_S))) {
+      if (!(await runner.readyWithin(READY_TIMEOUT_S))) {
         const hint = bridge.startupHint !== undefined ? ` (${bridge.startupHint})` : "";
         throw new Error(
           `local ${bridge.environmentKind} bridge for environment '${bridge.environmentId}' ` +
             `was not ready after ${READY_TIMEOUT_S.toFixed(0)}s${hint}`,
         );
       }
-      if (runner!.error !== undefined) {
+      if (runner.error !== undefined) {
         throw new Error(
           `local ${bridge.environmentKind} bridge for environment '${bridge.environmentId}' ` +
-            `failed to start: ${describe(runner!.error)}`,
-          { cause: runner!.error },
+            `failed to start: ${describe(runner.error)}`,
+          { cause: runner.error },
         );
       }
     } catch (error) {
@@ -114,7 +97,7 @@ export class BridgeManager {
           this._runners.delete(bridge.sessionId);
         }
         try {
-          await runner!.stop();
+          await runner.stop();
         } catch (cleanup) {
           console.error("Failed to clean up bridge after startup failure", cleanup);
         }
@@ -122,6 +105,40 @@ export class BridgeManager {
       throw error;
     }
     return started;
+  }
+
+  /** The runner for `bridge`, the one already serving or a new one, with the displaced ones stopped first; one caller at a time. */
+  #claim(bridge: ManagedBridge): Promise<{ runner: _Runner; started: boolean }> {
+    const claim = async () => {
+      const serving = this._runners.get(bridge.sessionId);
+      if (serving !== undefined && serving.alive) {
+        return { runner: serving, started: false };
+      }
+      // Python starts the new runner's thread before stopping the displaced ones (its bridges share one Chrome over the
+      // debug port); here each bridge may launch Chrome on the one profile, which two Chromes cannot share, so the
+      // displaced bridges stop first.
+      for (const other of this._displaceKind(bridge)) {
+        try {
+          await other.stop();
+        } catch (error) {
+          if (!(error instanceof TimeoutError)) {
+            throw error;
+          }
+          console.error("Displaced bridge did not stop in time", error);
+        } finally {
+          await other.notifyLost();
+        }
+      }
+      const runner = new _Runner(bridge);
+      this._runners.set(bridge.sessionId, runner);
+      return { runner, started: true };
+    };
+    const claimed = this.#claiming.then(claim, claim);
+    this.#claiming = claimed.then(
+      () => undefined,
+      () => undefined,
+    );
+    return claimed;
   }
 
   /**

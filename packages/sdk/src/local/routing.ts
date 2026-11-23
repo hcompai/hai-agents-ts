@@ -8,23 +8,18 @@
 import { createHash } from "node:crypto";
 
 import type { HaiAgents } from "../client/index.js";
-import { PlaywrightBrowserBridge, type PlaywrightBrowserBridgeOptions } from "./browser.js";
+import { PlaywrightBrowserBridge } from "./browser.js";
 import { defaultBaseUrl } from "./config.js";
+// The option types live in types.ts, which the main entry's typings import: no Node or Playwright type in them.
+import type { AutoBridgeOptions, AutoBridges, EnvironmentLike, WebBridgeOptions } from "./types.js";
 
+export type { AutoBridgeOptions, AutoBridges, EnvironmentLike, WebBridgeOptions };
 export type AgentLike = string | HaiAgents.Agent | Record<string, unknown>;
-export type EnvironmentLike = string | HaiAgents.Environment | Record<string, unknown>;
 // Python keys `resolved` by a ("agent" | "environment", name) tuple; a JS Map cannot, so the key is the pair joined by its first colon.
 export type Reference = `agent:${string}` | `environment:${string}`;
 export type Resolved = Partial<Record<Reference, unknown>>;
 
 export type LocalBridgeType = typeof PlaywrightBrowserBridge;
-
-/** What a product adds to an auto-started web bridge (ts-ahead); the transport, the session id and the environment id are the walk's. */
-export type WebBridgeOptions = Omit<PlaywrightBrowserBridgeOptions, "apiKey" | "baseUrl" | "fetch" | "sessionId" | "environmentId">;
-/** Per-kind factories of those options, given the environment spec the bridge will serve (ts-ahead). */
-export type AutoBridgeOptions = { web?: (environment: EnvironmentLike) => WebBridgeOptions };
-/** `autoBridges`: on, off, or on with a product's options (ts-ahead; Python's `auto_bridges` is a bool). */
-export type AutoBridges = boolean | AutoBridgeOptions;
 
 export const BRIDGE_TYPES: Record<string, LocalBridgeType> = {
   [PlaywrightBrowserBridge.environmentKind]: PlaywrightBrowserBridge,
@@ -86,7 +81,8 @@ export function localBridgeTypes(agent: AgentLike, resolved: Resolved = {}): Loc
   for (const env of _list(agent, "environments")) {
     const spec = typeof env === "string" ? resolved[reference("environment", env)] : env;
     const kind = spec == null ? undefined : _localKind(spec as EnvironmentLike);
-    if (kind !== undefined) {
+    if (kind !== undefined && !_read(spec, "sessionId")) {
+      _requireBridge(spec as EnvironmentLike, kind);
       found.push(_bridgeType(kind));
     }
   }
@@ -160,6 +156,8 @@ class _Walk {
         return env;
       }
     }
+    // Python serves every kind it knows; a kind with no bridge here is refused only once nothing else serves it (a sessionId or a claim above).
+    _requireBridge(env, kind);
     const serve = SERVE_COMMANDS[_bridgeType(kind).environmentKind];
     if (!byName) {
       return _replace(env, { kind, sessionId: this.bridge(env, kind).sessionId });
@@ -233,20 +231,21 @@ function _kind(env: unknown): string | undefined {
   return (_read(env, "kind") as string | undefined) || "web";
 }
 
-/** The kind of `env` when this machine serves it: a browser on user_device. */
+/** The kind of `env` when this machine would serve it: a user_device environment, or a desktop whatever its host (Python serves a desktop from this machine either way). */
 function _localKind(env: EnvironmentLike): string | undefined {
   const kind = _kind(env);
-  // Python serves a desktop from this machine whatever its host; TS has no desktop bridge, so a desktop is refused below with the other unsupported kinds.
-  if (kind !== "desktop" && _read(env, "host") !== "user_device") {
-    return undefined;
-  }
+  return kind !== "desktop" && _read(env, "host") !== "user_device" ? undefined : kind;
+}
+
+/** TS has a bridge for web only; Python's text names the kinds it serves, this one also says how to opt out. */
+function _requireBridge(env: EnvironmentLike, kind: string | undefined): void {
   if (kind === undefined || !Object.hasOwn(BRIDGE_TYPES, kind)) {
     throw new Error(
       `user_device environment ${repr(_read(env, "id"))} has kind ${repr(kind)}, which cannot be served by a ` +
-        `local bridge; supported kinds: [${Object.keys(BRIDGE_TYPES).sort().map(repr).join(", ")}]`,
+        `local bridge; supported kinds: [${Object.keys(BRIDGE_TYPES).sort().map(repr).join(", ")}]. Give it a sessionId ` +
+        "and serve it yourself, or start the client with autoBridges: false",
     );
   }
-  return kind;
 }
 
 // Python picks the workstation bridge for a shell-mode desktop here; no desktop or workstation bridge in TS.

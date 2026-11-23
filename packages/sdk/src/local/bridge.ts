@@ -13,11 +13,9 @@ import {
   serializeResult,
 } from "./transport.js";
 import type { Command, CommandResult, TransportOptions } from "./transport.js";
+import type { CommandDriver } from "./types.js";
 
-export interface CommandDriver {
-  /** Run one command; a thrown error becomes the command's error string. */
-  dispatch(name: string, args: Record<string, unknown>): Promise<unknown>;
-}
+export type { CommandDriver };
 
 export interface LocalBridgeOptions extends TransportOptions {
   /** The driver, or Python's `create_driver`: a factory `start()` runs once the channel is open. */
@@ -55,9 +53,11 @@ export class LocalBridge {
   readonly #onLog: (message: string) => void;
   // Python's run() takes a fresh stop event per run; a restarted bridge needs a fresh controller too.
   #stop = new AbortController();
-  /** Results by command_uid, so a redelivered command reposts instead of running twice. */
+  /** Results by command_uid, so a redelivered command reposts instead of running twice; cleared when the loop exits. */
   readonly #results = new Map<string, CommandResult>();
   #serving: Promise<void> | null = null;
+  /** Set by `fail()`: the loop ends with this error instead of a clean stop. */
+  #failure: Error | null = null;
 
   constructor(options: LocalBridgeOptions) {
     if (!options.apiKey) {
@@ -80,13 +80,20 @@ export class LocalBridge {
    */
   async start(): Promise<void> {
     this.ready = false;
+    this.#failure = null;
     this.#stop = new AbortController();
-    if (!(await this.#openChannel())) {
+    if (!(await this.#openChannel()) || this.#stop.signal.aborted) {
       return;
     }
-    this.#driver = await this.#createDriver();
+    const driver = await this.#createDriver();
+    if (this.#stop.signal.aborted) {
+      return; // stopped while the driver was being built (Python's run() checks its stop event the same way): not ready
+    }
+    this.#driver = driver;
     this.ready = true;
     this.#serving = this.#serve();
+    // `done` carries the loop's failure to whoever awaits it; the promise itself must never reject unhandled.
+    this.#serving.catch(() => undefined);
   }
 
   /**
@@ -133,12 +140,21 @@ export class LocalBridge {
     return false;
   }
 
-  /** Stop polling; resolves once the loop has exited. Idempotent. */
+  /** Stop polling; resolves once the loop has exited, whether it stopped or had died. Idempotent. */
   // No driver teardown: Python's _serve finally calls driver.destroy() / close(); the hai node driver's destroy is a no-op, and PlaywrightBrowserBridge releases what it launched.
   async stop(): Promise<void> {
     this.#stop.abort();
-    await this.#serving;
+    await this.#serving?.catch(() => undefined);
     this.#serving = null;
+  }
+
+  /** End the loop with `error`, as a crash: `done` rejects with it. For a driver whose browser is gone; Python's Selenium driver has no such signal. */
+  fail(error: Error): void {
+    if (this.#stop.signal.aborted) {
+      return;
+    }
+    this.#failure = error;
+    this.#stop.abort();
   }
 
   /** Rejects if the loop died (rejected key, permanent 4xx); resolves when it stops. */
@@ -147,6 +163,17 @@ export class LocalBridge {
   }
 
   async #serve(): Promise<void> {
+    try {
+      await this.#poll();
+    } finally {
+      this.#results.clear();
+    }
+    if (this.#failure !== null) {
+      throw this.#failure;
+    }
+  }
+
+  async #poll(): Promise<void> {
     let retryDelayMs = 1_000;
     let recreateChannel = false;
     while (!this.#stop.signal.aborted) {
@@ -216,7 +243,7 @@ export class LocalBridge {
       }
       let outcome = this.#results.get(command.command_uid);
       if (outcome === undefined) {
-        this.#onCommand?.(command.name, command.args ?? {});
+        this.#onCommand?.(command.name, redacted(command));
         outcome = await this.#run(command);
         if (this.#stop.signal.aborted) {
           // Python also calls interrupt_driver() first; the TS driver has no interrupt hook, so the command runs out.
@@ -304,6 +331,12 @@ export class LocalBridge {
 
 function describe(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+/** The args a hook may see: the driver keeps `enter_secret`'s text out of its own reports, so the hook never gets it either. */
+function redacted(command: Command): Record<string, unknown> {
+  const args = command.args ?? {};
+  return command.name === "enter_secret" && "text" in args ? { ...args, text: "<redacted>" } : args;
 }
 
 /** Python retries `httpx.HTTPError`: a failed status (ChannelHttpError) or fetch's own failures, a TypeError or an abort / timeout. */

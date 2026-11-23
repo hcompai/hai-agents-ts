@@ -45,7 +45,6 @@ describe("autoBridges with a product's options", () => {
   });
 
   it("reaches the auto path from the client's option", async () => {
-    vi.stubEnv("HAI_AUTO_BRIDGE", "1");
     const started: ManagedBridge[] = [];
     vi.spyOn(_defaultManager, "ensure").mockImplementation(async (bridges) => {
       started.push(...bridges);
@@ -87,6 +86,69 @@ class Fake implements ManagedBridge {
     this.#serving?.();
   }
 }
+
+describe("BridgeManager displacing the shared-Chrome bridge", () => {
+  /** A bridge that records its start and stop; `done` settles when it is stopped. */
+  function recording(sessionId: string, events: string[]): ManagedBridge {
+    let ready = false;
+    let finish = () => {};
+    const done = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    return {
+      environmentKind: "web",
+      environmentId: "laptop",
+      sessionId,
+      onCrash: null,
+      get ready() {
+        return ready;
+      },
+      async start() {
+        events.push(`${sessionId}.start`);
+        ready = true;
+      },
+      async stop() {
+        events.push(`${sessionId}.stop`);
+        finish();
+      },
+      done,
+    };
+  }
+
+  // Two Chromes cannot share the one profile: the displaced bridge is stopped before the new one starts.
+  it("stops the displaced bridge before starting the one that takes the kind over", async () => {
+    const events: string[] = [];
+    const manager = new BridgeManager();
+    await manager.ensure([recording("a", events)]);
+    await manager.ensure([recording("b", events)]);
+    expect(events).toEqual(["a.start", "a.stop", "b.start"]);
+    await manager.stopAll();
+  });
+
+  // Python's manager lock: the stop of the displaced bridge is awaited, so two ensure() calls for one session must not both start it.
+  it("starts a bridge once when two callers ensure it at the same time", async () => {
+    const events: string[] = [];
+    const manager = new BridgeManager();
+    await manager.ensure([recording("a", events)]);
+    const b = recording("b", events);
+    await Promise.all([manager.ensure([b]), manager.ensure([b])]);
+    expect(events).toEqual(["a.start", "a.stop", "b.start"]);
+    await manager.stopAll();
+  });
+});
+
+describe("localizeAgent with kinds this machine does not serve", () => {
+  it("leaves a desktop that already carries a sessionId alone, and names the way out when it must refuse one", () => {
+    const sessionId = "11111111-2222-4333-8444-555555555555";
+    const box = { id: "box", kind: "desktop", host: "user_device", sessionId };
+    const { agent, bridges } = localizeAgent({ name: "qa", environments: [box] }, { apiKey: "hk-test", baseUrl: "https://agp.test" });
+    expect(agent).toEqual({ name: "qa", environments: [box] });
+    expect(bridges).toEqual([]);
+    expect(() => localizeAgent({ name: "qa", environments: [{ id: "box", kind: "desktop", host: "user_device" }] }, { apiKey: "hk-test", baseUrl: "https://agp.test" })).toThrow(
+      /kind 'desktop', which cannot be served by a local bridge; supported kinds: \['web'\]\. Give it a sessionId and serve it yourself, or start the client with autoBridges: false/,
+    );
+  });
+});
 
 describe("BridgeManager with context-owning bridges", () => {
   it("serves several non-exclusive web bridges at once, beside the one shared-Chrome bridge", async () => {
