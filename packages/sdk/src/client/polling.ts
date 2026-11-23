@@ -369,8 +369,10 @@ class Decisions {
   private held = new Map<string | null | undefined, number | undefined>();
   private decided = new Map<string, number | undefined>();
 
-  add(callId: string): void {
-    this.decided.set(callId, this.held.get(callId));
+  /** Tie a decision to the step `status`, read after it, holds the call at; a call no longer held needs none. */
+  add(callId: string, status: SessionStatus | undefined): void {
+    if (status !== undefined) this.undecided(status);
+    if (this.held.has(callId)) this.decided.set(callId, this.held.get(callId));
   }
 
   /** Held calls not yet decided; a decision lapses once its call leaves the list or a later step holds it. */
@@ -817,7 +819,7 @@ export class SessionHandle<TAnswer = SessionChanges["answer"]> {
       call_id: callId,
       action: "approve",
     });
-    this.decisions.add(callId);
+    this.decisions.add(callId, await this.statusAfterDecision());
   }
 
   /** Refuse a call listed in `pendingApprovals`; the model reads `message`. */
@@ -828,7 +830,15 @@ export class SessionHandle<TAnswer = SessionChanges["answer"]> {
       action: "deny",
       ...(message === undefined ? {} : { message }),
     });
-    this.decisions.add(callId);
+    this.decisions.add(callId, await this.statusAfterDecision());
+  }
+
+  private async statusAfterDecision(): Promise<SessionStatus | undefined> {
+    try {
+      return await this.status();
+    } catch {
+      return undefined;
+    }
   }
 
   /** Block until settled (terminal or idle), reading past the cursor; holds this handle decided do not end it. */

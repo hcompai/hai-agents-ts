@@ -50,10 +50,10 @@ describe("waitForSession settling on idle", () => {
 });
 
 describe("SessionHandle waiting after a decision", () => {
-  it("skips only the hold it just decided", async () => {
+  // Holds call_1 at step 0 until the agent picks up its decision, then a later step holds the same id.
+  function heldClient(read: number[]): HaiAgentsClient {
     const steps = [0, 0, 1];
-    const read: number[] = [];
-    const client = {
+    return {
       fetch: async () => ({ status: 202 }),
       sessions: {
         getSessionChanges: async () => undefined,
@@ -67,9 +67,21 @@ describe("SessionHandle waiting after a decision", () => {
         },
       },
     } as unknown as HaiAgentsClient;
-    const handle = new SessionHandle(client, "s1");
+  }
+
+  it("skips only the hold it just decided", async () => {
+    const read: number[] = [];
+    const handle = new SessionHandle(heldClient(read), "s1");
     await handle.waitForCompletion({ waitForSeconds: 0 });
     await handle.approve("call_1");
+    await handle.waitForCompletion({ waitForSeconds: 0 });
+    expect(read).toEqual([0, 0, 1]);
+  });
+
+  it("lets a decision made before any wait lapse once a later step holds the call", async () => {
+    const read: number[] = [];
+    const handle = new SessionHandle(heldClient(read), "s1");
+    await handle.deny("call_1");
     await handle.waitForCompletion({ waitForSeconds: 0 });
     expect(read).toEqual([0, 0, 1]);
   });
