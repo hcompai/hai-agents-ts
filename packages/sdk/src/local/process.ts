@@ -4,13 +4,15 @@ import { type ChildProcess, execFileSync, spawn } from "node:child_process";
 import { closeSync, mkdirSync, openSync, readFileSync } from "node:fs";
 import { dirname } from "node:path";
 
+import { fetch as undiciFetch } from "undici";
+
 import { BinaryNotFoundError, LocalRuntimeError, RuntimeStartTimeoutError, RuntimeUnhealthyError } from "./errors.js";
-import { provenFetch } from "./identity.js";
+import { LOOPBACK_DISPATCHER, provenFetch } from "./identity.js";
 import type { Env } from "./inference.js";
 
 export const LOOPBACK_HOST = "127.0.0.1";
 export const SPAWN_TIMEOUT_MS = 45_000;
-const HEALTH_POLL_INTERVAL_MS = 250;
+export const HEALTH_POLL_INTERVAL_MS = 250;
 export const PROBE_TIMEOUT_MS = 2_000;
 // Exceeds the runtime's own shutdown teardown (10 s), which releases cloud environments.
 const TERM_GRACE_MS = 15_000;
@@ -32,7 +34,7 @@ export type Spawned = {
 /** Whether any HTTP server answers at `baseUrl`, proven or not. */
 export async function responds(baseUrl: string): Promise<boolean> {
   try {
-    await fetch(`${baseUrl}/health`, { signal: AbortSignal.timeout(PROBE_TIMEOUT_MS) });
+    await undiciFetch(`${baseUrl}/health`, { signal: AbortSignal.timeout(PROBE_TIMEOUT_MS), redirect: "manual", dispatcher: LOOPBACK_DISPATCHER });
     return true;
   } catch {
     return false;
@@ -60,7 +62,8 @@ export async function probeHealth(baseUrl: string, token: string): Promise<Healt
 // spawnRuntime, not Python's spawn: that name is node:child_process's import.
 export function spawnRuntime(command: string[], env: Env, logPath: string, log: (m: string) => void): Spawned {
   mkdirSync(dirname(logPath), { recursive: true });
-  const logFd = openSync(logPath, "w");
+  // Python truncates the log under its startup lock; without the lock, a spawner that loses the port must not truncate the winner's.
+  const logFd = openSync(logPath, "a");
   log(`spawning hai-agent-runtime: ${command.join(" ")} (stderr -> ${logPath})`);
   const [file, ...args] = command as [string, ...string[]];
   // Its own process group, so a stop reaches any grandchild; stderr to a file, as nobody drains a pipe.
@@ -103,6 +106,7 @@ export function spawnRuntime(command: string[], env: Env, logPath: string, log: 
 
 /** Poll `/health` until a proven 200; fail if the child exits first, or the timeout passes. */
 export async function waitHealthy(baseUrl: string, token: string, child: Spawned, timeoutMs: number, logPath: string): Promise<Health> {
+  // Python reads time.monotonic(); Date.now() follows the wall clock, which a jump during the 45 s budget would shift.
   const deadline = Date.now() + timeoutMs;
   for (;;) {
     const health = await probeHealth(baseUrl, token);

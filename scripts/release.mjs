@@ -119,7 +119,7 @@ export function unacceptedSessionFields(sdk, runtime) {
 
 /** The spec at `url`, or null when it is not published (403 / 404). */
 async function fetchSpec(url) {
-  const response = await fetch(url);
+  const response = await fetch(url, { signal: AbortSignal.timeout(30_000) });
   if (response.status === 403 || response.status === 404) return null;
   if (!response.ok) throw new Error(`cannot read ${url}: HTTP ${response.status}`);
   return response.json();
@@ -152,6 +152,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   if (command === "current") console.log(currentVersion());
   else if (command === "bump") console.log(bump());
   else if (command === "changed") console.log(shippedChanged(process.argv[3]));
-  else if (command === "check") await check(process.argv[3] === "--runtime-pin" ? process.argv[4] : undefined);
-  else throw new Error("usage: node scripts/release.mjs current|bump|changed <ref>|check [--runtime-pin <pin.json>]");
+  else if (command === "check") {
+    if (process.argv[3] === "--runtime-pin" && !process.argv[4]) throw new Error("--runtime-pin needs the pin file");
+    await check(process.argv[3] === "--runtime-pin" ? process.argv[4] : undefined);
+  } else throw new Error("usage: node scripts/release.mjs current|bump|changed <ref>|check [--runtime-pin <pin.json>]");
 }

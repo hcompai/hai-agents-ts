@@ -1,5 +1,5 @@
 // Pin a hai-agent-runtime release: its version plus a fresh sha256 for every platform in the pin file.
-// Usage: node scripts/bump_runtime.mjs --version 0.1.29 --sha darwin-arm64=<hex> --sha linux-x86_64=<hex> ...
+// Usage: node scripts/bump_runtime.mjs --version 0.1.31 --sha darwin-arm64=<hex> --sha linux-x86_64=<hex> ...
 // No dependencies: runs in a bare checkout.
 import { readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";

@@ -7,7 +7,7 @@
  */
 
 import { Client } from "../client/index.js";
-import { Inference } from "./inference.js";
+import type { Inference } from "./inference.js";
 import { LocalRuntime, type LocalRuntimeOptions } from "./runtime.js";
 
 /** The runtime configuration the SDK requires: the same agent routes AGP serves, with inline agents. */
@@ -60,31 +60,13 @@ function claim(runtime: LocalRuntime, inference: Inference | undefined): [LocalR
 
 /** The client needs the shared recipe, and starts the runtime with it; the shell's own recipe does not win. */
 function launchOptions(launch: LocalRuntimeOptions): LocalRuntimeOptions {
-  const options = { ...launch, requiredRecipe: SHARED_RECIPE, env: { [RECIPE_ENV]: SHARED_RECIPE, ...launch.env } };
-  if (options.inference === undefined) {
-    const inherited = (options.inheritEnv ?? true) ? process.env : {};
-    options.inference = Inference.fromEnv({ ...inherited, ...options.env });
-  }
-  // Python merges inference.runtime_env into spawn_env here and stops inheriting; ensureStarted takes `inference` and its childEnv applies it after the key default.
-  return options;
+  // Python merges inference.runtime_env into spawn_env here and stops inheriting; ensureStarted's childEnv reads the inference the environment selects itself.
+  return { ...launch, requiredRecipe: SHARED_RECIPE, env: { [RECIPE_ENV]: SHARED_RECIPE, ...launch.env } };
 }
-
-/** A `localClient()` client: `runtime` is its `localRuntime`, for callers written against this entry's former `Client`. */
-export type LocalClient = Client & { readonly runtime: LocalRuntime };
-
-/** @deprecated Use `Client.local()` from `hai-agents`; the runtime is `client.localRuntime`. */
-export async function localClient(options?: LocalClientOptions): Promise<LocalClient> {
-  const client = await Client.local(options);
-  return Object.defineProperty(client, "runtime", { get: () => client.localRuntime }) as LocalClient;
-}
-/** @deprecated Use `Client` from `hai-agents`. */
-export const LocalHaiAgentsClient = Client;
-/** @deprecated Use `Client` from `hai-agents`. */
-export type LocalHaiAgentsClient = Client;
 
 export { LocalRuntime, type LocalRuntimeOptions, defaultPort } from "./runtime.js";
 export { Inference } from "./inference.js";
-export { ensureInstalled, installedBinary } from "./install.js";
+export { installedBinary } from "./install.js";
 export { PINNED_RUNTIME_VERSION, platformKey } from "./manifest.js";
 export {
   BinaryIncompatibleError,

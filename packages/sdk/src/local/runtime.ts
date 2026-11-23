@@ -3,14 +3,14 @@
  * port with a fresh bearer token, or attach to one another process already started.
  *
  * Unlike the Python launcher: no startup lock, no re-acquire, no idle check, no auto bridges, no
- * stored-key fallback. The runtime exits on its own when the process that started it does. Start
- * one runtime per port at a time: of two concurrent ensureStarted() calls on a free port, the loser
- * fails its proof where Python's lock would make it attach. shutdown() stops a runtime this process
- * spawned even while another client in this process is attached to it.
+ * stored-key fallback. The runtime exits on its own when the process that started it does. Of two
+ * concurrent ensureStarted() calls on a free port, the loser's spawn fails and it then polls for the
+ * winner's token until the deadline, so it attaches as under Python's lock. shutdown() stops a
+ * runtime this process spawned even while another client in this process is attached to it.
  */
 
 import { createHash, randomBytes } from "node:crypto";
-import { existsSync, statSync } from "node:fs";
+import { accessSync, constants, existsSync, statSync } from "node:fs";
 import { delimiter, join } from "node:path";
 
 import { BinaryIncompatibleError, BinaryNotFoundError, LocalRuntimeError, RuntimeUnhealthyError } from "./errors.js";
@@ -18,7 +18,7 @@ import { provenFetch } from "./identity.js";
 import { API_KEY_VAR, type Env, HOSTED, Inference, servedInference } from "./inference.js";
 import { DOWNLOAD_SHA256_ENV, DOWNLOAD_URL_ENV, installRuntime, installedBinary, pinnedArtifact } from "./install.js";
 import { BINARY_NAME, PINNED_RUNTIME_VERSION } from "./manifest.js";
-import { type Health, LOOPBACK_HOST, PROBE_TIMEOUT_MS, SPAWN_TIMEOUT_MS, type Spawned, probeHealth, responds, spawnRuntime, terminate, waitHealthy } from "./process.js";
+import { type Health, HEALTH_POLL_INTERVAL_MS, LOOPBACK_HOST, PROBE_TIMEOUT_MS, SPAWN_TIMEOUT_MS, type Spawned, probeHealth, responds, spawnRuntime, terminate, waitHealthy } from "./process.js";
 import { DEFAULT_PORT, expandHome, inferenceFilePath, pidFilePath, readPid, readStateFile, resolveCacheDir, runtimeLogPath, tokenFilePath, unlinkIfContent, writeOwnerOnly } from "./state.js";
 
 export const BINARY_PATH_ENV = "HAI_AGENT_LOCAL_BINARY_PATH";
@@ -145,11 +145,13 @@ export class LocalRuntime {
     const explicitToken = env[AUTH_TOKEN_ENV]?.trim();
     const token = explicitToken || randomBytes(32).toString("base64url");
     const logPath = runtimeLogPath(port, cacheDir);
+    const timeoutMs = options.timeoutMs ?? SPAWN_TIMEOUT_MS;
+    const deadline = Date.now() + timeoutMs;
     const child = spawnRuntime(command, { ...env, [PORT_ENV]: String(port), [AUTH_TOKEN_ENV]: token }, logPath, log);
     const stateFiles: Fields["stateFiles"] = {};
     let health: Health;
     try {
-      health = await waitHealthy(baseUrl, token, child, options.timeoutMs ?? SPAWN_TIMEOUT_MS, logPath);
+      health = await waitHealthy(baseUrl, token, child, timeoutMs, logPath);
       const status = await authenticatedProbe(baseUrl, token);
       if (options.requiredRecipe !== undefined && health.recipe !== options.requiredRecipe) {
         throw new BinaryIncompatibleError(recipeMessage(options.requiredRecipe));
@@ -169,6 +171,13 @@ export class LocalRuntime {
       // Never leak the child or its state files.
       await terminate(child);
       unlinkStateFiles(stateFiles, token, child.process.pid, inferenceRecord(served, child.process.pid!));
+      // Another spawner won the port meanwhile (Python's lock would have made this one wait): attach once it publishes its token.
+      if (!(error instanceof BinaryIncompatibleError) && (await responds(baseUrl))) {
+        const winner = await attachUntil(baseUrl, cacheDir, log, deadline);
+        if (winner) {
+          return winner.verified(options.requiredRecipe, served);
+        }
+      }
       throw error;
     }
     warnOnVersionSkew(health.version);
@@ -254,16 +263,15 @@ function recipeMessage(recipe: string): string {
 /** The environment the runtime process starts with, before port and token are added. */
 function childEnv(options: LocalRuntimeOptions): Env {
   const inherit = options.inheritEnv ?? true;
-  let env: Env = { ...(inherit ? process.env : {}), ...(options.env ?? {}) };
+  const env: Env = { ...(inherit ? process.env : {}), ...(options.env ?? {}) };
   if (options.apiKey !== undefined) {
     env[API_KEY_VAR] = options.apiKey;
   } else if (env[API_KEY_VAR] === undefined && process.env[API_KEY_VAR]) {
     env[API_KEY_VAR] = process.env[API_KEY_VAR];
   }
-  if (options.inference) {
-    env = options.inference.runtimeEnv(env);
-  }
-  return env;
+  // The inference the environment selects withholds the H key too, as Python's spawn_env does.
+  const inference = options.inference ?? Inference.fromEnv(env);
+  return inference ? inference.runtimeEnv(env) : env;
 }
 
 /** Explicit path > HAI_AGENT_LOCAL_BINARY_PATH > PATH > managed install > verified download (opt-in). */
@@ -281,7 +289,7 @@ async function resolveCommand(options: LocalRuntimeOptions, cacheDir: string, lo
     log(`resolved hai-agent-runtime from PATH: ${onPath}`);
     return [onPath];
   }
-  const version = options.version ?? process.env[BINARY_VERSION_ENV]?.trim() ?? PINNED_RUNTIME_VERSION;
+  const version = options.version || process.env[BINARY_VERSION_ENV]?.trim() || PINNED_RUNTIME_VERSION;
   const managed = installedBinary(version, cacheDir);
   if (managed) {
     log(`resolved hai-agent-runtime from managed install v${version}: ${managed}`);
@@ -313,21 +321,30 @@ function isFile(path: string): boolean {
   }
 }
 
+/** shutil.which: the first executable file of that name on PATH (Windows checks PATHEXT too; here the bare name only). */
 function findOnPath(name: string): string | undefined {
   for (const dir of (process.env.PATH ?? "").split(delimiter).filter(Boolean)) {
     const candidate = join(dir, name);
-    if (isFile(candidate)) {
+    if (isFile(candidate) && isExecutable(candidate)) {
       return candidate;
     }
   }
   return undefined;
 }
 
+function isExecutable(path: string): boolean {
+  try {
+    accessSync(path, constants.X_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /** Status of a proven, bearer-authenticated session listing; call only after `/health` proved the server. */
 async function authenticatedProbe(baseUrl: string, token: string): Promise<number> {
   const response = await provenFetch(token)(`${baseUrl}/api/v2/sessions?size=1`, {
     headers: { Authorization: `Bearer ${token}` },
-    redirect: "manual",
     signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
   });
   return response.status;
@@ -378,8 +395,32 @@ async function attachAt(baseUrl: string, cacheDir: string, log: (m: string) => v
     version: health.version,
     recipe: health.recipe,
     logPath: existsSync(logPath) ? logPath : undefined,
-    serves: readStateFile(inferenceFilePath(port, cacheDir))?.split("\n")[0],
+    // A Python spawner on Windows writes the record in text mode, with CRLF.
+    serves: readStateFile(inferenceFilePath(port, cacheDir))?.split(/\r?\n/)[0]?.trim(),
   });
+}
+
+/**
+ * `attachAt`, retried until `deadline` while the runtime on the port has not published its token yet: the wait
+ * Python's startup lock gives a spawner that lost the port to a concurrent one.
+ */
+async function attachUntil(baseUrl: string, cacheDir: string, log: (m: string) => void, deadline: number): Promise<LocalRuntime | undefined> {
+  for (;;) {
+    try {
+      const attached = await attachAt(baseUrl, cacheDir, log);
+      if (attached) {
+        return attached;
+      }
+    } catch (error) {
+      if (!(error instanceof LocalRuntimeError && /no credentials were found/.test(error.message))) {
+        throw error;
+      }
+    }
+    if (Date.now() >= deadline) {
+      return undefined;
+    }
+    await new Promise((resolve) => setTimeout(resolve, HEALTH_POLL_INTERVAL_MS));
+  }
 }
 
 /** The pid keeps each runtime's record unique, so a stopping runtime never unlinks its successor's. */

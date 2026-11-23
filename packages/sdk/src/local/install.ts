@@ -10,7 +10,6 @@ import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 import { BinaryIncompatibleError, DownloadVerificationError, LocalRuntimeError } from "./errors.js";
 import {
   BINARY_NAME,
-  PINNED_RUNTIME_VERSION,
   PLACEHOLDER_SHA256,
   type RuntimeArtifact,
   UNIMPLEMENTED_PLATFORMS,
@@ -104,25 +103,19 @@ export function pinnedArtifact(pinned: { version: string; sha256: Record<string,
   return { url: artifactUrl(pinned.version, key), sha256 };
 }
 
-/** The pinned runtime binary, downloaded now if it is not already installed. */
-export async function ensureInstalled(
-  options: { version?: string; cacheDir?: string; force?: boolean } = {},
-): Promise<string> {
-  const version = options.version ?? PINNED_RUNTIME_VERSION;
-  if (!options.force) {
-    const installed = installedBinary(version, options.cacheDir);
-    if (installed) {
-      return installed;
-    }
-  }
-  return installRuntime(pinnedArtifact(), version, options.cacheDir);
-}
+// A staging directory this old was left by an interrupted install (Ctrl-C runs no `finally`), not by a download in progress.
+const STALE_STAGING_MS = 60 * 60 * 1000;
 
 /** Download, sha256-verify and atomically install `artifact` as `version`; returns the executable path. */
 export async function installRuntime(artifact: RuntimeArtifact, version: string, cacheDir?: string): Promise<string> {
+  // The version names the install directory: one path segment, or the install lands elsewhere under the cache.
+  if (!version || version === "." || version === ".." || /[\\/]/.test(version)) {
+    throw new LocalRuntimeError(`hai-agent-runtime version must be a single path segment, got ${JSON.stringify(version)}`);
+  }
   const root = join(resolveCacheDir(cacheDir), "bin");
   mkdirSync(root, { recursive: true });
   const versionDir = join(root, version);
+  sweepStaleStaging(root);
 
   // Staged next to the final location, so the last rename is atomic on the same filesystem.
   const staging = mkdtempSync(join(root, ".staging-"));
@@ -167,6 +160,19 @@ export async function installRuntime(artifact: RuntimeArtifact, version: string,
     throw new LocalRuntimeError(`hai-agent-runtime ${version} install did not produce an executable under ${versionDir}`);
   }
   return installed;
+}
+
+/** Python's TemporaryDirectory cleans up on KeyboardInterrupt; Node's `finally` does not run on a fatal signal, so the next install sweeps. */
+function sweepStaleStaging(root: string): void {
+  for (const entry of readdirSync(root)) {
+    if (!entry.startsWith(".staging-")) continue;
+    const path = join(root, entry);
+    try {
+      if (Date.now() - statSync(path).mtimeMs > STALE_STAGING_MS) rmSync(path, { recursive: true, force: true });
+    } catch {
+      // gone meanwhile
+    }
+  }
 }
 
 /**
