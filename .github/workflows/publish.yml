@@ -22,11 +22,46 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 24
-      - name: Prod serves every operation the SDK calls
-        run: node scripts/release.mjs check
+      - name: Prod serves every operation the SDK calls; the pinned runtime accepts its session fields
+        run: node scripts/release.mjs check --runtime-pin packages/sdk/src/local/pin.json
+
+  # As the Python SDK's publish: the pinned hai-agent-runtime downloads, verifies and serves the shared recipe.
+  runtime-pin:
+    runs-on: macos-15
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Build
+        run: pnpm --filter hai-agents run build
+      - name: Pinned runtime downloads, verifies and serves the shared recipe
+        working-directory: packages/sdk
+        env:
+          HAI_AGENT_RUNTIME_FAKE: "1"
+        run: |
+          node --input-type=module -e '
+          import { mkdtempSync } from "node:fs";
+          import { tmpdir } from "node:os";
+          import { join } from "node:path";
+          import { LocalRuntime } from "hai-agents/local";
+          const runtime = await LocalRuntime.ensureStarted({
+            download: true,
+            requiredRecipe: "shared",
+            cacheDir: mkdtempSync(join(tmpdir(), "runtime-pin-")),
+            port: 18799,
+            env: { HAI_AGENT_RUNTIME_RECIPE: "shared" },
+          });
+          await runtime.shutdown();
+          '
 
   publish:
-    needs: api-compat
+    needs: [api-compat, runtime-pin]
     runs-on: ubuntu-latest
     environment: release
     permissions:

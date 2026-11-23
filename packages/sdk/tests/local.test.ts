@@ -8,7 +8,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { runtimeProof, verifyProof } from "../src/local/identity.js";
+import { provenFetch, runtimeProof, verifyProof } from "../src/local/identity.js";
 import { installRuntime, pinnedArtifact } from "../src/local/install.js";
 import { platformKey } from "../src/local/manifest.js";
 import { inferenceFilePath, tokenFilePath, pidFilePath, writeOwnerOnly } from "../src/local/state.js";
@@ -18,12 +18,10 @@ import {
   BinaryNotFoundError,
   DownloadVerificationError,
   Inference,
-  LocalHaiAgentsClient,
   LocalRuntime,
   LocalRuntimeError,
   RuntimeUnhealthyError,
   defaultPort,
-  localClient,
 } from "../src/local/index.js";
 import { servedInference } from "../src/local/inference.js";
 import { extractZip } from "../src/local/zip.js";
@@ -94,6 +92,30 @@ describe("identity proof", () => {
     expect(() => verifyProof("tok", "http://127.0.0.1:1", "chal", wrong)).toThrow(LocalRuntimeError);
     expect(() => verifyProof("tok", "http://127.0.0.1:1", "chal", new Response(null))).toThrow(/did not prove/);
   });
+
+  it("never follows a redirect: a squatter answering 307 to another origin never sees the bearer token", async () => {
+    const seen: string[] = [];
+    const elsewhere = createServer((req, res) => {
+      seen.push(req.headers.authorization ?? "none");
+      res.end("{}");
+    }).listen(0, "127.0.0.1");
+    servers.push(elsewhere);
+    await new Promise((resolve) => elsewhere.once("listening", resolve));
+    const target = `http://127.0.0.1:${(elsewhere.address() as { port: number }).port}`;
+    const squatter = createServer((req, res) => {
+      res.writeHead(307, { Location: `${target}${req.url}` });
+      res.end();
+    }).listen(0, "127.0.0.1");
+    servers.push(squatter);
+    await new Promise((resolve) => squatter.once("listening", resolve));
+    const port = (squatter.address() as { port: number }).port;
+    const fetchProven = provenFetch("tok");
+    await expect(fetchProven(`http://127.0.0.1:${port}/health`, { headers: { Authorization: "Bearer tok" } })).rejects.toThrow(/did not prove/);
+    // Through the launcher too: the squatter holds a port whose token is published.
+    writeOwnerOnly(tokenFilePath(port, cacheDir), "tok");
+    await expect(start({ port })).rejects.toThrow(/did not prove/);
+    expect(seen).toEqual([]);
+  });
 });
 
 describe("inference placement", () => {
@@ -125,6 +147,14 @@ describe("LocalRuntime.ensureStarted", () => {
     expect(readFileSync(tokenFilePath(port, cacheDir), "utf8")).toBe(runtime.apiKey);
     expect(readFileSync(pidFilePath(port, cacheDir), "utf8")).toBe(String(runtime.pid));
     expect(existsSync(runtime.logPath!)).toBe(true);
+  });
+
+  it("lets a start that loses the port to a concurrent one attach to the winner, as under Python's lock", async () => {
+    const port = await freePort();
+    const [first, second] = await Promise.all([start({ port }), start({ port })]);
+    expect([first.owned, second.owned].sort()).toEqual([false, true]);
+    expect(second.apiKey).toBe(first.apiKey);
+    expect(second.pid).toBe(first.pid);
   });
 
   it("attaches to a runtime another client started instead of spawning a second one", async () => {
@@ -232,6 +262,14 @@ describe("LocalRuntime.ensureStarted", () => {
     expect(env.HAI_API_KEY).toBe("hk-explicit");
   });
 
+  it("withholds the H key when the environment, not an option, selects a self-hosted server", async () => {
+    const runtime = await LocalRuntime.ensureStarted({ command: fake(), cacheDir, env: { HAI_AGENT_RUNTIME_BASE_URL: "http://127.0.0.1:8000/v1" } });
+    started.push(runtime);
+    const env = await runtime.fetch(`${runtime.baseUrl}/fake/env`, { headers: { Authorization: `Bearer ${runtime.apiKey}` } }).then((r) => r.json());
+    expect(env.HAI_API_KEY).toBeUndefined();
+    expect(runtime.serves).toBe("http://127.0.0.1:8000/v1");
+  });
+
   it("explains what to do when no binary can be found", async () => {
     vi.stubEnv("PATH", cacheDir);
     vi.stubEnv("HAI_AGENT_LOCAL_BINARY_PATH", "");
@@ -325,14 +363,6 @@ describe("Client.local", () => {
     await client.close();
     expect(runtime.childAlive).toBe(true);
     await expect(Client.local({ runtime, download: true })).rejects.toThrow(/owns its inference and launch configuration/);
-  });
-
-  it("keeps the deprecated names working, with `runtime` for callers written against the local entry's Client", async () => {
-    const runtime = await start();
-    const client = await localClient({ runtime });
-    expect(client).toBeInstanceOf(Client);
-    expect(client.runtime).toBe(runtime);
-    expect(LocalHaiAgentsClient).toBe(Client);
   });
 
   it("rejects responses from a runtime that does not hold the client's token", async () => {
@@ -434,6 +464,13 @@ describe("install", () => {
     const url = await serve(join(cacheDir, "not-a.zip"));
     // Reached loopback directly: the digest check is what fails, not the connection.
     await expect(installRuntime({ url, sha256: "ab".repeat(32) }, "9.9.9", cacheDir)).rejects.toThrow(DownloadVerificationError);
+  });
+
+  it("refuses a version that is not one path segment", async () => {
+    const artifact = { url: "https://example.test/r.zip", sha256: "0".repeat(64) };
+    for (const version of ["", "..", "a/b"]) {
+      await expect(installRuntime(artifact, version, cacheDir)).rejects.toThrow(/single path segment/);
+    }
   });
 
   it("refuses plain-http downloads off loopback", async () => {

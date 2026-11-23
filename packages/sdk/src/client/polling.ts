@@ -14,6 +14,7 @@ import type {
   TrajectoryStatus,
 } from "./api/index.js";
 import { asTools, toolDefinition, type Tool } from "./tools.js";
+import { toRawResponse } from "./core/index.js";
 import { HaiAgentsError, HaiAgentsTimeoutError } from "./errors/index.js";
 
 export const TERMINAL_SESSION_STATUSES = [
@@ -61,11 +62,18 @@ export type SessionRunResult<TAnswer = SessionChanges["answer"]> = {
 /**
  * Structural subset of a Zod v4 schema: anything with `parse` works for the read side,
  * but the create side converts to JSON Schema via zod's `toJSONSchema`, so pass a real
- * Zod v4 schema. Zod is an optional peer dependency, loaded only when this is used.
+ * Zod v4 schema. Zod is an optional peer dependency, loaded only when this is used, which is
+ * why this type stays structural (a zod type import would force zod on every consumer);
+ * `attachAnswerSchema` checks the value at runtime instead.
  */
 export type AnswerSchema<TAnswer = unknown> = {
   parse(data: unknown): TAnswer;
 };
+
+/** Every zod v4 schema carries `_zod`; a bare `{ parse }` object does not. */
+function isZodSchema(schema: unknown): boolean {
+  return typeof schema === "object" && schema !== null && "_zod" in schema;
+}
 
 /** The session's final answer did not match the requested `answerSchema`. */
 export class AnswerValidationError extends HaiAgentsError {
@@ -73,6 +81,7 @@ export class AnswerValidationError extends HaiAgentsError {
     public readonly raw: unknown,
     cause: unknown,
   ) {
+    // Python names the pydantic model (`does not match {model.__name__}`); a zod schema has no name.
     super({ message: `Final answer does not match the requested answerSchema: ${cause}`, cause });
   }
 }
@@ -88,6 +97,9 @@ export class SessionTimeoutError extends HaiAgentsTimeoutError {
 }
 
 async function answerJsonSchema(schema: AnswerSchema<unknown>): Promise<Record<string, unknown>> {
+  if (!isZodSchema(schema)) {
+    throw new TypeError(`answerSchema must be a zod v4 schema, got ${String(schema)}.`);
+  }
   const zod = (await import("zod").catch(() => undefined)) as
     | { toJSONSchema?: (s: unknown) => Record<string, unknown> }
     | undefined;
@@ -121,7 +133,8 @@ export async function attachAnswerSchema(
     }
     return { ...params, agent: { ...agent, answerFormat: jsonSchema } };
   }
-  throw new Error("answerSchema requires an agent reference on the request.");
+  // Python prints type(agent).__name__; typeof is the TS type name.
+  throw new TypeError(`answerSchema requires an agent reference, got ${agent === null ? "null" : typeof agent}.`);
 }
 
 function parseAnswer<TAnswer>(
@@ -330,7 +343,7 @@ async function executeToolCall(
   if (localTool === undefined) {
     return {
       kind: "error_event",
-      error: `Tool ${JSON.stringify(call.tool_name)} is not registered with this client.`,
+      error: `Tool '${call.tool_name}' is not registered with this client.`,
       origin: "client",
       tool_req: toolReq(call),
     };
@@ -344,7 +357,12 @@ async function executeToolCall(
   }
 }
 
-async function postToolResults(client: HaiAgentsClient, id: string, results: ToolResultPayload[]): Promise<void> {
+function isTransient(statusCode: number): boolean {
+  return statusCode === 408 || statusCode === 429 || statusCode >= 500;
+}
+
+/** Module export only: the tests call it, as Python's test calls `_post_tool_results`. */
+export async function postToolResults(client: HaiAgentsClient, id: string, results: ToolResultPayload[]): Promise<void> {
   await postSettlement(client, id, "tool_results", results.length === 1 ? results[0] : { type: "batch", results });
 }
 
@@ -354,15 +372,28 @@ async function postSettlement(
   route: "tool_results" | "tool_approvals",
   body: unknown,
 ): Promise<void> {
-  const response = await client.fetch(`api/v2/sessions/${encodeURIComponent(id)}/${route}`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  // 409 means the session finished and settled the calls itself; the status poll will exit the loop.
-  if (!(response.status >= 200 && response.status < 300) && response.status !== 409) {
-    throw new Error(`Posting ${route} to session ${id} failed: HTTP ${response.status} ${await response.text()}`);
+  // The client would retry a 409; here a 409 is a final answer (session settled), so retry transient codes only.
+  let response: Response;
+  for (let attempt = 0; ; attempt += 1) {
+    response = await client.fetch(
+      `api/v2/sessions/${encodeURIComponent(id)}/${route}`,
+      { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) },
+      { maxRetries: 0 },
+    );
+    if (!isTransient(response.status) || attempt === 2) {
+      break;
+    }
+    await new Promise((resolve) => setTimeout(resolve, Math.min(500 * 2 ** attempt, 2000)));
   }
+  await raiseUnlessPosted(response);
+}
+
+/** 409 means the session finished and settled the calls itself; the status poll will exit the loop. */
+async function raiseUnlessPosted(response: Response): Promise<void> {
+  if ((response.status >= 200 && response.status < 300) || response.status === 409) {
+    return;
+  }
+  throw new HaiAgentsError({ statusCode: response.status, body: await response.text(), rawResponse: toRawResponse(response) });
 }
 
 /** Only held calls block the session: nothing a tool loop runs will settle them. */

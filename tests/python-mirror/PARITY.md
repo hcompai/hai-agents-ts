@@ -8,17 +8,161 @@ Decisions, and the additions TS carries ahead of Python (ts-ahead); PORT.md's Le
 
 | Pair | Side | Name | Reason | Note |
 | --- | --- | --- | --- | --- |
+| `src/hai_agents/client.py` | Python | `credentials_path` | decided-out | no credentials store; the client takes apiKey only |
+| `src/hai_agents/client.py` | Python (private) | `_stored_api_key` | decided-out | no credentials store; the client takes apiKey only |
+| `src/hai_agents/client.py` | Python | `default_api_key` | decided-out | no credentials store; the client takes apiKey only |
+| `src/hai_agents/client.py` | Python (private) | `_default_api_key` | decided-out | no credentials store; the client takes apiKey only |
+| `src/hai_agents/client.py` | Python (private) | `_LocalRuntimeAccess` | ts-idiom | the runtime hold is a field on Client (_hold) |
+| `src/hai_agents/client.py` | Python | `API_KEY_VAR` | ts-idiom | lives in local/inference.ts, next to the runtime env it shapes; oo.ts is platform-owned |
+| `src/hai_agents/client.py` | Python (private) | `_P` | ts-idiom | a ParamSpec for the sync/async wrappers; one client here |
+| `src/hai_agents/client.py` | TS only | `HaiAgentsClient` | ts-idiom | deprecated alias of Client, kept for callers of the former name |
+| `src/hai_agents/polling.py` | Python (private) | `_request_bytes` | ts-idiom | inlined in the loop; polling.ts is overlay-owned (agent_platform) |
+| `src/hai_agents/polling.py` | Python (private) | `_await_result` | node-forced | sync call of an async tool from a running loop; one loop here |
+| `src/hai_agents/polling.py` | Python (private) | `_run_awaitable` | node-forced | sync call of an async tool from a running loop; one loop here |
+| `src/hai_agents/polling.py` | Python (private) | `_tool_results_body` | ts-idiom | inlined in the loop; polling.ts is overlay-owned (agent_platform) |
+| `src/hai_agents/polling.py` | Python (private) | `_approval_body` | ts-idiom | inlined in the loop; polling.ts is overlay-owned (agent_platform) |
+| `src/hai_agents/polling.py` | Python (private) | `_replayed` | ts-idiom | inlined in the loop; polling.ts is overlay-owned (agent_platform) |
+| `src/hai_agents/polling.py` | Python (private) | `_settled_cleanly` | ts-idiom | inlined in the loop; polling.ts is overlay-owned (agent_platform) |
+| `src/hai_agents/polling.py` | Python | `stream_session` | deferred | SessionHandle.stream() replaced streamSession on TS main; TS main moved first; Python main has the same change past the pinned commit, so this closes when the pin moves |
+| `src/hai_agents/polling.py` | TS only | `SessionTimeoutError` | deferred | TS main moved first; Python main has the same change past the pinned commit, so this closes when the pin moves |
+| `src/hai_agents/polling.py` | TS only | `toCreateRequest` | ts-idiom | builds the wire request from camelCase params; Python passes kwargs |
+| `src/hai_agents/polling.py` | TS only | `fileFromBlob` | node-forced | a browser has Blobs, not paths; fileFromPath is the Python one |
+| `src/hai_agents/tools.py` | Python (private) | `_schema_from_signature` | python-only-feature | the JSON schema comes from type hints; TS has no runtime types, tool() takes inputSchema |
+| `src/hai_agents/tools.py` | TS only | `toolDefinition` | ts-idiom | the wire definition of a Tool object; Python's Tool carries it as a method |
+| `src/hai_agents/core/api_error.py` | Python (private) | `_field` | ts-idiom | inlined in serverDetail |
+| `src/hai_agents/core/api_error.py` | Python | `ApiError` | ts-idiom | Fern's TS name is HaiAgentsError |
+| `src/hai_agents/core/api_error.py` | TS only | `HaiAgentsError` | ts-idiom | Fern's TS name for ApiError |
+| `src/hai_agents/core/http_client.py` | Python (private) | `_parse_retry_after` | ts-idiom | folded into getRetryDelayFromHeaders |
+| `src/hai_agents/core/http_client.py` | Python (private) | `_parse_x_ratelimit_reset` | ts-idiom | folded into getRetryDelayFromHeaders |
+| `src/hai_agents/core/http_client.py` | Python (private) | `_retry_timeout` | ts-idiom | folded into getRetryDelayFromHeaders |
+| `src/hai_agents/core/http_client.py` | Python (private) | `_retry_timeout_from_retries` | ts-idiom | folded into getRetryDelayFromHeaders |
+| `src/hai_agents/core/http_client.py` | Python (private) | `_is_idempotent` | ts-idiom | folded into isRetryable (IDEMPOTENT_METHODS) |
+| `src/hai_agents/core/http_client.py` | Python (private) | `_should_retry` | ts-idiom | isRetryable |
+| `src/hai_agents/core/http_client.py` | Python (private) | `_build_url` | ts-idiom | createRequestUrl |
+| `src/hai_agents/core/http_client.py` | Python (private) | `_maybe_filter_none_from_multipart_data` | ts-idiom | Fern's TS serializers drop omitted fields before the fetcher |
+| `src/hai_agents/core/http_client.py` | Python | `remove_omit_from_dict` | ts-idiom | Fern's TS serializers drop omitted fields before the fetcher |
+| `src/hai_agents/core/http_client.py` | Python | `maybe_filter_request_body` | ts-idiom | Fern's TS serializers drop omitted fields before the fetcher |
+| `src/hai_agents/core/http_client.py` | Python | `HttpClient` | ts-idiom | Fern's TS fetcher is a function, `fetcher`, not a class |
+| `src/hai_agents/core/http_client.py` | Python | `INITIAL_RETRY_DELAY_SECONDS` | node-forced | INITIAL_RETRY_DELAY, in milliseconds |
+| `src/hai_agents/core/http_client.py` | Python | `MAX_RETRY_DELAY_SECONDS` | node-forced | MAX_RETRY_DELAY, in milliseconds |
+| `src/hai_agents/core/http_client.py` | TS only | `requestWithRetries` | ts-idiom | the retry loop of HttpClient.request, its own function in Fern's TS fetcher |
+| `src/hai_agents/core/http_client.py` | TS only | `fetcherImpl` | ts-idiom | Fern's TS fetcher: HttpClient.request |
+| `src/hai_agents/core/http_client.py` | TS only | `fetcher` | ts-idiom | Fern's TS fetcher: HttpClient.request |
+| `src/hai_agents/core/http_client.py` | TS only | `createRequestUrl` | ts-idiom | _build_url |
 | `src/hai_agents_tools/otp.py` | Python (private) | `_validated_otp` | ts-idiom | inlined in otpTool's handler; one async path |
 | `src/hai_agents_tools/otp.py` | Python (private) | `_await_validated_otp` | ts-idiom | inlined in otpTool's handler; one async path |
 | `src/hai_agents_tools/otp.py` | Python (private) | `_message_text` | ts-idiom | mailparser hands the text and html parts; Python walks the email.message |
+| `src/hai_agents_local/runtime/runtime.py` | Python (private) | `_port_of` | deferred | the idle check and re-acquire, not ported (runtime.ts header; later PR) |
+| `src/hai_agents_local/runtime/runtime.py` | Python (private) | `_served_from_record` | deferred | the idle check and re-acquire, not ported (runtime.ts header; later PR) |
+| `src/hai_agents_local/runtime/runtime.py` | Python | `locate_runtime` | decided-out | the CLI's doctor asks it which binary Client.local would start |
+| `src/hai_agents_local/runtime/runtime.py` | Python (private) | `_startup_lock` | node-forced | the startup lock: Node has no flock; one runtime per port at a time, left to developers (runtime.ts header) |
+| `src/hai_agents_local/runtime/runtime.py` | Python | `CLIENT_TIMEOUT_S` | deferred | the idle check and re-acquire, not ported (runtime.ts header; later PR) |
+| `src/hai_agents_local/runtime/runtime.py` | Python | `IDLE_PROBE_PAGE_SIZE` | deferred | the idle check and re-acquire, not ported (runtime.ts header; later PR) |
+| `src/hai_agents_local/runtime/runtime.py` | Python | `STARTUP_LOCK_GRACE_S` | node-forced | the startup lock: Node has no flock; one runtime per port at a time, left to developers (runtime.ts header) |
+| `src/hai_agents_local/runtime/acquire.py` | Python (private) | `_relaunch` | deferred | re-acquiring a runtime whose spawner died and the spawn registry, not ported (index.ts: no spawn registry in TS) |
+| `src/hai_agents_local/runtime/acquire.py` | Python (private) | `_require_unconfigured` | ts-idiom | inlined in local(); same error text |
+| `src/hai_agents_local/runtime/acquire.py` | Python | `RuntimeHold` | deferred | re-acquiring a runtime whose spawner died and the spawn registry, not ported (index.ts: no spawn registry in TS) |
+| `src/hai_agents_local/runtime/acquire.py` | TS only | `local` | ts-idiom | the body of Client.local(): client.py's local() plus acquire_runtime, in the Node-only entry |
+| `src/hai_agents_local/runtime/identity.py` | Python | `challenge` | node-forced | httpx event hooks; fetch is wrapped instead (provenFetch) |
+| `src/hai_agents_local/runtime/identity.py` | Python | `verify` | node-forced | httpx event hooks; fetch is wrapped instead (provenFetch) |
+| `src/hai_agents_local/runtime/identity.py` | Python (private) | `_current` | node-forced | httpx event hooks; fetch is wrapped instead (provenFetch) |
+| `src/hai_agents_local/runtime/identity.py` | Python | `event_hooks` | node-forced | httpx event hooks; fetch is wrapped instead (provenFetch) |
+| `src/hai_agents_local/runtime/identity.py` | Python | `http_client` | node-forced | httpx event hooks; fetch is wrapped instead (provenFetch) |
+| `src/hai_agents_local/runtime/identity.py` | TS only | `runtimeProof` | node-forced | the fetch wrapper that challenges each request; Python installs httpx event hooks |
+| `src/hai_agents_local/runtime/identity.py` | TS only | `LOOPBACK_DISPATCHER` | node-forced | Python's trust_env=False client; Node's fetch takes a proxy-free dispatcher instead |
+| `src/hai_agents_local/runtime/identity.py` | TS only | `verifyProof` | node-forced | the fetch wrapper that challenges each request; Python installs httpx event hooks |
+| `src/hai_agents_local/runtime/identity.py` | TS only | `provenFetch` | node-forced | the fetch wrapper that challenges each request; Python installs httpx event hooks |
+| `src/hai_agents_local/runtime/inference.py` | TS only | `API_KEY_VAR` | ts-idiom | Python defines it in client.py; platform-owned here, so it lives in inference.ts |
+| `src/hai_agents_local/runtime/install.py` | Python | `install_artifact` | decided-out | PORT.md: install_artifact(name) generalised for the workstation driver download; not ported |
+| `src/hai_agents_local/runtime/install.py` | Python (private) | `_DOWNLOAD_TIMEOUT` | node-forced | an httpx.Timeout; fetch has no per-phase timeouts |
+| `src/hai_agents_local/runtime/install.py` | TS only | `extractZip` | node-forced | Python's zipfile; Node has none, zip.ts is the reader |
+| `src/hai_agents_local/runtime/manifest.py` | Python (private) | `_PIN` | ts-idiom | pin.json is imported as a module |
+| `src/hai_agents_local/runtime/manifest.py` | Python | `MANIFEST` | ts-idiom | manifest.ts:16: no dict of every platform; pinnedArtifact composes the URL through artifactUrl (PORT.md bump_runtime row) |
+| `src/hai_agents_local/runtime/manifest.py` | TS only | `artifactUrl` | ts-idiom | manifest.ts:16: composes the URL MANIFEST would hold (PORT.md bump_runtime row) |
+| `src/hai_agents_local/runtime/process.py` | Python | `spawn` | node-forced | `spawn` is node:child_process's; spawnRuntime wraps it |
+| `src/hai_agents_local/runtime/process.py` | Python (private) | `_killpg_posix` | node-forced | signalTree: child_process signals the detached group |
+| `src/hai_agents_local/runtime/process.py` | Python | `kill_process_group` | node-forced | signalTree: child_process signals the detached group |
+| `src/hai_agents_local/runtime/process.py` | Python (private) | `_signal` | node-forced | signalTree: child_process signals the detached group |
+| `src/hai_agents_local/runtime/process.py` | TS only | `PROBE_TIMEOUT_MS` | ts-idiom | the health probe's own timeout; Python passes httpx's inline |
+| `src/hai_agents_local/runtime/process.py` | TS only | `spawnRuntime` | node-forced | `spawn` is node:child_process's; spawnRuntime wraps it |
+| `src/hai_agents_local/runtime/state.py` | Python | `state_dir` | ts-idiom | inlined in the three *FilePath helpers |
+| `src/hai_agents_local/runtime/state.py` | Python | `DEFAULT_CACHE_DIR` | ts-idiom | inlined in resolveCacheDir |
+| `src/hai_agents_local/runtime/state.py` | TS only | `expandHome` | node-forced | no expanduser in node:path |
 
 ### Error texts on record
 
 | Pair | Side | Name | Reason | Note |
 | --- | --- | --- | --- | --- |
+| `src/hai_agents/client.py` | Python | `No API key found. Pass api_key, set *, or run `holo login`.` | decided-out | no credentials store, no CLI login |
+| `src/hai_agents/client.py` | TS only | `Client.local() needs Node.js: the local runtime runs on this machine` | node-forced | the main entry is browser-safe; the local entry loads under Node only |
+| `src/hai_agents/polling.py` | Python | `answer_schema must be a pydantic.BaseModel subclass, got *.` | ts-idiom | PORT.md Changed on purpose: zod v4 schema |
+| `src/hai_agents/polling.py` | Python | `answer_schema conflicts with overrides['agent.answer_format']; pass only one.` | ts-idiom | names the camelCase option the TS user typed; one inline-agent form (plain objects) where Python has dict and model |
+| `src/hai_agents/polling.py` | Python | `answer_schema conflicts with agent['answer_format']; pass only one.` | ts-idiom | names the camelCase option the TS user typed; one inline-agent form (plain objects) where Python has dict and model |
+| `src/hai_agents/polling.py` | Python | `answer_schema conflicts with agent.answer_format; pass only one.` | ts-idiom | names the camelCase option the TS user typed; one inline-agent form (plain objects) where Python has dict and model |
+| `src/hai_agents/polling.py` | Python | `answer_schema requires an agent reference, got *.` | ts-idiom | names the camelCase option the TS user typed |
+| `src/hai_agents/polling.py` | Python | `tools require include_events=True: pending calls arrive on the event stream.` | ts-idiom | names the camelCase option the TS user typed |
+| `src/hai_agents/polling.py` | Python | `Session * did not settle within *s` | node-forced | Node times in milliseconds |
+| `src/hai_agents/polling.py` | Python | `Session * did not settle before max_polls=*` | ts-idiom | PORT.md Changed on purpose: maxPolls= |
+| `src/hai_agents/polling.py` | TS only | `answerSchema must be a zod v4 schema, got *.` | ts-idiom | PORT.md Changed on purpose: zod v4 schema |
+| `src/hai_agents/polling.py` | TS only | `answerSchema requires zod >= 4 (provides toJSONSchema); install it alongside the SDK.` | ts-idiom | zod is an optional peer |
+| `src/hai_agents/polling.py` | TS only | `answerSchema conflicts with overrides['agent.answer_format']; pass only one.` | ts-idiom | names the camelCase option the TS user typed |
+| `src/hai_agents/polling.py` | TS only | `answerSchema conflicts with agent.answerFormat; pass only one.` | ts-idiom | names the camelCase option the TS user typed |
+| `src/hai_agents/polling.py` | TS only | `answerSchema requires an agent reference, got *.` | ts-idiom | names the camelCase option the TS user typed |
+| `src/hai_agents/polling.py` | TS only | `fileFromBlob needs a name for a Blob that is not a File` | node-forced | Blob API |
+| `src/hai_agents/polling.py` | TS only | `fileFromPath needs Node.js 20.16 or newer; use fileFromBlob in a browser` | node-forced | process.getBuiltinModule keeps the main entry browser-safe |
+| `src/hai_agents/polling.py` | TS only | `tools require includeEvents=true: pending calls arrive on the event stream.` | ts-idiom | names the camelCase option the TS user typed |
+| `src/hai_agents/polling.py` | TS only | `within *ms` | deferred | SessionTimeoutError's reason; TS main moved first; Python main has the same change past the pinned commit, so this closes when the pin moves |
+| `src/hai_agents/polling.py` | TS only | `before maxPolls=*` | deferred | SessionTimeoutError's reason; TS main moved first; Python main has the same change past the pinned commit, so this closes when the pin moves |
+| `src/hai_agents/tools.py` | Python | `Tool * cannot use *args/*kwargs; declare explicit parameters.` | python-only-feature | signature introspection |
+| `src/hai_agents/tools.py` | Python | `Duplicate tool names: *.` | ts-idiom | the same text, Python's list repr ['a', 'b'] built with a nested template literal (tools.ts, overlay-owned), which the regexes read up to the inner backtick |
+| `src/hai_agents/tools.py` | TS only | `Tool needs a non-empty name.` | ts-idiom | Python takes the name from the function; TS has no function name to fall back on |
+| `src/hai_agents/tools.py` | TS only | `Duplicate tool names: [*'` | ts-idiom | the same text, Python's list repr ['a', 'b'] built with a nested template literal (tools.ts, overlay-owned), which the regexes read up to the inner backtick |
+| `src/hai_agents/webhook_verification.py` | TS only | `verifyWebhook needs Node.js 20.16 or newer` | node-forced | process.getBuiltinModule keeps the main entry browser-safe |
+| `src/hai_agents/webhook_verification.py` | TS only | `unparsable payload: missing type, id or data` | ts-idiom | the shape check pydantic does inside the same `unparsable payload` branch |
+| `src/hai_agents/core/http_client.py` | Python | `A base_url is required to make this request, please provide one and try again.` | ts-idiom | the generated TS client always resolves a base URL (BaseClient's default environment) |
 | `src/hai_agents_tools/otp.py` | TS only | `No interactive stdin available; pass a handler to otpTool().` | node-forced | Python's input() raises EOFError itself |
 | `src/hai_agents_tools/otp.py` | TS only | `The interactive OTP prompt needs Node.js 20.16 or newer; pass a handler to otpTool().` | node-forced | process.getBuiltinModule keeps the main entry browser-safe |
 | `src/hai_agents_tools/otp.py` | TS only | `imapOtpHandler requires the optional dependency *: npm install *` | ts-idiom | imapflow and mailparser are optional peers; imaplib is Python's stdlib |
+| `src/hai_agents_local/runtime/runtime.py` | Python | `command must be nonempty and cannot be combined with binary_path` | ts-idiom | names the option the TS user typed |
+| `src/hai_agents_local/runtime/runtime.py` | Python | `runtime startup cancelled` | node-forced | Python cancels the spawning thread through an Event; one loop here, no cancel event |
+| `src/hai_agents_local/runtime/runtime.py` | Python | `runtime must support recipe *; use a compatible source command or binary` | ts-idiom | the same text, built by recipeMessage() for its two call sites |
+| `src/hai_agents_local/runtime/runtime.py` | Python | `binary_path / * points at a missing file: *` | ts-idiom | names the option the TS user typed |
+| `src/hai_agents_local/runtime/runtime.py` | Python | `hai-agent-runtime not found: not on PATH, no managed install under *, and download=False. Pass binary_path=, set *, or allow download=True.` | ts-idiom | names the options the TS user typed |
+| `src/hai_agents_local/runtime/runtime.py` | Python | `timed out waiting for local runtime startup lock` | node-forced | the startup lock: Node has no flock (runtime.ts header) |
+| `src/hai_agents_local/runtime/runtime.py` | TS only | `command must be nonempty and cannot be combined with binaryPath` | ts-idiom | names the option the TS user typed |
+| `src/hai_agents_local/runtime/runtime.py` | TS only | `binaryPath / * points at a missing file: *` | ts-idiom | names the option the TS user typed |
+| `src/hai_agents_local/runtime/runtime.py` | TS only | `hai-agent-runtime not found: not on PATH, no managed install under *, and download is off. Pass binaryPath, set *, or allow *.` | ts-idiom | names the options the TS user typed |
+| `src/hai_agents_local/runtime/acquire.py` | Python | `the replacement runtime listens at *, not *` | deferred | re-acquire / spawn registry, not ported |
+| `src/hai_agents_local/runtime/identity.py` | Python | `*://* did not prove it is the runtime this client started or attached to: another process holds the port, or the runtime predates identity proofs` | ts-idiom | the same text; the origin is one placeholder (URL.origin) where Python prints scheme and netloc |
+| `src/hai_agents_local/runtime/identity.py` | TS only | `* did not prove it is the runtime this client started or attached to: another process holds the port, or the runtime predates identity proofs` | ts-idiom | the same text; the origin is one placeholder (URL.origin) where Python prints scheme and netloc |
+| `src/hai_agents_local/runtime/install.py` | Python | `*; put hai-agent-runtime on PATH, or set * + * to a trusted build` | ts-idiom | the same text; the tail is the `trusted` variable in TS |
+| `src/hai_agents_local/runtime/install.py` | Python | `hai-agent-runtime v* has no published artifact for * yet; put hai-agent-runtime on PATH, or set * + * to a trusted build` | ts-idiom | the same text; the tail is the `trusted` variable in TS |
+| `src/hai_agents_local/runtime/install.py` | Python | `* download failed sha256 verification: expected *, got * (url: *)` | decided-out | install_artifact(name) generalisation not ported: the name is hai-agent-runtime |
+| `src/hai_agents_local/runtime/install.py` | Python | `downloaded artifact contains no * executable (url: *)` | decided-out | install_artifact(name) generalisation not ported: the name is hai-agent-runtime |
+| `src/hai_agents_local/runtime/install.py` | Python | `* download failed: HTTP * from *` | decided-out | install_artifact(name) generalisation not ported: the name is hai-agent-runtime |
+| `src/hai_agents_local/runtime/install.py` | Python | `* download too large: * bytes exceeds *` | decided-out | install_artifact(name) generalisation not ported: the name is hai-agent-runtime |
+| `src/hai_agents_local/runtime/install.py` | Python | `* download exceeded * bytes; aborting` | decided-out | install_artifact(name) generalisation not ported: the name is hai-agent-runtime |
+| `src/hai_agents_local/runtime/install.py` | Python | `* download failed: * (url: *)` | decided-out | install_artifact(name) generalisation not ported: the name is hai-agent-runtime |
+| `src/hai_agents_local/runtime/install.py` | TS only | `*; *` | ts-idiom | the same text; the tail is the `trusted` variable in TS |
+| `src/hai_agents_local/runtime/install.py` | TS only | `hai-agent-runtime v* has no published artifact for * yet; *` | ts-idiom | the same text; the tail is the `trusted` variable in TS |
+| `src/hai_agents_local/runtime/install.py` | TS only | `hai-agent-runtime version must be a single path segment, got *` | ts-idiom | a guard TS adds: the version names the install directory under the cache. Python follow-up |
+| `src/hai_agents_local/runtime/install.py` | TS only | `hai-agent-runtime download failed sha256 verification: expected *, got * (url: *)` | decided-out | install_artifact(name) generalisation not ported: the name is hai-agent-runtime |
+| `src/hai_agents_local/runtime/install.py` | TS only | `downloaded artifact contains no hai-agent-runtime executable (url: *)` | decided-out | install_artifact(name) generalisation not ported: the name is hai-agent-runtime |
+| `src/hai_agents_local/runtime/install.py` | TS only | `hai-agent-runtime * install did not produce an executable under *` | ts-idiom | a guard after the atomic rename; Python trusts the rename |
+| `src/hai_agents_local/runtime/install.py` | TS only | `hai-agent-runtime download failed: * (url: *)` | decided-out | install_artifact(name) generalisation not ported: the name is hai-agent-runtime |
+| `src/hai_agents_local/runtime/install.py` | TS only | `hai-agent-runtime download failed: HTTP * from *` | decided-out | install_artifact(name) generalisation not ported: the name is hai-agent-runtime |
+| `src/hai_agents_local/runtime/install.py` | TS only | `hai-agent-runtime download too large: * bytes exceeds *` | decided-out | install_artifact(name) generalisation not ported: the name is hai-agent-runtime |
+| `src/hai_agents_local/runtime/install.py` | TS only | `* is not a zip archive` | node-forced | zip.ts, the reader Python gets from zipfile |
+| `src/hai_agents_local/runtime/install.py` | TS only | `*: zip64 archives are not supported` | node-forced | zip.ts, the reader Python gets from zipfile |
+| `src/hai_agents_local/runtime/install.py` | TS only | `*: corrupt central directory` | node-forced | zip.ts, the reader Python gets from zipfile |
+| `src/hai_agents_local/runtime/install.py` | TS only | `*: entry escapes the destination: *` | node-forced | zip.ts, the reader Python gets from zipfile |
+| `src/hai_agents_local/runtime/install.py` | TS only | `*: corrupt local header for *` | node-forced | zip.ts, the reader Python gets from zipfile |
+| `src/hai_agents_local/runtime/install.py` | TS only | `*: unsupported compression method * for *` | node-forced | zip.ts, the reader Python gets from zipfile |
+| `src/hai_agents_local/runtime/manifest.py` | Python | `unsupported platform for hai-agent-runtime: *` | ts-idiom | one check of process.platform and process.arch; Python checks the two in turn |
+| `src/hai_agents_local/runtime/manifest.py` | Python | `unsupported architecture for hai-agent-runtime: *` | ts-idiom | one check of process.platform and process.arch; Python checks the two in turn |
+| `src/hai_agents_local/runtime/manifest.py` | TS only | `unsupported platform for hai-agent-runtime: *-*` | ts-idiom | one check of process.platform and process.arch; Python checks the two in turn |
+| `src/hai_agents_local/runtime/process.py` | Python | `runtime startup cancelled` | node-forced | Python cancels the spawning thread through an Event; one loop here, no cancel event |
+| `src/hai_agents_local/runtime/process.py` | TS only | `hai-agent-runtime could not start: *` | node-forced | ENOENT arrives as the child's error event, after spawn returned |
 
 ### Tests on record
 
@@ -73,3 +217,9 @@ Decisions, and the additions TS carries ahead of Python (ts-ahead); PORT.md's Le
 | `tests/test_tools.py` | Python | `tool decorator derives schema` → `tool with explicit schema keeps the shape the agent sees` | python-only-feature | PORT.md Adapted: the schema comes from type hints; tool() takes inputSchema |
 | `tests/test_tools.py` | Python | `tool decorator with args returns tool and applies overrides` → `tool with a zod schema returns tool and applies overrides` | ts-idiom | PORT.md Adapted: the pydantic input= model becomes z.toJSONSchema |
 | `tests/test_tools.py` | Python | `async tool dispatch inside running loop` | node-forced | PORT.md: Node has one event loop and no sync-call-inside-a-running-loop case |
+
+### Additions (TS ahead of Python) on record
+
+| Pair | Side | Name | Reason | Note |
+| --- | --- | --- | --- | --- |
+| `src/hai_agents/client.py` | TS only | `Client.Options.autoBridges as an object` | ts-ahead | `true \| false \| { web?: (environment) => WebBridgeOptions }`; Python's auto_bridges is a bool. Python follow-up: per-environment bridge options on Client.local() / Client() |
