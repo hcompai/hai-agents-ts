@@ -33,9 +33,9 @@ overlay in agent_platform, in a paired change.
 entry (`hai-agents`) stays browser-safe: no `node:` import anywhere it reaches;
 `packages/sdk/tests/browserBundle.test.ts` enforces it.
 
-Local control is web only: a `LocalBridge` composed with the Playwright driver from `hai-drivers`.
-No desktop, mobile or workstation driver, no bridge manager, kill switch or CLI: Python has
-them, this repo does not.
+Local control is web only: a `LocalBridge` composed with the Playwright driver from `hai-drivers`,
+and a bridge manager for web bridges only. No desktop, mobile or workstation driver, no kill switch
+or CLI: Python has them, this repo does not.
 
 Timing and retry constants (poll intervals, backoff, retry counts, request limits) are
 decisions taken in Python. A port copies them; it does not tune them.

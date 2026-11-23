@@ -19,6 +19,10 @@ class FakeChannel {
   readonly headers: IncomingMessage["headers"][] = [];
   /** Hold an empty poll for `wait_for_seconds`, as AGP does; off, it answers 204 at once. */
   holdPolls = false;
+  /** Answer every poll with this status instead of commands (a rejected key, say). */
+  pollStatus: number | null = null;
+  /** Answer every result post with this status instead of 200. */
+  resultStatus: number | null = null;
   /** The polls held open right now. */
   readonly held = new Set<() => void>();
   baseUrl = "";
@@ -75,6 +79,10 @@ class FakeChannel {
         return;
       }
       if (/^\/api\/v1\/commands\/[^/]+\/commands$/.test(url.pathname)) {
+        if (this.pollStatus !== null) {
+          res.writeHead(this.pollStatus).end("{}");
+          return;
+        }
         const waitMs = Number(url.searchParams.get("wait_for_seconds") ?? 0) * 1000;
         if (this.queue.length > 0 || !this.holdPolls || waitMs === 0) {
           this.#answerPoll(res);
@@ -96,7 +104,7 @@ class FakeChannel {
       const result = url.pathname.match(/^\/api\/v1\/commands\/([^/]+)\/result$/);
       if (result && req.method === "POST") {
         this.results.push({ commandId: result[1], body });
-        res.writeHead(200).end("{}");
+        res.writeHead(this.resultStatus ?? 200).end("{}");
         return;
       }
       res.writeHead(404).end();
@@ -220,6 +228,95 @@ describe("LocalBridge", () => {
       vi.restoreAllMocks();
       await bridge.stop();
     }
+  });
+
+  it("ends with the loop's failure once, so stop() resolves and nothing rejects unhandled", async () => {
+    const unhandled: unknown[] = [];
+    const onUnhandled = (reason: unknown) => unhandled.push(reason);
+    process.on("unhandledRejection", onUnhandled);
+    const bridge = new LocalBridge({ baseUrl: channel.baseUrl, apiKey: "hk-test", driver: { dispatch: async () => null } });
+    try {
+      await bridge.start();
+      channel.pollStatus = 403; // the key is rejected mid-session: the loop dies
+      await expect(bridge.done).rejects.toBeInstanceOf(AuthError);
+      await new Promise((r) => setImmediate(r));
+      await expect(bridge.stop()).resolves.toBeUndefined();
+      await expect(bridge.stop()).resolves.toBeUndefined();
+      expect(unhandled).toEqual([]);
+    } finally {
+      channel.pollStatus = null;
+      process.off("unhandledRejection", onUnhandled);
+    }
+  });
+
+  it("is not ready, and has no loop, when stop() lands while the driver is being built", async () => {
+    let release = () => {};
+    const building = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let built = () => {};
+    const asked = new Promise<void>((resolve) => {
+      built = resolve;
+    });
+    const bridge = new LocalBridge({
+      baseUrl: channel.baseUrl,
+      apiKey: "hk-test",
+      driver: async () => {
+        built();
+        await building;
+        return { dispatch: async () => null };
+      },
+    });
+    const starting = bridge.start();
+    await asked;
+    const stopping = bridge.stop();
+    release();
+    await starting;
+    await stopping;
+    expect(bridge.ready).toBe(false);
+    await expect(bridge.done).resolves.toBeUndefined();
+  });
+
+  it("ends the loop as a crash on fail(), the browser being gone", async () => {
+    const bridge = new LocalBridge({ baseUrl: channel.baseUrl, apiKey: "hk-test", driver: { dispatch: async () => null } });
+    await bridge.start();
+    bridge.fail(new Error("browser closed"));
+    await expect(bridge.done).rejects.toThrow("browser closed");
+    await bridge.stop();
+  });
+
+  it("keeps the text of enter_secret from the command hook; the driver gets it", async () => {
+    const hooked: Record<string, unknown>[] = [];
+    const typed: unknown[] = [];
+    const bridge = new LocalBridge({
+      baseUrl: channel.baseUrl,
+      apiKey: "hk-test",
+      driver: { dispatch: async (_name, args) => (typed.push(args.text), null) },
+      onCommand: (_name, args) => hooked.push(args),
+    });
+    await bridge.start();
+    const posted = channel.results.length;
+    channel.enqueue({ id: "s1", command_uid: "s1", name: "enter_secret", args: { text: "hunter2" } });
+    await channel.wait(posted + 1);
+    await bridge.stop();
+    expect(hooked).toEqual([{ text: "<redacted>" }]);
+    expect(typed).toEqual(["hunter2"]);
+  });
+
+  it("logs a result the platform no longer knows, as Python warns, and carries on", async () => {
+    const logs: string[] = [];
+    const bridge = new LocalBridge({ baseUrl: channel.baseUrl, apiKey: "hk-test", driver: { dispatch: async () => null }, onLog: (m) => logs.push(m) });
+    channel.resultStatus = 404;
+    try {
+      await bridge.start();
+      const posted = channel.results.length;
+      channel.enqueue({ id: "gone", command_uid: "gone", name: "click_at", args: {} });
+      await channel.wait(posted + 1);
+      await bridge.stop();
+    } finally {
+      channel.resultStatus = null;
+    }
+    expect(logs).toContain("platform no longer knows command gone; dropping its result");
   });
 
   it("stops promptly while a long poll is in flight", async () => {

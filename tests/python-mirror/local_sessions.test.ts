@@ -9,7 +9,7 @@ import type { IncomingMessage, Server, ServerResponse } from "node:http";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AgentsClient, Client, EnvironmentsClient, HaiAgentsError, SessionsClient } from "hai-agents";
-import { AUTO_BRIDGE_ENV_VAR, AuthError, BridgeManager, LocalBridge, PlaywrightBrowserBridge, localizeAgent } from "hai-agents/local";
+import { AuthError, BridgeManager, LocalBridge, PlaywrightBrowserBridge, localizeAgent } from "hai-agents/local";
 import type { AgentLike, LocalSessionsClient, ManagedBridge, Resolved } from "hai-agents/local";
 import * as core from "hai-agents-src/client/core/index.js";
 import { READY_TIMEOUT_S, STOP_JOIN_TIMEOUT_S, TimeoutError, _Runner, _defaultManager } from "hai-agents-src/local/manager.js";
@@ -29,10 +29,10 @@ type Internals = { _ownedBridges: Map<string, string[]> };
 function internals(sessions: unknown): Internals {
   return sessions as Internals;
 }
-/** Python reads the local sessions client off `client.sessions`; in TS that is the lazy proxy, the loaded client sits behind it. */
+/** Python reads the local sessions client off `client.sessions`; in TS that is the lazy stand-in, the loaded client sits behind it. */
 async function localSessions(client: Client): Promise<LocalSessionsClient> {
   void client.sessions;
-  return (await client["_localSessions"])!;
+  return (await client["_localSessions"]) as LocalSessionsClient;
 }
 
 const API_KEY = "test-key";
@@ -538,7 +538,6 @@ const _stop = (fake: (ids: readonly string[]) => Promise<void>) => mp.setattr(_d
 
 describe("TestAutoStart", () => {
   it("create session starts bridges and stamps matching session ids", async () => {
-    mp.setenv(AUTO_BRIDGE_ENV_VAR, "1");
     const started: ManagedBridge[] = [];
     let captured: { body: Args } | undefined;
     _ensure(async (bridges) => {
@@ -567,7 +566,6 @@ describe("TestAutoStart", () => {
   });
 
   it("named agent routes its user device env through an override", async () => {
-    mp.setenv(AUTO_BRIDGE_ENV_VAR, "1");
     const started: ManagedBridge[] = [];
     let captured: { body: Args } | undefined;
     const fetched = _registry({
@@ -597,8 +595,7 @@ describe("TestAutoStart", () => {
 
   for (const stop of ["ended", "cancelled"]) {
     it(`follow up to a stopped session serves its bridges again [${stop}]`, async () => {
-      mp.setenv(AUTO_BRIDGE_ENV_VAR, "1");
-      _exitCancels.clear();
+        _exitCancels.clear();
       const events: unknown[] = [];
       _ensure(async (bridges) => {
         events.push(["start", bridges.map((bridge) => bridge.environmentKind)]);
@@ -640,7 +637,6 @@ describe("TestAutoStart", () => {
   }
 
   it("create session failure stops newly started bridges", async () => {
-    mp.setenv(AUTO_BRIDGE_ENV_VAR, "1");
     const stopped: string[] = [];
     _ensure(async () => ["new-sid"]);
     _stop(async (ids) => {
@@ -667,7 +663,6 @@ describe("TestAutoStart", () => {
   });
 
   function _crashWiring(cancelled: string[], stopped: string[], bridges: ManagedBridge[]): void {
-    mp.setenv(AUTO_BRIDGE_ENV_VAR, "1");
     _stop(async (ids) => {
       stopped.push(...ids);
     });
@@ -747,7 +742,6 @@ describe("TestAutoStart", () => {
   });
 
   it("local sessions get default runaway budgets", async () => {
-    mp.setenv(AUTO_BRIDGE_ENV_VAR, "1");
     let captured: { body: Args } | undefined;
     _ensure(async () => []);
     _create((request) => {
@@ -769,8 +763,8 @@ describe("TestAutoStart", () => {
     expect(captured!.body).not.toHaveProperty("maxTimeS");
   });
 
+  // Python's test flips HAI_AUTO_BRIDGE to 0; TS does not read the variable (its Python main removed it), so the option is the switch.
   it("no bridges and no stamping when disabled", async () => {
-    mp.setenv(AUTO_BRIDGE_ENV_VAR, "0");
     const started: ManagedBridge[] = [];
     let captured: { body: Args } | undefined;
     _ensure(async (bridges) => {
@@ -781,7 +775,7 @@ describe("TestAutoStart", () => {
       captured = request;
       return reply(undefined);
     });
-    await new Client({ apiKey: API_KEY }).sessions.createSession({
+    await new Client({ apiKey: API_KEY, autoBridges: false }).sessions.createSession({
       body: { agent: { name: "x", environments: [{ id: "box", kind: "web", host: "user_device" }] } as AgentLike as string, messages: "hi" },
     });
     expect(started).toEqual([]);

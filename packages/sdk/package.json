@@ -46,7 +46,7 @@
     "node": ">=20.4"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts --clean --external ../local/index.js && tsup --entry.local src/local/index.ts --format esm,cjs --dts --external ../client/index.js && node scripts/link-local-entry.mjs",
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean && tsup --entry.local src/local/index.ts --format esm,cjs --dts --external ../client/index.js && node scripts/link-local-entry.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
@@ -54,9 +54,13 @@
     "undici": "^6.29.1"
   },
   "peerDependencies": {
+    "playwright-core": ">=1.40",
     "zod": "^4.0.0"
   },
   "peerDependenciesMeta": {
+    "playwright-core": {
+      "optional": true
+    },
     "zod": {
       "optional": true
     }
@@ -64,6 +68,7 @@
   "devDependencies": {
     "@types/node": "^26.6.6",
     "esbuild": "^0.28.2",
+    "playwright-core": "1.65.0",
     "tsup": "^9.0.0",
     "typescript": "^6.0.3",
     "vitest": "^5.1.0",

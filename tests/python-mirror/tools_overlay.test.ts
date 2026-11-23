@@ -22,7 +22,8 @@ it("tool without description raises", () => {
         fn: ({ x }: { x: unknown }) => x,
       } as never),
     Error,
-    /needs a description/,
+    // Python: "needs a description: add a docstring or pass description="; TS has neither, so its text differs.
+    /needs a non-empty description/,
   );
 });
 
