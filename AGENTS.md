@@ -42,6 +42,5 @@ decisions taken in Python. A port copies them; it does not tune them.
 
 ## Commits
 
-Commit locally with conventional messages (`feat(sdk): ...`, `fix(sdk): ...`, `test(sdk): ...`,
-`chore(sdk): ...`). No co-author trailers. Do not push and do not open a pull request unless
-asked.
+Conventional messages (`feat(sdk): ...`, `fix(sdk): ...`, `test(sdk): ...`, `chore(sdk): ...`), no
+co-author trailers. Pull requests open from a branch; nothing is pushed to `main` directly.

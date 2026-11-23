@@ -8,6 +8,7 @@
  */
 
 import { tool, type Tool } from "../client/tools.js";
+import { htmlToText } from "../html.js";
 
 export const OTP_TOOL_NAME = "request_otp";
 
@@ -152,19 +153,6 @@ export function extractOtp(text: string, kind: "code" | "link" = "code", codePat
     }
   }
   return collapsed.match(OTP_BARE_CODE)?.[0];
-}
-
-/** Module export only: the tests call it, as Python's test calls `_html_to_text`. */
-export function htmlToText(markup: string): string {
-  const entities: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', "#39": "'", nbsp: " " };
-  return (
-    markup
-      .replace(/<(?:script|style)\b[^>]*>[\s\S]*?<\/(?:script|style)>/gi, " ")
-      // Surface link targets: html mail hides the URL behind anchor text ("Click here").
-      .replace(/<a\b[^>]*?href=["']([^"']+)["'][^>]*>/gi, " $1 ")
-      .replace(/<[^>]+>/g, " ")
-      .replace(/&(amp|lt|gt|quot|#39|nbsp);/g, (_, entity: string) => entities[entity] ?? " ")
-  );
 }
 
 export type ImapOtpHandlerOptions = {

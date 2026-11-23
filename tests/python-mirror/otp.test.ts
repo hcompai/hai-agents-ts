@@ -9,7 +9,7 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { OTP_TOOL_INPUT_SCHEMA, extractOtp, imapOtpHandler, otpTool, toolDefinition } from "hai-agents";
 import type { OtpRequest } from "hai-agents";
 
-import { htmlToText } from "hai-agents-src/tools/otp";
+import { htmlToText } from "hai-agents-src/html";
 
 import { mp, raisesAsync } from "./helpers";
 
