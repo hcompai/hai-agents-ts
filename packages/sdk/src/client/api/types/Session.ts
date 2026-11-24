@@ -18,6 +18,8 @@ export interface Session {
     agentViewUrl?: string | null;
     /** The agent's most recent final answer: free-form text, or structured data when the agent runs with a custom answer format. Null until the agent first answers. Mirrors the answer streamed from the changes endpoint, surfaced here for non-interactive runs. */
     latestAnswer?: unknown;
+    /** The agent-envs session hosting the agent's environment, as the environment last reported it. Null until the environment starts (a lazy one at the agent's first call to it). Shown to the session's owner and organization only. */
+    runner?: HaiAgents.Runner | null;
     createdAt: Date;
     startedAt?: Date | null;
     finishedAt?: Date | null;

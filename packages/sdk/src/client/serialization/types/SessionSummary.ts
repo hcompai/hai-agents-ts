@@ -3,12 +3,14 @@
 import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
+import { SessionFlag } from "./SessionFlag.js";
 import { TrajectoryStatus } from "./TrajectoryStatus.js";
 import { UserMessageEvent } from "./UserMessageEvent.js";
 
 export const SessionSummary: core.serialization.ObjectSchema<serializers.SessionSummary.Raw, HaiAgents.SessionSummary> =
     core.serialization.object({
         id: core.serialization.string(),
+        ownerId: core.serialization.property("owner_id", core.serialization.string().optionalNullable()),
         agent: core.serialization.string().optionalNullable(),
         agentRevision: core.serialization.property("agent_revision", core.serialization.number().optionalNullable()),
         status: TrajectoryStatus,
@@ -19,11 +21,13 @@ export const SessionSummary: core.serialization.ObjectSchema<serializers.Session
         finishedAt: core.serialization.property("finished_at", core.serialization.date().optionalNullable()),
         lastActivityAt: core.serialization.property("last_activity_at", core.serialization.date().optionalNullable()),
         anonymizedAt: core.serialization.property("anonymized_at", core.serialization.date().optionalNullable()),
+        flag: SessionFlag.optionalNullable(),
     });
 
 export declare namespace SessionSummary {
     export interface Raw {
         id: string;
+        owner_id?: (string | null | undefined) | null;
         agent?: (string | null | undefined) | null;
         agent_revision?: (number | null | undefined) | null;
         status: TrajectoryStatus.Raw;
@@ -34,5 +38,6 @@ export declare namespace SessionSummary {
         finished_at?: (string | null | undefined) | null;
         last_activity_at?: (string | null | undefined) | null;
         anonymized_at?: (string | null | undefined) | null;
+        flag?: (SessionFlag.Raw | null | undefined) | null;
     }
 }

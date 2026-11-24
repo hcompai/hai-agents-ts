@@ -7,6 +7,8 @@ import type * as HaiAgents from "../index.js";
  */
 export interface SessionSummary {
     id: string;
+    /** The user who created the session; API keys create sessions as their owner. Null from hosts that do not record owners, such as a local runtime. */
+    ownerId?: string | null;
     agent?: string | null;
     /** Revision of the catalog agent the session runs; null for inline specs and older sessions. */
     agentRevision?: number | null;
@@ -21,4 +23,6 @@ export interface SessionSummary {
     lastActivityAt?: Date | null;
     /** When the session's PII text and screenshots were irreversibly anonymized. Null if not anonymized. */
     anonymizedAt?: Date | null;
+    /** Set while the session is flagged for attention. */
+    flag?: HaiAgents.SessionFlag | null;
 }

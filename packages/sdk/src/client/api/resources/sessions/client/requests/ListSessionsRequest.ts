@@ -20,6 +20,10 @@ export interface ListSessionsRequest {
     createdAfter?: Date | null;
     finishedBefore?: Date | null;
     finishedAfter?: Date | null;
+    /** true: only flagged sessions. false: only sessions that are not flagged. */
+    flagged?: boolean | null;
+    /** Only sessions flagged after this time. */
+    flaggedAfter?: Date | null;
     /** Page number (1-based) */
     page?: number;
     /** Number of items per page */
