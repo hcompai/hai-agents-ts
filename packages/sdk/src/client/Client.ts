@@ -10,6 +10,7 @@ import { SessionsClient } from "./api/resources/sessions/client/Client.js";
 import { SkillsClient } from "./api/resources/skills/client/Client.js";
 import { VaultsClient } from "./api/resources/vaults/client/Client.js";
 import { WebhooksClient } from "./api/resources/webhooks/client/Client.js";
+import { WorkflowsClient } from "./api/resources/workflows/client/Client.js";
 import type { BaseClientOptions, BaseRequestOptions } from "./BaseClient.js";
 import { type NormalizedClientOptionsWithAuth, normalizeClientOptionsWithAuth } from "./BaseClient.js";
 import * as core from "./core/index.js";
@@ -29,6 +30,7 @@ export class HaiAgentsClient {
     protected _agents: AgentsClient | undefined;
     protected _webhooks: WebhooksClient | undefined;
     protected _schedules: SchedulesClient | undefined;
+    protected _workflows: WorkflowsClient | undefined;
     protected _browserProfiles: BrowserProfilesClient | undefined;
     protected _vaults: VaultsClient | undefined;
     protected _quota: QuotaClient | undefined;
@@ -63,6 +65,10 @@ export class HaiAgentsClient {
 
     public get schedules(): SchedulesClient {
         return (this._schedules ??= new SchedulesClient(this._options));
+    }
+
+    public get workflows(): WorkflowsClient {
+        return (this._workflows ??= new WorkflowsClient(this._options));
     }
 
     public get browserProfiles(): BrowserProfilesClient {
