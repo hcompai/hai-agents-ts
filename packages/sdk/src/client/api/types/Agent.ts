@@ -26,4 +26,6 @@ export interface Agent {
     answerFormat?: Record<string, unknown> | null;
     /** Custom tools executed by the API client. The agent emits a tool call, pauses, and resumes once the client sends back the matching tool result. */
     tools?: HaiAgents.ToolDefinition[] | null;
+    /** Persistent memory the agent can save to and recall from across sessions. Off when null. */
+    memory?: HaiAgents.MemoryConfig | null;
 }
