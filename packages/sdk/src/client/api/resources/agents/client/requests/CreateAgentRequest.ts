@@ -15,5 +15,7 @@ import type * as HaiAgents from "../../../../index.js";
 export interface CreateAgentRequest {
     /** Optional note stored on the revision this write creates, such as why the change was made. */
     message?: string | null;
+    /** Repeating the create with the same key, spec and message within 24h returns the agent the first one made, at revision 1, instead of a 409. The same key with a different request is a 422. A replay while the first create is still running is a 409 with Retry-After. A replay after that agent was deleted is a 404. */
+    idempotencyKey?: string | null;
     body: HaiAgents.Agent;
 }

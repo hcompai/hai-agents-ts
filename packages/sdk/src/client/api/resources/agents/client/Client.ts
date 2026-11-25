@@ -171,7 +171,7 @@ export class AgentsClient {
         request: HaiAgents.CreateAgentRequest,
         requestOptions?: AgentsClient.RequestOptions,
     ): Promise<core.WithRawResponse<HaiAgents.Agent>> {
-        const { message, body: _body } = request;
+        const { message, idempotencyKey, body: _body } = request;
         const _queryParams: Record<string, unknown> = {
             message,
         };
@@ -179,6 +179,7 @@ export class AgentsClient {
         const _headers: core.Fetcher.Args["headers"] = mergeHeaders(
             _authRequest.headers,
             this._options?.headers,
+            mergeOnlyDefinedHeaders({ "Idempotency-Key": idempotencyKey ?? undefined }),
             requestOptions?.headers,
         );
         const _response = await core.fetcher({

@@ -3,6 +3,7 @@
 import type * as HaiAgents from "../../../../../api/index.js";
 import * as core from "../../../../../core/index.js";
 import type * as serializers from "../../../../index.js";
+import { MemoryConfig } from "../../../../types/MemoryConfig.js";
 import { ToolDefinition } from "../../../../types/ToolDefinition.js";
 import { PatchAgentEnvironmentsItem } from "../../types/PatchAgentEnvironmentsItem.js";
 import { PatchAgentReasoningEffort } from "../../types/PatchAgentReasoningEffort.js";
@@ -25,6 +26,7 @@ export const PatchAgent: core.serialization.Schema<
         core.serialization.record(core.serialization.string(), core.serialization.unknown()).optionalNullable(),
     ),
     tools: core.serialization.list(ToolDefinition).optionalNullable(),
+    memory: MemoryConfig.optionalNullable(),
 });
 
 export declare namespace PatchAgent {
@@ -38,5 +40,6 @@ export declare namespace PatchAgent {
         skills?: (PatchAgentSkillsItem.Raw[] | null | undefined) | null;
         answer_format?: (Record<string, unknown> | null | undefined) | null;
         tools?: (ToolDefinition.Raw[] | null | undefined) | null;
+        memory?: (MemoryConfig.Raw | null | undefined) | null;
     }
 }

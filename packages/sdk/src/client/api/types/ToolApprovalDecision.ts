@@ -8,7 +8,7 @@ import type * as HaiAgents from "../index.js";
 export interface ToolApprovalDecision {
     toolReq: HaiAgents.ToolRequest;
     decision: HaiAgents.ToolApprovalDecisionDecision;
-    /** Who decided: 'client' for a response posted through the API, 'unattended' for an agent set to settle held calls on its own, 'run_end' when the run ended with the call still waiting. */
+    /** Who decided: 'client' for a response posted through the API, 'unattended' for an agent set to settle held calls on its own, 'run_end' when the run ended with the call still waiting, 'superseded' when the user sent a new message instead of deciding. */
     decidedBy: string;
     /** The decider's words, which the model reads on a denial. */
     message?: string | null;

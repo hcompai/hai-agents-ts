@@ -6,6 +6,7 @@ import * as serializers from "../index.js";
 import { AgentEnvironmentsItem } from "./AgentEnvironmentsItem.js";
 import { AgentReasoningEffort } from "./AgentReasoningEffort.js";
 import { AgentSkillsItem } from "./AgentSkillsItem.js";
+import { MemoryConfig } from "./MemoryConfig.js";
 import { ToolDefinition } from "./ToolDefinition.js";
 
 export const Agent: core.serialization.ObjectSchema<serializers.Agent.Raw, HaiAgents.Agent> = core.serialization.object(
@@ -25,6 +26,7 @@ export const Agent: core.serialization.ObjectSchema<serializers.Agent.Raw, HaiAg
             core.serialization.record(core.serialization.string(), core.serialization.unknown()).optionalNullable(),
         ),
         tools: core.serialization.list(ToolDefinition).optionalNullable(),
+        memory: MemoryConfig.optionalNullable(),
     },
 );
 
@@ -40,5 +42,6 @@ export declare namespace Agent {
         skills?: (AgentSkillsItem.Raw[] | null | undefined) | null;
         answer_format?: (Record<string, unknown> | null | undefined) | null;
         tools?: (ToolDefinition.Raw[] | null | undefined) | null;
+        memory?: (MemoryConfig.Raw | null | undefined) | null;
     }
 }
