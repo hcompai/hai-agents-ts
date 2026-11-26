@@ -2,10 +2,9 @@
 
 import type * as core from "../../core/index.js";
 import * as errors from "../../errors/index.js";
-import type * as HaiAgents from "../index.js";
 
 export class ConflictError extends errors.HaiAgentsError {
-    constructor(body: HaiAgents.DetailErrorResponse, rawResponse?: core.RawResponse) {
+    constructor(body?: unknown, rawResponse?: core.RawResponse) {
         super({
             message: "ConflictError",
             statusCode: 409,

@@ -200,16 +200,7 @@ export class VaultsClient {
                         _response.rawResponse,
                     );
                 case 409:
-                    throw new HaiAgents.ConflictError(
-                        serializers.DetailErrorResponse.parseOrThrow(_response.error.body, {
-                            unrecognizedObjectKeys: "passthrough",
-                            allowUnrecognizedUnionMembers: true,
-                            allowUnrecognizedEnumValues: true,
-                            skipValidation: true,
-                            breadcrumbsPrefix: ["response"],
-                        }),
-                        _response.rawResponse,
-                    );
+                    throw new HaiAgents.ConflictError(_response.error.body, _response.rawResponse);
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
                         serializers.ErrorResponse.parseOrThrow(_response.error.body, {
@@ -379,16 +370,7 @@ export class VaultsClient {
                 case 404:
                     throw new HaiAgents.NotFoundError(_response.error.body, _response.rawResponse);
                 case 409:
-                    throw new HaiAgents.ConflictError(
-                        serializers.DetailErrorResponse.parseOrThrow(_response.error.body, {
-                            unrecognizedObjectKeys: "passthrough",
-                            allowUnrecognizedUnionMembers: true,
-                            allowUnrecognizedEnumValues: true,
-                            skipValidation: true,
-                            breadcrumbsPrefix: ["response"],
-                        }),
-                        _response.rawResponse,
-                    );
+                    throw new HaiAgents.ConflictError(_response.error.body, _response.rawResponse);
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
                         serializers.ErrorResponse.parseOrThrow(_response.error.body, {
@@ -499,16 +481,7 @@ export class VaultsClient {
                 case 404:
                     throw new HaiAgents.NotFoundError(_response.error.body, _response.rawResponse);
                 case 409:
-                    throw new HaiAgents.ConflictError(
-                        serializers.DetailErrorResponse.parseOrThrow(_response.error.body, {
-                            unrecognizedObjectKeys: "passthrough",
-                            allowUnrecognizedUnionMembers: true,
-                            allowUnrecognizedEnumValues: true,
-                            skipValidation: true,
-                            breadcrumbsPrefix: ["response"],
-                        }),
-                        _response.rawResponse,
-                    );
+                    throw new HaiAgents.ConflictError(_response.error.body, _response.rawResponse);
                 case 422:
                     throw new HaiAgents.UnprocessableEntityError(
                         serializers.ErrorResponse.parseOrThrow(_response.error.body, {

@@ -3,6 +3,7 @@
 import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
+import { ConnectedServer } from "./ConnectedServer.js";
 import { SessionRequestAgent } from "./SessionRequestAgent.js";
 import { SessionRequestMessages } from "./SessionRequestMessages.js";
 
@@ -14,6 +15,7 @@ export const SessionRequest: core.serialization.ObjectSchema<serializers.Session
         maxTimeS: core.serialization.property("max_time_s", core.serialization.number().optionalNullable()),
         idleTimeoutS: core.serialization.property("idle_timeout_s", core.serialization.number().optionalNullable()),
         timezone: core.serialization.string().optionalNullable(),
+        connections: core.serialization.list(ConnectedServer).optionalNullable(),
         deleteAfterMin: core.serialization.property("delete_after_min", core.serialization.number().optionalNullable()),
         deleteScreenshotAfterMin: core.serialization.property(
             "delete_screenshot_after_min",
@@ -36,6 +38,7 @@ export declare namespace SessionRequest {
         max_time_s?: (number | null | undefined) | null;
         idle_timeout_s?: (number | null | undefined) | null;
         timezone?: (string | null | undefined) | null;
+        connections?: (ConnectedServer.Raw[] | null | undefined) | null;
         delete_after_min?: (number | null | undefined) | null;
         delete_screenshot_after_min?: (number | null | undefined) | null;
         queue?: boolean | null;
