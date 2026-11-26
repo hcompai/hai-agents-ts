@@ -3,14 +3,12 @@
 import type * as HaiAgents from "../../api/index.js";
 import * as core from "../../core/index.js";
 import type * as serializers from "../index.js";
-import { BrowserHost } from "./BrowserHost.js";
 import { BrowserMode } from "./BrowserMode.js";
 import { BrowserNetwork } from "./BrowserNetwork.js";
 
 export const Browser: core.serialization.ObjectSchema<serializers.Browser.Raw, HaiAgents.Browser> =
     core.serialization.object({
         id: core.serialization.string(),
-        host: BrowserHost.optional(),
         startUrl: core.serialization.property("start_url", core.serialization.string().optionalNullable()),
         headless: core.serialization.boolean().optional(),
         sessionId: core.serialization.property("session_id", core.serialization.string().optionalNullable()),
@@ -36,7 +34,6 @@ export const Browser: core.serialization.ObjectSchema<serializers.Browser.Raw, H
 export declare namespace Browser {
     export interface Raw {
         id: string;
-        host?: BrowserHost.Raw | null;
         start_url?: (string | null | undefined) | null;
         headless?: boolean | null;
         session_id?: (string | null | undefined) | null;

@@ -18,6 +18,8 @@ export interface SessionRequest {
     idleTimeoutS?: number | null;
     /** IANA timezone the agent uses for dates and times, e.g. 'Europe/Paris'. UTC if null. */
     timezone?: string | null;
+    /** MCP servers the user connected, which the agent's shell reaches with `mcporter`; their keys stay where they are served. Each entry is a name plus an optional description (a bare name string is accepted). Listed in the system prompt of the agent, and of each subagent, with a desktop in shell mode; ignored by the others. */
+    connections?: HaiAgents.ConnectedServer[] | null;
     /** Minutes after the session finishes before it is automatically deleted. When omitted, Portal's retention preference applies. An explicit value adds an earlier expiry; null adds no expiry beyond Portal's policy. */
     deleteAfterMin?: number | null;
     /** Minutes after the session finishes before its screenshots are deleted. When omitted or null, screenshots follow the session's retention policy. An explicit value can delete screenshots earlier. */

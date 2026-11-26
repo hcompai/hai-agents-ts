@@ -11,6 +11,10 @@ import type * as HaiAgents from "../../../../index.js";
  *     }
  */
 export interface CreateSessionRequest {
+    /** Have the session's browser record its end state (its calls and localStorage, kept 30 days) when it closes, so `POST /sessions/{id}/probe` can judge it. Refused for an organization whose runs record no browser end state. */
+    captureEndState?: boolean;
+    /** Stamped as the session's `workflow_type` metadata, which groups the sessions `POST /workflows/{workflow_type}/probe/draft` drafts a probe from. */
+    workflowType?: string | null;
     idempotencyKey?: string | null;
     body: HaiAgents.SessionRequest;
 }
