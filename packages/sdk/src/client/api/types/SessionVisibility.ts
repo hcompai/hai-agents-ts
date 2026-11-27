@@ -8,4 +8,8 @@ export interface SessionVisibility {
     organizationRuns: boolean;
     /** Whether the caller administers the organization: an owner, or a platform administrator. */
     isOrgAdmin: boolean;
+    /** Whether the caller owns the organization. Only a vault's creator or an organization owner can reveal its items; platform administrators who are not owners cannot. */
+    isOrgOwner: boolean;
+    /** The caller's effective AgP permissions, sorted. ``agp:records:see_all``: sees and changes every member's records, as an owner does, or any member once the organization lets members see each other's sessions. ``agp:vaults:reveal_any``: reveals any vault's items, never granted by that setting. */
+    permissions: string[];
 }

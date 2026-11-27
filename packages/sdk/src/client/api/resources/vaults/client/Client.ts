@@ -24,7 +24,7 @@ export class VaultsClient {
     }
 
     /**
-     * List the caller's org vault configs.
+     * List the org's vault configs the caller sees: every one for an org-wide caller, else those they created.
      *
      * @param {HaiAgents.ListVaultsRequest} request
      * @param {VaultsClient.RequestOptions} requestOptions - Request-specific configuration.
@@ -1269,10 +1269,13 @@ export class VaultsClient {
     /**
      * Return an internal vault item's values, with the current TOTP code in place of its seed. Audit-logged.
      *
+     * Only the vault's creator or an org owner, whatever the org's run-visibility setting; never an agent.
+     *
      * @param {HaiAgents.RevealVaultItemRequest} request
      * @param {VaultsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
      * @throws {@link HaiAgents.BadRequestError}
+     * @throws {@link HaiAgents.ForbiddenError}
      * @throws {@link HaiAgents.NotFoundError}
      * @throws {@link HaiAgents.UnprocessableEntityError}
      * @throws {@link HaiAgents.BadGatewayError}
@@ -1343,6 +1346,8 @@ export class VaultsClient {
                         }),
                         _response.rawResponse,
                     );
+                case 403:
+                    throw new HaiAgents.ForbiddenError(_response.error.body, _response.rawResponse);
                 case 404:
                     throw new HaiAgents.NotFoundError(_response.error.body, _response.rawResponse);
                 case 422:

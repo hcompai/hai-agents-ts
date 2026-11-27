@@ -10,11 +10,13 @@ export const AgentWithRevision: core.serialization.ObjectSchema<
 > = core.serialization
     .object({
         revision: core.serialization.number(),
+        createdBy: core.serialization.property("created_by", core.serialization.string().optionalNullable()),
     })
     .extend(core.serialization.lazyObject(() => serializers.Agent));
 
 export declare namespace AgentWithRevision {
     export interface Raw extends serializers.Agent.Raw {
         revision: number;
+        created_by?: (string | null | undefined) | null;
     }
 }
