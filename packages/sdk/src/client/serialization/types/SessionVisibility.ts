@@ -10,11 +10,15 @@ export const SessionVisibility: core.serialization.ObjectSchema<
 > = core.serialization.object({
     organizationRuns: core.serialization.property("organization_runs", core.serialization.boolean()),
     isOrgAdmin: core.serialization.property("is_org_admin", core.serialization.boolean()),
+    isOrgOwner: core.serialization.property("is_org_owner", core.serialization.boolean()),
+    permissions: core.serialization.list(core.serialization.string()),
 });
 
 export declare namespace SessionVisibility {
     export interface Raw {
         organization_runs: boolean;
         is_org_admin: boolean;
+        is_org_owner: boolean;
+        permissions: string[];
     }
 }

@@ -24,7 +24,7 @@ export class BrowserProfilesClient {
     }
 
     /**
-     * List the caller's browser profiles.
+     * List the caller's browser profiles, or the whole org's for an org-wide caller.
      *
      * @param {HaiAgents.ListBrowserProfilesRequest} request
      * @param {BrowserProfilesClient.RequestOptions} requestOptions - Request-specific configuration.
@@ -586,7 +586,7 @@ export class BrowserProfilesClient {
     }
 
     /**
-     * Fetch a browser profile by id.
+     * Fetch a browser profile by id: the caller's own, or any of the org's for an org-wide caller.
      *
      * @param {HaiAgents.GetBrowserProfileRequest} request
      * @param {BrowserProfilesClient.RequestOptions} requestOptions - Request-specific configuration.
